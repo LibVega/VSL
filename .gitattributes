@@ -2,4 +2,4 @@
 polaris.project linguist-language=Lua
 
 # Linguist Ignore Paths
-# <path> linguist-vendored
+include/antlr4/* linguist-vendored
