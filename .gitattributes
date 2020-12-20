@@ -3,3 +3,8 @@ polaris.project linguist-language=Lua
 
 # Linguist Ignore Paths
 include/antlr4/* linguist-vendored
+
+# Git LFS
+lib/macos/libantlr4-runtime.a filter=lfs diff=lfs merge=lfs -text
+lib/linux/libantlr4-runtime.a filter=lfs diff=lfs merge=lfs -text
+lib/vs2019/antlr4-runtime.lib filter=lfs diff=lfs merge=lfs -text
