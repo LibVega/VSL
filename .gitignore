@@ -1,2 +1,9 @@
 # Build files
 build/
+
+# Tool-generated files
+grammar/\.antlr/
+
+# Generated lexer/parser files
+generated/*
+!generated/README.md
