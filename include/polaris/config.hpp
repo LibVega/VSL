@@ -54,6 +54,24 @@
 #	error Unsupported compiler detected - please use MSVC, GNU GCC, or Clang.
 #endif // defined(_MSC_VER)
 
+/* Import/Export Macros */
+#if !defined(PLS_STATIC)
+#	if defined(PLS_MSVC)
+#		if defined(_PLS_BUILD)
+#			define PLS_API __declspec(dllexport)
+#			define PLS_C_API extern "C" __declspec(dllexport)
+#		else
+#			define PLS_API __declspec(dllimport)
+#			define PLS_C_API extern "C" __declspec(dllimport)
+#		endif // defined(_PLS_BUILD)
+#	else
+#		define PLS_API __attribute__((__visibility__("default")))
+#		define PLS_C_API extern "C" __attribute__((__visibility__("default")))
+#	endif // defined(PLS_COMPILER_MSVC)
+#else
+#	define PLS_API
+#endif // !defined(PLS_STATIC)
+
 /* Library Version */
 #define PLS_VERSION_MAJOR 0
 #define PLS_VERSION_MINOR 1
@@ -124,9 +142,9 @@ inline string mkstr(const char* const fmt, Args&&... args)
 
 
 /* Class Operation Macros */
-#define PLS_TYPE_NO_COPY(cName) public: cName(const cName&) = delete; cName& operator = (const cName&) = delete;
-#define PLS_TYPE_NO_MOVE(cName) public: cName(cName&&) = delete; cName& operator = (cName&&) = delete;
-#define PLS_TYPE_NO_INIT(cName) \
+#define PLS_NO_COPY(cName) public: cName(const cName&) = delete; cName& operator = (const cName&) = delete;
+#define PLS_NO_MOVE(cName) public: cName(cName&&) = delete; cName& operator = (cName&&) = delete;
+#define PLS_NO_INIT(cName) \
 	public: \
 	cName() = delete; \
 	void* operator new (size_t) = delete; \
