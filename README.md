@@ -12,7 +12,13 @@ Many thanks to the authors of the following libraries and tools used in Polaris:
 ### Premake
 
 * Website: [link](https://github.com/premake/premake-core)
-* License: BSD3 ([original](https://github.com/premake/premake-core/blob/master/LICENSE.txt)) ([copy](./license/premake))
+* License: BSD 3-clause ([original](https://github.com/premake/premake-core/blob/master/LICENSE.txt)) ([copy](./license/premake))
 * Description: Project generator allowing cross-platform and cross-compiler C++ projects.
+
+### ANTLR4
+
+* Website: [link](https://www.antlr.org/index.html)
+* License: BSD 3-clause ([original](https://github.com/antlr/antlr4/blob/master/LICENSE.txt)) ([copy](./license/antlr))
+* Description: Lexer/Parser generator used to perform the parsing of Polaris shader files
 
 These third-party tools and libraries are rehosted under their original licenses. The authors of Polaris and the Vega library make no authorship claims.
