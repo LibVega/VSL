@@ -55,3 +55,43 @@ project "polaris"
     filter { "configurations:Shared" }
         kind "SharedLib"
     filter {}
+
+    -- Library Paths
+    filter { "system:windows" }
+        libdirs { "./libs/vs2019" }
+    filter { "system:linux" }
+        libdirs { "./libs/linux" }
+    filter { "system:macos" }
+        libdirs { "./libs/macos" }
+    filter {}
+
+    -- Project Files
+    files {
+        "include/polaris/**.hpp",
+        "include/polaris/**.h",
+        "src/polaris/**.hpp",
+        "src/polaris/**.h",
+        "src/polaris/**.cpp"
+    }
+
+
+-- Command Line Tool
+project "plsc"
+    -- Settings
+    includedirs { "include" }
+    defines { }
+    targetname "plsc"
+    kind "ConsoleApp"
+    dependson { "polaris" }
+    links { "polaris" }
+
+    -- Static Linking
+    filter { "configurations:Static" }
+        defines { "PLS_STATIC" }
+    filter {}
+
+    -- Project files
+    files {
+        "src/plsc/**.hpp",
+        "src/plsc/**.cpp"
+    }
