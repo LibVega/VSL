@@ -1,7 +1,7 @@
 /*
- * Microsoft Public License(Ms - PL) - Copyright(c) 2020 Sean Moss
+ * Microsoft Public License (Ms-PL) - Copyright (c) 2020 Sean Moss
  * This file is subject to the terms and conditions of the Microsoft Public License, the text of which can be found in
- * the 'LICENSE' file at the root of this repository, or online at < https://opensource.org/licenses/MS-PL>.
+ * the 'LICENSE' file at the root of this repository, or online at <https://opensource.org/licenses/MS-PL>.
  */
 
 #pragma once
@@ -67,7 +67,7 @@
 #	else
 #		define PLSL_API __attribute__((__visibility__("default")))
 #		define PLSL_C_API extern "C" __attribute__((__visibility__("default")))
-#	endif // defined(PLSL_COMPILER_MSVC)
+#	endif // defined(PLSL_MSVC)
 #else
 #	define PLSL_API
 #endif // !defined(PLSL_STATIC)

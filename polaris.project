@@ -41,13 +41,16 @@ workspace "Polaris"
     filter {}
 
     -- Shared Defines
-    defines { "ANTLR4CPP_STATIC" }
+    defines { "ANTLR4CPP_STATIC", "USE_UTF8_INSTEAD_OF_CODECVT" }
+    filter { "system:windows" }
+        defines { "UTF_CPP_CPLUSPLUS=_MSVC_LANG" }
+    filter {}
 
 
 -- Compiler Library
 project "plsl"
     -- Settings
-    includedirs { "include" }
+    includedirs { "include", "include/antlr4" }
     defines { "_PLSL_BUILD" }
     targetname "plsl"
 
@@ -71,6 +74,8 @@ project "plsl"
 
     -- Project Files
     files {
+        "generated/**.h",
+        "generated/**.cpp",
         "include/plsl/**.hpp",
         "include/plsl/**.h",
         "plsl/**.hpp",

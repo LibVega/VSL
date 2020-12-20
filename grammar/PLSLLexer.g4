@@ -8,4 +8,33 @@
 
 lexer grammar PLSLLexer;
 
-Eof : EOF ;
+
+// Keywords
+KW_SHADER   : 'shader' ;
+
+// Identifiers, valid for variable and type names, and built-ins
+IDENTIFIER
+    : (AlphaChar|'_') (AlnumChar|'_')*
+    | '$' AlphaChar+
+    ;
+
+// Punctuation
+SEMICOLON : ';' ;
+
+// Whitespace and comments (ignore to hidden channel)
+WS
+    : [ \t\r\n\u000C]+ -> skip
+    ;
+COMMENT
+    : '/*' .*? '*/' -> channel(HIDDEN)
+    ;
+LINE_COMMENT
+    : '//' ~[\r\n]* (('\r'? '\n') | EOF) -> channel(HIDDEN)
+    ;
+
+// Character types
+fragment AlphaChar    : [a-zA-Z] ;
+fragment DigitChar    : [0-9] ;
+fragment AlnumChar    : AlphaChar | DigitChar ;
+fragment HexDigitChar : [a-fA-F0-9] ;
+fragment BinDigitChar : [01] ;

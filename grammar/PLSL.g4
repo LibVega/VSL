@@ -14,5 +14,10 @@ options {
 
 // Top-level file unit
 file
-    : EOF
+    : shaderTypeStatement EOF
+    ;
+
+// Shader info statement
+shaderTypeStatement
+    : 'shader' type=IDENTIFIER ';'
     ;
