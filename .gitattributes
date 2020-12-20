@@ -1,0 +1,5 @@
+# Language Overrides
+polaris.project linguist-language=Lua
+
+# Linguist Ignore Paths
+# <path> linguist-vendored

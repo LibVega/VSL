@@ -1,0 +1,57 @@
+--
+-- Microsoft Public License (Ms-PL) - Copyright (c) 2020 Sean Moss
+-- This file is subject to the terms and conditions of the Microsoft Public License, the text of which can be found in
+-- the 'LICENSE' file at the root of this repository, or online at <https://opensource.org/licenses/MS-PL>.
+--
+
+-- Premake solution generation script. Written in Lua.
+
+
+-- Project Workspace
+workspace "Polaris"
+    -- Shared Settings
+    language "C++"
+    cppdialect "C++17"
+    location "build"
+    configurations { "Static", "Shared" }
+    platforms { "x64" }
+    architecture "x86_64"
+    flags { "MultiProcessorCompile", "NoImportLib", "LinkTimeOptimization" }
+
+    -- Output Directories
+    filter { "configurations:Static" }
+        targetdir "build/bin/Static"
+    filter { "configurations:Shared" }
+        targetdir "build/bin/Shared"
+    filter {}
+
+    -- Release Settings
+    runtime "Release"
+    symbols "Off"
+    optimize "Speed"
+
+    -- Compiler/Platform Settings
+    filter { "system:windows" }
+        systemversion "latest"
+        disablewarnings { "4099", "4251", "4275" }
+        staticruntime "off"
+        defines { "_CRT_SECURE_NO_WARNINGS" }
+    filter { "toolset:gcc or clang" }
+        buildoptions { "-fpermissive", "-fvisibility=hidden", "-fPIC" }
+    filter {}
+
+
+-- Compiler Library
+project "polaris"
+    -- Settings
+    includedirs { "include" }
+    defines { }
+    targetname "polaris"
+
+    -- Output Types
+    filter { "configurations:Static" }
+        kind "StaticLib"
+        defines { "PLS_STATIC" }
+    filter { "configurations:Shared" }
+        kind "SharedLib"
+    filter {}
