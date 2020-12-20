@@ -4,7 +4,7 @@
  * the 'LICENSE' file at the root of this repository, or online at < https://opensource.org/licenses/MS-PL>.
  */
 
-/// The main function entry point for the command-line Polaris compiler 'plsc'
+/// The main function entry point for the command-line Polaris compiler 'plslc'
 
 
 int main(int argc, char* argv[])

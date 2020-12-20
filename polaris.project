@@ -45,16 +45,16 @@ workspace "Polaris"
 
 
 -- Compiler Library
-project "polaris"
+project "plsl"
     -- Settings
     includedirs { "include" }
-    defines { "_PLS_BUILD" }
-    targetname "polaris"
+    defines { "_PLSL_BUILD" }
+    targetname "plsl"
 
     -- Output Types
     filter { "configurations:Static" }
         kind "StaticLib"
-        defines { "PLS_STATIC" }
+        defines { "PLSL_STATIC" }
     filter { "configurations:Shared" }
         kind "SharedLib"
     filter {}
@@ -71,31 +71,31 @@ project "polaris"
 
     -- Project Files
     files {
-        "include/polaris/**.hpp",
-        "include/polaris/**.h",
-        "polaris/**.hpp",
-        "polaris/**.h",
-        "polaris/**.cpp"
+        "include/plsl/**.hpp",
+        "include/plsl/**.h",
+        "plsl/**.hpp",
+        "plsl/**.h",
+        "plsl/**.cpp"
     }
 
 
 -- Command Line Tool
-project "plsc"
+project "plslc"
     -- Settings
     includedirs { "include" }
     defines { }
-    targetname "plsc"
+    targetname "plslc"
     kind "ConsoleApp"
-    dependson { "polaris" }
-    links { "polaris" }
+    dependson { "plsl" }
+    links { "plsl" }
 
     -- Static Linking
     filter { "configurations:Static" }
-        defines { "PLS_STATIC" }
+        defines { "PLSL_STATIC" }
     filter {}
 
     -- Project files
     files {
-        "plsc/**.hpp",
-        "plsc/**.cpp"
+        "plslc/**.hpp",
+        "plslc/**.cpp"
     }
