@@ -8,12 +8,23 @@
 
 #include <plsl/compiler.hpp>
 
+#include <iostream>
+
 
 int main(int argc, char* argv[])
 {
 	using namespace plsl;
 
+	if (argc < 2) {
+		std::cerr << "Usage: plslc <file>" << std::endl;
+		return 1;
+	}
+
 	Compiler c{};
+	if (!c.compileFile(argv[1], {})) {
+		std::cerr << "Failed to compile - " << c.lastError().message() << std::endl;
+		return 2;
+	}
 
 	return 0;
 }

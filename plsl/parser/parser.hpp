@@ -9,10 +9,10 @@
 /// The main type for performing the parsing of Polaris shaders, the implementation is split into many files
 
 #include <plsl/config.hpp>
+#include <plsl/compiler.hpp>
+#include "./error_listener.hpp"
 
 #include "../../generated/PLSLBaseVisitor.h"
-
-#include "./error_listener.hpp"
 
 #define VISIT_DECL(type) antlrcpp::Any visit##type(grammar::PLSL::type##Context* ctx) override;
 
@@ -25,11 +25,17 @@ class Parser final :
 	public grammar::PLSLBaseVisitor
 {
 public:
-	Parser(const string& source);
+	Parser();
 	virtual ~Parser();
+
+	bool parse(const string& source, const CompilerOptions& options) noexcept;
+
+	inline const CompilerError& lastError() const { return lastError_; }
+	inline bool hasError() const { return !lastError_.message().empty(); }
 
 private:
 	ErrorListener errorListener_;
+	CompilerError lastError_;
 
 	PLSL_NO_COPY(Parser)
 	PLSL_NO_MOVE(Parser)

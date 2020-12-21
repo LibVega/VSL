@@ -11,8 +11,9 @@ namespace plsl
 {
 
 // ====================================================================================================================
-Parser::Parser(const string& source)
-	: errorListener_{ }
+Parser::Parser()
+	: errorListener_{ this }
+	, lastError_{ }
 {
 
 }
@@ -21,6 +22,12 @@ Parser::Parser(const string& source)
 Parser::~Parser()
 {
 
+}
+
+// ====================================================================================================================
+bool Parser::parse(const string& source, const CompilerOptions& options) noexcept
+{
+	return true;
 }
 
 } // namespace plsl

@@ -5,13 +5,15 @@
  */
 
 #include "./error_listener.hpp"
+#include "./parser.hpp"
 
 
 namespace plsl
 {
 
 // ====================================================================================================================
-ErrorListener::ErrorListener()
+ErrorListener::ErrorListener(Parser* parser)
+	: parser_{ parser }
 {
 
 }

@@ -14,16 +14,21 @@
 namespace plsl
 {
 
+class Parser;
+
 // The antlr4 error listener implementation for the PLSL lexer and parser
 class ErrorListener final :
 	public antlr4::BaseErrorListener
 {
 public:
-	ErrorListener();
+	ErrorListener(Parser* parser);
 	virtual ~ErrorListener();
 
 	void syntaxError(antlr4::Recognizer* recognizer, antlr4::Token* badToken, size_t line, size_t charPosition,
 		const std::string& msg, std::exception_ptr e) override;
+
+private:
+	Parser* const parser_;
 
 	PLSL_NO_COPY(ErrorListener)
 	PLSL_NO_MOVE(ErrorListener)
