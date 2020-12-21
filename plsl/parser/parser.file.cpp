@@ -30,10 +30,10 @@ VISIT_FUNC(ShaderTypeStatement)
 		return nullptr; // Only graphics supported for now
 	}
 	else if (shaderType == "compute") {
-		ERROR(ctx->type, "Compute shaders are not supported");
+		ERROR(ctx->type, "Compute shaders are not yet supported");
 	}
 	else if (shaderType == "ray") {
-		ERROR(ctx->type, "Ray shaders are not supported");
+		ERROR(ctx->type, "Ray shaders are not yet supported");
 	}
 	else {
 		ERROR(ctx->type, mkstr("Unknown shader type '%s'", shaderType.c_str()));

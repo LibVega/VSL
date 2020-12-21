@@ -6,12 +6,11 @@
 
 #pragma once
 
-/// The main type for performing the parsing of Polaris shaders, the implementation is split into many files
-
 #include <plsl/config.hpp>
 #include <plsl/compiler.hpp>
 #include "./error_listener.hpp"
 #include "../../generated/PLSLBaseVisitor.h"
+#include "../reflection/shader_info.hpp"
 
 #include <antlr4/CommonTokenStream.h>
 #include <antlr4/RuleContext.h>
@@ -78,6 +77,7 @@ private:
 	ErrorListener errorListener_;
 	CompilerError lastError_;
 	antlr4::CommonTokenStream* tokens_;
+	sptr<ShaderInfo> shaderInfo_;
 
 	PLSL_NO_COPY(Parser)
 	PLSL_NO_MOVE(Parser)

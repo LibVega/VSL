@@ -19,8 +19,9 @@ Parser::Parser()
 	: errorListener_{ this }
 	, lastError_{ }
 	, tokens_{ nullptr }
+	, shaderInfo_{ std::make_shared<ShaderInfo>() }
 {
-
+	
 }
 
 // ====================================================================================================================
