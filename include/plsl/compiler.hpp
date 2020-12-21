@@ -21,7 +21,6 @@ enum class CompilerStage
 {
 	FileRead,
 	Parse,
-	Generate,
 	Compile,
 	FileWrite
 }; // enum class CompilerStage
@@ -53,9 +52,9 @@ public:
 private:
 	CompilerStage stage_;  // The compilation stage of the error
 	string message_;       // The human-readable error description
-	uint32 line_;          // The source line of the error (for Parse/Generate)
-	uint32 character_;     // The character index in the line of the error (for Parse/Generate)
-	string badText_;       // The invalid source generating the error (for Parse/Generate)
+	uint32 line_;          // The source line of the error (for Parse)
+	uint32 character_;     // The character index in the line of the error (for Parse)
+	string badText_;       // The invalid source generating the error (for Parse)
 }; // class CompilerError
 
 

@@ -49,7 +49,7 @@ bool Compiler::compileFile(const string& path, const CompilerOptions& options) n
 	}
 
 	// Try to read the file
-	std::ifstream inFile{ inPath.c_str(), std::ifstream::ate };
+	std::ifstream inFile{ inPath.c_str(), std::ifstream::ate | std::istream::in };
 	if (!inFile) {
 		SET_ERROR(FileRead, "Could not open input file for reading");
 		return false;

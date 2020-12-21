@@ -20,10 +20,30 @@
 namespace plsl
 {
 
+// The exception type used to stop the tree walk and report an error
+class ParserError final
+{
+public:
+	ParserError(const CompilerError& error)
+		: error_{ error }
+	{ }
+	ParserError(const string& msg, uint32 l, uint32 c)
+		: error_{ CompilerStage::Parse, msg, l, c }
+	{ }
+
+	inline const CompilerError& error() const { return error_; }
+
+private:
+	const CompilerError error_;
+}; // class ParserError
+
+
 // The central visitor type that performs the parsing and AST walk
 class Parser final :
 	public grammar::PLSLBaseVisitor
 {
+	friend class ErrorListener;
+
 public:
 	Parser();
 	virtual ~Parser();
@@ -32,6 +52,10 @@ public:
 
 	inline const CompilerError& lastError() const { return lastError_; }
 	inline bool hasError() const { return !lastError_.message().empty(); }
+
+	/* File-Level Rules */
+	VISIT_DECL(File)
+	VISIT_DECL(ShaderTypeStatement)
 
 private:
 	ErrorListener errorListener_;
