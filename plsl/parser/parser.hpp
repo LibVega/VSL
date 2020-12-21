@@ -11,8 +11,12 @@
 #include <plsl/config.hpp>
 #include <plsl/compiler.hpp>
 #include "./error_listener.hpp"
-
 #include "../../generated/PLSLBaseVisitor.h"
+
+#include <antlr4/CommonTokenStream.h>
+#include <antlr4/RuleContext.h>
+#include <antlr4/Token.h>
+#include <antlr4/tree/TerminalNode.h>
 
 #define VISIT_DECL(type) antlrcpp::Any visit##type(grammar::PLSL::type##Context* ctx) override;
 
@@ -58,8 +62,22 @@ public:
 	VISIT_DECL(ShaderTypeStatement)
 
 private:
+	inline void ERROR(antlr4::Token* tk, const string& msg) {
+		throw ParserError(msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()));
+	}
+	inline void ERROR(antlr4::RuleContext* ctx, const string& msg) {
+		const auto tk = tokens_->get(ctx->getSourceInterval().a);
+		throw ParserError(msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()));
+	}
+	inline void ERROR(antlr4::tree::TerminalNode* node, const string& msg) {
+		const auto tk = tokens_->get(node->getSourceInterval().a);
+		throw ParserError(msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()));
+	}
+
+private:
 	ErrorListener errorListener_;
 	CompilerError lastError_;
+	antlr4::CommonTokenStream* tokens_;
 
 	PLSL_NO_COPY(Parser)
 	PLSL_NO_MOVE(Parser)

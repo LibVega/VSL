@@ -18,6 +18,7 @@ namespace plsl
 Parser::Parser()
 	: errorListener_{ this }
 	, lastError_{ }
+	, tokens_{ nullptr }
 {
 
 }
@@ -39,14 +40,16 @@ bool Parser::parse(const string& source, const CompilerOptions& options) noexcep
 
 	// Create the parser object
 	antlr4::CommonTokenStream tokenStream{ &lexer };
+	tokens_ = &tokenStream;
 	grammar::PLSL parser{ &tokenStream };
 	parser.removeErrorListeners();
 	parser.addErrorListener(&errorListener_);
 
 	// Perform the lexing and parsing
 	const auto fileCtx = parser.file();
+	bool result = false;
 	if (hasError()) {
-		return false; // The error listener in the lexer/parser picked up an error
+		goto end_parse; // The error listener in the lexer/parser picked up an error
 	}
 
 	// Visit the parsed file context
@@ -55,14 +58,18 @@ bool Parser::parse(const string& source, const CompilerOptions& options) noexcep
 	}
 	catch (const ParserError& pe) {
 		lastError_ = pe.error();
-		return false;
+		goto end_parse;
 	}
 	catch (const std::exception& ex) {
 		SET_ERROR(Parse, mkstr("Unhanded error - %s", ex.what()));
-		return false;
+		goto end_parse;
 	}
+	result = true;
 
-	return true;
+end_parse:
+	// Cleanup and return
+	tokens_ = nullptr;
+	return result;
 }
 
 } // namespace plsl

@@ -22,7 +22,17 @@ int main(int argc, char* argv[])
 
 	Compiler c{};
 	if (!c.compileFile(argv[1], {})) {
-		std::cerr << "Failed to compile - " << c.lastError().message() << std::endl;
+		const auto err = c.lastError();
+		if (err.stage() == CompilerStage::Parse) {
+			std::cerr << "Failed to compile (at " << err.line() << ':' << err.character() << ")";
+			if (!err.badText().empty()) {
+				std::cerr << " ('" << err.badText() << "')";
+			}
+			std::cerr << " - " << err.message() << std::endl;
+		}
+		else {
+			std::cerr << "Failed to compile - " << err.message() << std::endl;
+		}
 		return 2;
 	}
 

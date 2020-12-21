@@ -7,6 +7,8 @@
 #include "./error_listener.hpp"
 #include "./parser.hpp"
 
+#define STRMATCH(mstr) (msg.find(mstr)!=string::npos) 
+
 
 namespace plsl
 {
@@ -48,8 +50,8 @@ void ErrorListener::syntaxError(antlr4::Recognizer* recognizer, antlr4::Token* b
 	string errorMsg{};
 
 	// Check all of the known error combinations
-	if (false) {
-
+	if (STRMATCH("expecting ';'")) {
+		errorMsg = "expected end of statement ';'";
 	}
 	else {
 		// Fallback for errors we have not customized a response to
@@ -60,6 +62,9 @@ void ErrorListener::syntaxError(antlr4::Recognizer* recognizer, antlr4::Token* b
 
 	// Set the parser error
 	parser_->lastError_ = CompilerError(CompilerStage::Parse, errorMsg, uint32(line), uint32(charPosition));
+	if (!badText.empty()) {
+		parser_->lastError_.badText(badText);
+	}
 }
 
 } // namespace plsl

@@ -15,12 +15,30 @@ namespace plsl
 // ====================================================================================================================
 VISIT_FUNC(File)
 {
+	// Visit the shader type statement
+	visit(ctx->shaderTypeStatement());
+
 	return nullptr;
 }
 
 // ====================================================================================================================
 VISIT_FUNC(ShaderTypeStatement)
 {
+	// Validate the shader type
+	const auto shaderType = ctx->type->getText();
+	if (shaderType == "graphics") {
+		return nullptr; // Only graphics supported for now
+	}
+	else if (shaderType == "compute") {
+		ERROR(ctx->type, "Compute shaders are not supported");
+	}
+	else if (shaderType == "ray") {
+		ERROR(ctx->type, "Ray shaders are not supported");
+	}
+	else {
+		ERROR(ctx->type, mkstr("Unknown shader type '%s'", shaderType.c_str()));
+	}
+
 	return nullptr;
 }
 
