@@ -4,16 +4,24 @@
  * the 'LICENSE' file at the root of this repository, or online at <https://opensource.org/licenses/MS-PL>.
  */
 
-/// The main function entry point for the command-line Polaris compiler 'plslc'
+#pragma once
 
-#include <plsl/compiler.hpp>
+#include "./config.hpp"
 
 
-int main(int argc, char* argv[])
+namespace plsl
 {
-	using namespace plsl;
 
-	Compiler c{};
+class PLSL_API Compiler final
+{
+public:
+	Compiler();
+	~Compiler();
 
-	return 0;
-}
+private:
+
+	PLSL_NO_COPY(Compiler)
+	PLSL_NO_MOVE(Compiler)
+}; // class Compiler
+
+} // namespace plsl

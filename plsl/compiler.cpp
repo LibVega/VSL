@@ -4,20 +4,20 @@
  * the 'LICENSE' file at the root of this repository, or online at <https://opensource.org/licenses/MS-PL>.
  */
 
-#include "./visitor.hpp"
+#include <plsl/compiler.hpp>
 
 
 namespace plsl
 {
 
 // ====================================================================================================================
-Visitor::Visitor(antlr4::CommonTokenStream* tokens)
+Compiler::Compiler()
 {
-
+	
 }
 
 // ====================================================================================================================
-Visitor::~Visitor()
+Compiler::~Compiler()
 {
 
 }

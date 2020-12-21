@@ -103,7 +103,7 @@
 #endif
 
 
-namespace pls
+namespace plsl
 {
 
 /* Integer Types */
@@ -138,7 +138,7 @@ inline string mkstr(const char* const fmt, Args&&... args)
 	return string(buf, (len < BUFSIZE) ? len : BUFSIZE);
 }
 
-} // namespace pls
+} // namespace plsl
 
 
 /* Class Operation Macros */
