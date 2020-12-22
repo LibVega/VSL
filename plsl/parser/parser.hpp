@@ -11,6 +11,7 @@
 #include "./error_listener.hpp"
 #include "../../generated/PLSLBaseVisitor.h"
 #include "../reflection/shader_info.hpp"
+#include "../reflection/type_manager.hpp"
 
 #include <antlr4/CommonTokenStream.h>
 #include <antlr4/RuleContext.h>
@@ -55,6 +56,8 @@ public:
 
 	inline const CompilerError& lastError() const { return lastError_; }
 	inline bool hasError() const { return !lastError_.message().empty(); }
+	inline const ShaderInfo& shaderInfo() const { return shaderInfo_; }
+	inline const TypeManager& types() const { return types_; }
 
 	/* File-Level Rules */
 	VISIT_DECL(File)
@@ -77,7 +80,8 @@ private:
 	ErrorListener errorListener_;
 	CompilerError lastError_;
 	antlr4::CommonTokenStream* tokens_;
-	sptr<ShaderInfo> shaderInfo_;
+	ShaderInfo shaderInfo_;
+	TypeManager types_;
 
 	PLSL_NO_COPY(Parser)
 	PLSL_NO_MOVE(Parser)
