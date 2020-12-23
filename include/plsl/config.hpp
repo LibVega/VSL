@@ -72,6 +72,13 @@
 #	define PLSL_API
 #endif // !defined(PLSL_STATIC)
 
+/* Platform Macros */
+#if defined(PLSL_MSVC)
+#	define NORETURN __declspec(noreturn)
+#else
+#	define NORETURN __attribute__((noreturn))
+#endif // defined(PLSL_MSVC)
+
 /* Library Version */
 #define PLSL_VERSION_MAJOR 0
 #define PLSL_VERSION_MINOR 1

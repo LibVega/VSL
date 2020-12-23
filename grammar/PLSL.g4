@@ -14,10 +14,25 @@ options {
 
 // Top-level file unit
 file
-    : shaderTypeStatement EOF
+    : shaderTypeStatement topLevelStatement* EOF
     ;
 
-// Shader info statement
+// Shader type statement
 shaderTypeStatement
     : 'shader' type=IDENTIFIER ';'
+    ;
+
+// Shader top level statements
+topLevelStatement
+    : shaderUserTypeDefinition
+    ;
+
+// Shader type statement, for defining new POD types
+shaderUserTypeDefinition
+    : '@type' name=IDENTIFIER '{' fieldDeclaration+ '}' ';'
+    ;
+
+// Field declaration, for type members and variables
+fieldDeclaration
+    : type=IDENTIFIER name=IDENTIFIER ('[' arraySize=INTEGER_LITERAL ']')? ';'
     ;

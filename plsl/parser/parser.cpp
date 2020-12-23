@@ -74,4 +74,81 @@ end_parse:
 	return result;
 }
 
+// ====================================================================================================================
+Literal Parser::ParseLiteral(const string& txt)
+{
+	if (txt.empty()) {
+		return { Literal::EInvalid };
+	}
+
+	const char* beg = txt.data();
+	char* end;
+
+	// Parse floats separately
+	const bool isFlt =
+		(txt.find('.') != string::npos) ||
+		(txt.find('e') != string::npos) ||
+		(txt.find('E') != string::npos);
+	if (isFlt) {
+		const auto val = std::strtod(beg, &end);
+		if (errno == ERANGE) {
+			return { Literal::EOutOfRange };
+		}
+		else if (isnan(val) || isinf(val)) {
+			return { Literal::EOutOfRange };
+		}
+		else if (end == beg) {
+			return { Literal::EInvalid };
+		}
+		else {
+			return { val };
+		}
+	}
+
+	// Check neg state
+	const bool isNeg = txt[0] == '-';
+	const bool isHex = txt.find("0x") == 0;
+
+	// Parse the value as 64-bit integers
+	if (isHex || !isNeg) {
+		const auto val = std::strtoull(beg, &end, isHex ? 16 : 10);
+		if (errno == ERANGE) {
+			return { Literal::EOutOfRange };
+		}
+		else if (end == beg) {
+			return { Literal::EInvalid };
+		}
+		else {
+			return { uint64_t(val) };
+		}
+	}
+	else {
+		const auto val = std::strtoll(beg, &end, 10);
+		if (errno == ERANGE) {
+			return { Literal::EOutOfRange };
+		}
+		else if (end == beg) {
+			return { Literal::EInvalid };
+		}
+		else {
+			return { int64_t(val) };
+		}
+	}
+}
+
+// ====================================================================================================================
+Literal Parser::ParseLiteral(Parser* parser, const antlr4::Token* token)
+{
+	const auto lit = ParseLiteral(token->getText());
+	if (lit.parseError == Literal::EOutOfRange) {
+		parser->ERROR(token, mkstr("Numeric literal '%s' is out of range", token->getText().c_str()));
+	}
+	else if (lit.parseError == Literal::EInvalid) {
+		parser->ERROR(token, mkstr("Numeric literal '%s' is invalid", token->getText().c_str()));
+	}
+	else {
+		return lit;
+	}
+}
+
 } // namespace plsl

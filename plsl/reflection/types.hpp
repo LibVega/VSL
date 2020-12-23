@@ -10,8 +10,8 @@
 
 #include <vector>
 
-#define PLSL_MAX_ARRAY_SIZE (255)   // The maximum size of an array for struct members
-#define PLSL_MAX_MEMBER_COUNT (32)  // The maximum number of struct members
+#define PLSL_MAX_ARRAY_SIZE (255u)   // The maximum size of an array for struct members
+#define PLSL_MAX_MEMBER_COUNT (32u)  // The maximum number of struct members
 
 
 namespace plsl
@@ -42,25 +42,36 @@ enum class ShaderBaseType : uint8
 // The different dimensionalities that BoundSampler/Texture/Image can take on
 enum class ImageDims : uint8
 {
-	None,      // Un-dimensioned texture
-	E1D,       // Single 1D texture
-	E2D,       // Single 2D texture
-	E3D,       // Single 3D texture
-	E1DArray,  // Array of 1D textures
-	E2DArray,  // Array of 2D textures
-	Cube,      // Single cubemap texture
-	CubeArray  // Array of cubemap textures
+	None,       // Un-dimensioned texture
+	E1D,        // Single 1D texture
+	E2D,        // Single 2D texture
+	E3D,        // Single 3D texture
+	E1DArray,   // Array of 1D textures
+	E2DArray,   // Array of 2D textures
+	Cube,       // Single cubemap texture
+	CubeArray,  // Array of cubemap textures
+	Shadow,     // Sampler-specific type for shadows
 }; // enum class ImageDims
 
 
 // Contains information about a struct member (similar to ShaderType)
-struct StructMemberType final
+struct StructMember final
 {
+	string name;              // The struct member name
 	ShaderBaseType baseType;  // The base type for the member
 	uint8 size;               // The type size (in bytes)
 	uint8 dims[2];            // The type dimensions ([0] = vec dims, [1] = matrix columns)
 	uint8 arraySize;          // The array element count, or 1 if not an array (array max size is 255)
-}; // struct StructMemberType
+
+	inline bool operator == (const StructMember& other) const {
+		return (name == other.name) && (baseType == other.baseType) && (size == other.size) &&
+			(dims[0] == other.dims[0]) && (dims[1] == other.dims[1]) && (arraySize == other.arraySize);
+	}
+	inline bool operator != (const StructMember& other) const {
+		return (name != other.name) || (baseType != other.baseType) || (size != other.size) ||
+			(dims[0] != other.dims[0]) || (dims[1] != other.dims[1]) || (arraySize != other.arraySize);
+	}
+}; // struct StructMember
 
 
 // Contains information about the type of an object, variable, or operand within a shader
@@ -82,7 +93,7 @@ public:
 	ShaderType(ShaderBaseType baseType, const string& bufferType)
 		: baseType{ baseType }, image{}, numeric{}, buffer{ bufferType }, userStruct{}
 	{ }
-	ShaderType(const string& structName, const std::vector<StructMemberType>& members = {})
+	ShaderType(const string& structName, const std::vector<StructMember>& members = {})
 		: baseType{ ShaderBaseType::Struct }, image{}, numeric{}, buffer{}, userStruct{ structName, members }
 	{ }
 	~ShaderType() { }
@@ -103,6 +114,8 @@ public:
 			(baseType == ShaderBaseType::RWTexels);
 	}
 	inline bool isStruct() const { return (baseType == ShaderBaseType::Struct); }
+
+	bool hasMember(const string& memberName) const;
 
 public:
 	ShaderBaseType baseType;      // The base type
@@ -128,7 +141,7 @@ public:
 	struct StructInfo
 	{
 		string structName;                      // The name of the struct type
-		std::vector<StructMemberType> members;  // The struct members
+		std::vector<StructMember> members;  // The struct members
 	} userStruct;
 }; // struct ShaderType
 

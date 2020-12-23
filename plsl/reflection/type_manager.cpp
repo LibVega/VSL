@@ -68,7 +68,8 @@ const std::unordered_map<string, ShaderType> TypeManager::BuiltinTypes_ {
 	{ "float2x4", { ShaderBaseType::Float, 4, 4, 2 } }, { "float4x2", { ShaderBaseType::Float, 4, 2, 4 } },
 	{ "float3x4", { ShaderBaseType::Float, 4, 4, 3 } }, { "float4x3", { ShaderBaseType::Float, 4, 3, 4 } },
 	// Sampler
-	{ "Sampler", { ShaderBaseType::Sampler, ImageDims::None } },
+	{ "Sampler",       { ShaderBaseType::Sampler, ImageDims::None } },
+	{ "SamplerShadow", { ShaderBaseType::Sampler, ImageDims::Shadow } },
 	// Bound Sampler
 	{ "Sampler1D",        { ShaderBaseType::BoundSampler, ImageDims::E1D } },
 	{ "Sampler2D",        { ShaderBaseType::BoundSampler, ImageDims::E2D } },

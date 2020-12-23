@@ -42,6 +42,53 @@ private:
 }; // class ParserError
 
 
+// Result value and code for attempting to parse a literal
+struct Literal final
+{
+public:
+	union
+	{
+		uint64_t u;  // The unsigned parsed literal
+		int64_t  i;  // The signed parsed literal
+		double   f;  // The floating point parsed literal
+	};
+	enum : uint8_t
+	{
+		ENone,        // The literal is valid (no error)
+		EOutOfRange,  // The literal is out of range
+		EInvalid      // The literal is not parseable
+	} parseError;
+	enum : uint8_t
+	{
+		Unsigned,
+		Signed,
+		Float
+	} type;
+
+	Literal()
+		: u{ 0 }, parseError{ EInvalid }, type{ Unsigned }
+	{ }
+	Literal(decltype(parseError) error)
+		: u{ 0 }, parseError{ error }, type{ }
+	{ }
+	Literal(uint64_t val)
+		: u{ val }, parseError{ ENone }, type{ Unsigned }
+	{ }
+	Literal(int64_t val)
+		: i{ val }, parseError{ ENone }, type{ Signed }
+	{ }
+	Literal(double val)
+		: f{ val }, parseError{ ENone }, type{ Float }
+	{ }
+
+	inline bool isValid() const { return parseError == ENone; }
+	inline bool isNegative() const {
+		return (type == Float) ? f < 0 : (type == Signed) ? i < 0 : false;
+	}
+	inline bool isZero() const { return u == 0 || (f == -0); }
+}; // struct Literal
+
+
 // The central visitor type that performs the parsing and AST walk
 class Parser final :
 	public grammar::PLSLBaseVisitor
@@ -59,19 +106,25 @@ public:
 	inline const ShaderInfo& shaderInfo() const { return shaderInfo_; }
 	inline const TypeManager& types() const { return types_; }
 
+	/* Utilities */
+	static Literal ParseLiteral(const string& txt);
+	static Literal ParseLiteral(Parser* parser, const antlr4::Token* token);
+
 	/* File-Level Rules */
 	VISIT_DECL(File)
 	VISIT_DECL(ShaderTypeStatement)
+	VISIT_DECL(ShaderUserTypeDefinition)
 
 private:
-	inline void ERROR(antlr4::Token* tk, const string& msg) {
+	/* Error Functions */
+	NORETURN inline void ERROR(const antlr4::Token* tk, const string& msg) {
 		throw ParserError(msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()));
 	}
-	inline void ERROR(antlr4::RuleContext* ctx, const string& msg) {
+	NORETURN inline void ERROR(antlr4::RuleContext* ctx, const string& msg) {
 		const auto tk = tokens_->get(ctx->getSourceInterval().a);
 		throw ParserError(msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()));
 	}
-	inline void ERROR(antlr4::tree::TerminalNode* node, const string& msg) {
+	NORETURN inline void ERROR(antlr4::tree::TerminalNode* node, const string& msg) {
 		const auto tk = tokens_->get(node->getSourceInterval().a);
 		throw ParserError(msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()));
 	}

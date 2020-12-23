@@ -6,10 +6,24 @@
 
 #include "./types.hpp"
 
+#include <algorithm>
+
 
 namespace plsl
 {
 
+// ====================================================================================================================
+bool ShaderType::hasMember(const string& memberName) const
+{
+	if (baseType != ShaderBaseType::Struct) {
+		return false;
+	}
 
+	const auto it =
+		std::find_if(userStruct.members.begin(), userStruct.members.end(), [&memberName](const StructMember& mem) {
+			return mem.name == memberName;
+		});
+	return it != userStruct.members.end();
+}
 
 } // namespace plsl
