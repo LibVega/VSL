@@ -22,15 +22,19 @@ public:
 	TypeManager();
 	~TypeManager();
 
+	inline const string& lastError() const { return lastError_; } // Populated when a type function returns nullptr
+
 	/* Type Getters */
 	const ShaderType* addType(const string& name, const ShaderType& type);
 	const ShaderType* getType(const string& typeName) const;
+	const ShaderType* getOrAddType(const string& typeName);
 
 	/* Type Map Access */
 	inline const std::unordered_map<string, ShaderType>& addedTypes() const { return addedTypes_; }
 	inline static const std::unordered_map<string, ShaderType>& BuiltinTypes() { return BuiltinTypes_; }
 
 private:
+	mutable string lastError_;
 	std::unordered_map<string, ShaderType> addedTypes_; // Added types, does not duplicate BuiltinTypes_ entries
 
 	static const std::unordered_map<string, ShaderType> BuiltinTypes_;

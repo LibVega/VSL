@@ -29,6 +29,7 @@ const ShaderType* TypeManager::addType(const string& name, const ShaderType& typ
 	if (it == addedTypes_.end()) {
 		return &(addedTypes_[name] = type);
 	}
+	lastError_ = mkstr("type name '%s' already exists", name.c_str());
 	return nullptr;
 }
 
@@ -43,7 +44,69 @@ const ShaderType* TypeManager::getType(const string& typeName) const
 	if (it != BuiltinTypes_.end()) {
 		return &(it->second);
 	}
+	lastError_ = mkstr("no type with name '%s' was found", typeName.c_str());
 	return nullptr;
+}
+
+// ====================================================================================================================
+const ShaderType* TypeManager::getOrAddType(const string& typeName)
+{
+	// Check if it exists already
+	if (const auto type = getType(typeName); type) {
+		return type;
+	}
+
+	// Get the subtype (if no subtype, return error because all non-subtype types are already known)
+	const auto stIndex = typeName.find('<');
+	if (stIndex == string::npos) {
+		lastError_ = mkstr("unknown non-subtyped type name '%s'", typeName.c_str());
+		return nullptr;
+	}
+	const auto baseType = getType(typeName.substr(0, stIndex));
+	if (!baseType) {
+		lastError_ = mkstr("unknown subtype base type '%s'", typeName.substr(0, stIndex).c_str());
+		return nullptr;
+	}
+	if (!baseType->hasSubtype()) {
+		lastError_ = mkstr("cannot apply subtype to invalid base type '%s'", typeName.substr(0, stIndex).c_str());
+		return nullptr;
+	}
+	const auto subTypeName = typeName.substr(stIndex + 1, typeName.length() - stIndex - 2);
+	const auto subType = getType(subTypeName);
+	
+	// Subtype validation
+	if (!subType) {
+		lastError_ = mkstr("could not find subtype '%s'", subTypeName.c_str());
+		return nullptr;
+	}
+	if ((baseType->baseType == ShaderBaseType::Image) || (baseType->baseType == ShaderBaseType::RWTexels)) {
+		if (!subType->isNumeric() || (subType->numeric.dims[1] != 1)) {
+			lastError_ = "texel-like subtype must be a numeric scalar or vector";
+			return nullptr;
+		}
+		if (subType->numeric.dims[0] == 3) {
+			lastError_ = "texel-like subtype cannot be a three-component vector";
+			return nullptr;
+		}
+	}
+	else { // Buffer types
+		if (!subType->isStruct()) {
+			lastError_ = "buffer subtype must be a user-defined struct";
+			return nullptr;
+		}
+	}
+
+	// Create the new type
+	ShaderType newType = *baseType;
+	if ((baseType->baseType == ShaderBaseType::Image) || (baseType->baseType == ShaderBaseType::RWTexels)) {
+		newType.image.texel.type = subType->baseType;
+		newType.image.texel.size = subType->numeric.size;
+		newType.image.texel.components = subType->numeric.dims[0];
+	}
+	else {
+		newType.buffer.structName = subTypeName;
+	}
+	return &(addedTypes_[typeName] = newType);
 }
 
 // ====================================================================================================================
@@ -112,7 +175,7 @@ const std::unordered_map<string, ShaderType> TypeManager::BuiltinTypes_ {
 	{ "Uniform",  { ShaderBaseType::Uniform, "" } },
 	{ "ROBuffer", { ShaderBaseType::ROBuffer, "" } },
 	{ "RWBuffer", { ShaderBaseType::RWBuffer, "" } },
-	{ "ROTexels", { ShaderBaseType::ROTexels, "" } },
+	{ "ROTexels", { ShaderBaseType::ROTexels, ImageDims::E1D } },
 	{ "RWTexels", { ShaderBaseType::RWTexels, "" } },
 	// Subpass Input
 	{ "Input",  { ShaderBaseType::Input, ImageDims::E2D, ShaderBaseType::Float, 4 } },

@@ -111,12 +111,15 @@ public:
 	inline bool isImage() const { return (baseType == ShaderBaseType::Image); }
 	inline bool isBuffer() const {
 		return (baseType == ShaderBaseType::Uniform) || (baseType == ShaderBaseType::ROBuffer) ||
-			(baseType == ShaderBaseType::RWBuffer) || (baseType == ShaderBaseType::ROTexels) ||
-			(baseType == ShaderBaseType::RWTexels);
+			(baseType == ShaderBaseType::RWBuffer);
+	}
+	inline bool isTexelBuffer() const {
+		return (baseType == ShaderBaseType::ROTexels) || (baseType == ShaderBaseType::RWTexels);
 	}
 	inline bool isStruct() const { return (baseType == ShaderBaseType::Struct); }
 
 	/* Type-Specific Checks */
+	bool hasSubtype() const; // Checks if the base type supports (requires) subtypes
 	bool isComplete() const; // Checks if types with subtypes are fully specified
 	bool hasMember(const string& memberName) const; // For struct types, check if it has a member
 	uint32 getBindingCount() const; // For numeric types, gets the number of binding slots the type takes up for inputs

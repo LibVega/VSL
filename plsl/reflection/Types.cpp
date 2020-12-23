@@ -13,6 +13,15 @@ namespace plsl
 {
 
 // ====================================================================================================================
+bool ShaderType::hasSubtype() const
+{
+	return 
+		(baseType == ShaderBaseType::Image) || (baseType == ShaderBaseType::RWTexels) || 
+		(baseType == ShaderBaseType::Uniform) || (baseType == ShaderBaseType::ROBuffer) || 
+		(baseType == ShaderBaseType::RWBuffer);
+}
+
+// ====================================================================================================================
 bool ShaderType::isComplete() const
 {
 	switch (baseType)
@@ -25,19 +34,19 @@ bool ShaderType::isComplete() const
 	case ShaderBaseType::Float:
 		return (numeric.size != 0) && (numeric.dims[0] != 0) && (numeric.dims[1] != 0);
 	case ShaderBaseType::Sampler: 
+	case ShaderBaseType::ROTexels:
 		return true;
 	case ShaderBaseType::BoundSampler: 
 		return (image.dims != ImageDims::None);
 	case ShaderBaseType::Texture:
 	case ShaderBaseType::Image:
 	case ShaderBaseType::Input:
+	case ShaderBaseType::RWTexels:
 		return (image.dims != ImageDims::None) && (image.texel.type != ShaderBaseType::Void) &&
 			(image.texel.size != 0) && (image.texel.components != 0);
 	case ShaderBaseType::Uniform:
 	case ShaderBaseType::ROBuffer:
 	case ShaderBaseType::RWBuffer:
-	case ShaderBaseType::ROTexels:
-	case ShaderBaseType::RWTexels:
 		return !buffer.structName.empty();
 	}
 	return false;

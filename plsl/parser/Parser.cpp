@@ -161,9 +161,9 @@ Variable Parser::parseVariableDeclaration(const grammar::PLSL::VariableDeclarati
 	}
 
 	// Get type
-	const auto vType = types_.getType(ctx->type->getText());
+	const auto vType = types_.getOrAddType(ctx->type->getText());
 	if (!vType) {
-		ERROR(ctx->type, mkstr("Unknown type '%s'", ctx->type->getText().c_str()));
+		ERROR(ctx->type, mkstr("Unknown type: %s", types_.lastError().c_str()));
 	}
 	if (!vType->isComplete()) {
 		ERROR(ctx->type, mkstr("Incomplete type '%s' (missing subtype specification)", ctx->type->getText().c_str()));
