@@ -98,6 +98,7 @@ public:
 	{ }
 	~ShaderType() { }
 
+	/* Base Type Checks */
 	inline bool isVoid() const { return (baseType == ShaderBaseType::Void); }
 	inline bool isNumeric() const {
 		return (baseType == ShaderBaseType::Float) || (baseType == ShaderBaseType::SInteger) ||
@@ -115,7 +116,9 @@ public:
 	}
 	inline bool isStruct() const { return (baseType == ShaderBaseType::Struct); }
 
-	bool hasMember(const string& memberName) const;
+	/* Type-Specific Checks */
+	bool hasMember(const string& memberName) const; // For struct types, check if it has a member
+	uint32 getBindingCount() const; // For numeric types, gets the number of binding slots the type takes up for inputs
 
 public:
 	ShaderBaseType baseType;      // The base type
@@ -140,7 +143,7 @@ public:
 	} buffer;
 	struct StructInfo
 	{
-		string structName;                      // The name of the struct type
+		string structName;                  // The name of the struct type
 		std::vector<StructMember> members;  // The struct members
 	} userStruct;
 }; // struct ShaderType

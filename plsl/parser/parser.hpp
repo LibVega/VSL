@@ -114,6 +114,7 @@ public:
 	VISIT_DECL(File)
 	VISIT_DECL(ShaderTypeStatement)
 	VISIT_DECL(ShaderUserTypeDefinition)
+	VISIT_DECL(ShaderInputOutputStatement)
 
 private:
 	/* Error Functions */

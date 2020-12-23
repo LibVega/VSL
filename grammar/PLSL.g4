@@ -25,14 +25,20 @@ shaderTypeStatement
 // Shader top level statements
 topLevelStatement
     : shaderUserTypeDefinition
+    | shaderInputOutputStatement
     ;
 
 // Shader type statement, for defining new POD types
 shaderUserTypeDefinition
-    : '@type' name=IDENTIFIER '{' fieldDeclaration+ '}' ';'
+    : '@type' name=IDENTIFIER '{' (variableDeclaration ';')+ '}' ';'
     ;
 
-// Field declaration, for type members and variables
-fieldDeclaration
-    : type=IDENTIFIER name=IDENTIFIER ('[' arraySize=INTEGER_LITERAL ']')? ';'
+// Shader input or output declaration
+shaderInputOutputStatement
+    : io=('in'|'out') '(' index=INTEGER_LITERAL ')' variableDeclaration ';'
+    ;
+
+// Variable declaration, for globals, type fields, and function locals
+variableDeclaration
+    : type=IDENTIFIER name=IDENTIFIER ('[' arraySize=INTEGER_LITERAL ']')?
     ;

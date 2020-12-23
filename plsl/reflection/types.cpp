@@ -26,4 +26,16 @@ bool ShaderType::hasMember(const string& memberName) const
 	return it != userStruct.members.end();
 }
 
+// ====================================================================================================================
+uint32 ShaderType::getBindingCount() const
+{
+	if (!isNumeric()) {
+		return 0;
+	}
+
+	const auto totalSize = numeric.size * numeric.dims[0];
+	static const uint32 SLOT_SIZE = 16; // 16 bytes per binding slot for inputs
+	return ((totalSize > SLOT_SIZE) ? 2 : 1) * numeric.dims[1];
+}
+
 } // namespace plsl

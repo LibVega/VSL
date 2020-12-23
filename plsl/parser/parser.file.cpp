@@ -58,7 +58,7 @@ VISIT_FUNC(ShaderUserTypeDefinition)
 
 	// Parse the field declarations
 	ShaderType structType{ typeName, {} };
-	for (const auto field : ctx->fieldDeclaration()) {
+	for (const auto field : ctx->variableDeclaration()) {
 		// Get field info
 		const auto tName = field->type->getText();
 		const auto fName = field->name->getText();
@@ -101,6 +101,89 @@ VISIT_FUNC(ShaderUserTypeDefinition)
 
 	// Add the struct type to the type manager
 	types_.addType(structType.userStruct.structName, structType);
+
+	return nullptr;
+}
+
+// ====================================================================================================================
+VISIT_FUNC(ShaderInputOutputStatement)
+{
+	// Get direction and interface index
+	const bool isIn = ctx->io->getText() == "in";
+	const auto indexLiteral = ParseLiteral(this, ctx->index);
+	if (indexLiteral.isNegative()) {
+		ERROR(ctx->index, "Negative binding index not allowed");
+	}
+	const auto index = uint32(indexLiteral.u);
+
+	// TODO: Validate the name
+
+	// Validate index
+	if (isIn) {
+		if (index > PLSL_MAX_INPUT_INDEX) {
+			ERROR(ctx->index, mkstr("Vertex input is larger than max allowed binding %u", PLSL_MAX_INPUT_INDEX));
+		}
+		const auto other = shaderInfo_.getInput(index);
+		if (other) {
+			ERROR(ctx->index, (other->location == index)
+				? mkstr("Vertex input slot '%u' is already filled by '%s'", index, other->name.c_str())
+				: mkstr("Vertex input slot '%u' overlaps with input '%s'", index, other->name.c_str()));
+		}
+	}
+	else {
+		if (index > PLSL_MAX_OUTPUT_INDEX) {
+			ERROR(ctx->index, mkstr("Fragment output is larger than max allowed binding %u", PLSL_MAX_OUTPUT_INDEX));
+		}
+		const auto other = shaderInfo_.getOutput(index);
+		if (other) {
+			ERROR(ctx->index, mkstr("Fragment output slot '%s' is already filled by '%s'", index, other->name.c_str()));
+		}
+		if ((index != 0) && !shaderInfo_.getOutput(index - 1)) {
+			ERROR(ctx->index, "Fragment output indices must be contiguous");
+		}
+	}
+
+	// Get and validate the type
+	const auto varDecl = ctx->variableDeclaration();
+	const auto ioType = types_.getType(varDecl->type->getText());
+	const auto arrSizeLiteral = varDecl->arraySize ? ParseLiteral(this, varDecl->arraySize) : Literal{ 1ull };
+	if (!ioType) {
+		ERROR(varDecl->type, mkstr("Unknown type '%s'", varDecl->type->getText().c_str()));
+	}
+	if (!ioType->isNumeric()) {
+		ERROR(varDecl->type, "Shader interface variables must be a numeric type");
+	}
+	if (arrSizeLiteral.isNegative() || arrSizeLiteral.isZero()) {
+		ERROR(varDecl->arraySize, "Array size cannot be zero or negative");
+	}
+	const auto arrSize = uint32(arrSizeLiteral.u);
+
+	// Input/Output specific type validation
+	if (isIn) {
+		if (arrSize > PLSL_MAX_INPUT_ARRAY_SIZE) {
+			ERROR(varDecl->arraySize, mkstr("Vertex input arrays cannot be larger than %u", PLSL_MAX_INPUT_ARRAY_SIZE));
+		}
+		if ((arrSize != 1) && (ioType->numeric.dims[1] != 1)) {
+			ERROR(varDecl->arraySize, "Vertex inputs that are matrix types cannot be arrays");
+		}
+	}
+	else { // Outputs must be non-arrays, and either scalars or vectors
+		if (arrSize != 1) {
+			ERROR(varDecl->arraySize, "Fragment outputs cannot be arrays");
+		}
+		if (ioType->numeric.dims[1] != 1) {
+			ERROR(varDecl->type, "Fragment outputs cannot be matrix types");
+		}
+	}
+
+	// Add to shader info (TODO: Variable Manager)
+	InterfaceVariable iovar{ varDecl->name->getText(), index, *ioType, uint8(arrSize) };
+	if (isIn) {
+		shaderInfo_.inputs().push_back(iovar);
+	}
+	else {
+		shaderInfo_.outputs().push_back(iovar);
+	}
 
 	return nullptr;
 }

@@ -50,16 +50,16 @@ const ShaderType* TypeManager::getType(const string& typeName) const
 const std::unordered_map<string, ShaderType> TypeManager::BuiltinTypes_ {
 	{ "void", { } },
 	// Boolean
-	{ "bool",  { ShaderBaseType::Boolean, 4, 1, 0 } }, { "bool2", { ShaderBaseType::Boolean, 4, 2, 0 } },
-	{ "bool3", { ShaderBaseType::Boolean, 4, 3, 0 } }, { "bool4", { ShaderBaseType::Boolean, 4, 4, 0 } },
+	{ "bool",  { ShaderBaseType::Boolean, 4, 1, 1 } }, { "bool2", { ShaderBaseType::Boolean, 4, 2, 1 } },
+	{ "bool3", { ShaderBaseType::Boolean, 4, 3, 1 } }, { "bool4", { ShaderBaseType::Boolean, 4, 4, 1 } },
 	// Integer
-	{ "int",   { ShaderBaseType::SInteger, 4, 1, 0 } }, { "int2",  { ShaderBaseType::SInteger, 4, 2, 0 } },
-	{ "int3",  { ShaderBaseType::SInteger, 4, 3, 0 } }, { "int4",  { ShaderBaseType::SInteger, 4, 4, 0 } },
-	{ "uint",  { ShaderBaseType::UInteger, 4, 1, 0 } }, { "uint2", { ShaderBaseType::UInteger, 4, 2, 0 } },
-	{ "uint3", { ShaderBaseType::UInteger, 4, 3, 0 } }, { "uint4", { ShaderBaseType::UInteger, 4, 4, 0 } },
+	{ "int",   { ShaderBaseType::SInteger, 4, 1, 1 } }, { "int2",  { ShaderBaseType::SInteger, 4, 2, 1 } },
+	{ "int3",  { ShaderBaseType::SInteger, 4, 3, 1 } }, { "int4",  { ShaderBaseType::SInteger, 4, 4, 1 } },
+	{ "uint",  { ShaderBaseType::UInteger, 4, 1, 1 } }, { "uint2", { ShaderBaseType::UInteger, 4, 2, 1 } },
+	{ "uint3", { ShaderBaseType::UInteger, 4, 3, 1 } }, { "uint4", { ShaderBaseType::UInteger, 4, 4, 1 } },
 	// Floating
-	{ "float",  { ShaderBaseType::Float, 4, 1, 0 } }, { "float2", { ShaderBaseType::Float, 4, 2, 0 } },
-	{ "float3", { ShaderBaseType::Float, 4, 3, 0 } }, { "float4", { ShaderBaseType::Float, 4, 4, 0 } },
+	{ "float",  { ShaderBaseType::Float, 4, 1, 1 } }, { "float2", { ShaderBaseType::Float, 4, 2, 1 } },
+	{ "float3", { ShaderBaseType::Float, 4, 3, 1 } }, { "float4", { ShaderBaseType::Float, 4, 4, 1 } },
 	// Matrices
 	{ "float2x2", { ShaderBaseType::Float, 4, 2, 2 } },
 	{ "float3x3", { ShaderBaseType::Float, 4, 3, 3 } },

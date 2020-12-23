@@ -10,17 +10,14 @@ lexer grammar PLSLLexer;
 
 
 // Keywords
+KW_IN     : 'in' ;
+KW_OUT    : 'out' ;
 KW_SHADER : 'shader' ;
 KW_TYPE   : '@type' ;
 
 // Number literals
-NUMBER_LITERAL
-    : INTEGER_LITERAL
-    | FLOAT_LITERAL
-    ;
 INTEGER_LITERAL
-    : '-'? DecimalLiteral
-    | DecimalLiteral [uU]
+    : '-'? DecimalLiteral [uU]?
     | HexLiteral
     ;
 FLOAT_LITERAL
@@ -28,7 +25,7 @@ FLOAT_LITERAL
     ;
 fragment DecimalLiteral : DigitChar+ ;
 fragment HexLiteral     : '0x' HexDigitChar+ ;
-fragment ExponentPart   : [eE] ('-'|'+') DigitChar+ ;
+fragment ExponentPart   : [eE] ('-'|'+')? DigitChar+ ;
 
 // Identifiers, valid for variable and type names, and built-ins
 IDENTIFIER
@@ -37,11 +34,13 @@ IDENTIFIER
     ;
 
 // Punctuation
-LBRACKET  : '[' ;
 LBRACE    : '{' ;
+LBRACKET  : '[' ;
+LPAREN    : '(' ;
 PERIOD    : '.' ;
-RBRACKET  : ']' ;
 RBRACE    : '}' ;
+RBRACKET  : ']' ;
+RPAREN    : ')' ;
 SEMICOLON : ';' ;
 
 // Operators

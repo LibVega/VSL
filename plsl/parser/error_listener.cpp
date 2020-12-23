@@ -53,6 +53,9 @@ void ErrorListener::syntaxError(antlr4::Recognizer* recognizer, antlr4::Token* b
 	if (STRMATCH("expecting ';'")) {
 		errorMsg = "expected end of statement ';'";
 	}
+	else if (STRMATCH("missing INTEGER_LITERAL at ']'")) {
+		errorMsg = "missing array size specifier";
+	}
 	else {
 		// Fallback for errors we have not customized a response to
 		errorMsg = mkstr("(Rule '%s') (Bad Text: '%s') - %s",
