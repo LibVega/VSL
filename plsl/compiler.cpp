@@ -4,12 +4,12 @@
  * the 'LICENSE' file at the root of this repository, or online at <https://opensource.org/licenses/MS-PL>.
  */
 
-#include <plsl/compiler.hpp>
+#include <plsl/Compiler.hpp>
 
 #include <filesystem>
 #include <fstream>
 
-#include "./parser/parser.hpp"
+#include "./parser/Parser.hpp"
 
 #define SET_ERROR(stage,...) lastError_ = CompilerError(CompilerStage::stage, ##__VA_ARGS__);
 

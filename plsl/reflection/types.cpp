@@ -4,7 +4,7 @@
  * the 'LICENSE' file at the root of this repository, or online at <https://opensource.org/licenses/MS-PL>.
  */
 
-#include "./types.hpp"
+#include "./Types.hpp"
 
 #include <algorithm>
 

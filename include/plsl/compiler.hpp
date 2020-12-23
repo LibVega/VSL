@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "./config.hpp"
+#include "./Config.hpp"
 
 #define DECL_GETTER_SETTER(ftype,fname) \
 	inline ftype fname() const { return fname##_; } \

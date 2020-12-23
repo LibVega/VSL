@@ -6,12 +6,12 @@
 
 #pragma once
 
-#include <plsl/config.hpp>
-#include <plsl/compiler.hpp>
-#include "./error_listener.hpp"
+#include <plsl/Config.hpp>
+#include <plsl/Compiler.hpp>
+#include "./ErrorListener.hpp"
 #include "../../generated/PLSLBaseVisitor.h"
-#include "../reflection/shader_info.hpp"
-#include "../reflection/type_manager.hpp"
+#include "../reflection/ShaderInfo.hpp"
+#include "../reflection/TypeManager.hpp"
 
 #include <antlr4/CommonTokenStream.h>
 #include <antlr4/RuleContext.h>

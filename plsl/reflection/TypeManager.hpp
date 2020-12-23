@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <plsl/config.hpp>
-#include "./types.hpp"
+#include <plsl/Config.hpp>
+#include "./Types.hpp"
 
 #include <unordered_map>
 

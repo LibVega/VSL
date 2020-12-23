@@ -4,8 +4,8 @@
  * the 'LICENSE' file at the root of this repository, or online at <https://opensource.org/licenses/MS-PL>.
  */
 
-#include "./error_listener.hpp"
-#include "./parser.hpp"
+#include "./ErrorListener.hpp"
+#include "./Parser.hpp"
 
 #define STRMATCH(mstr) (msg.find(mstr)!=string::npos) 
 

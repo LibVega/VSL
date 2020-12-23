@@ -4,7 +4,7 @@
  * the 'LICENSE' file at the root of this repository, or online at <https://opensource.org/licenses/MS-PL>.
  */
 
-#include "./shader_info.hpp"
+#include "./ShaderInfo.hpp"
 
 
 namespace plsl

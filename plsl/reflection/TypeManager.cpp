@@ -4,7 +4,7 @@
  * the 'LICENSE' file at the root of this repository, or online at <https://opensource.org/licenses/MS-PL>.
  */
 
-#include "./type_manager.hpp"
+#include "./TypeManager.hpp"
 
 
 namespace plsl

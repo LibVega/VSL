@@ -6,7 +6,7 @@
 
 /// The main function entry point for the command-line Polaris compiler 'plslc'
 
-#include <plsl/compiler.hpp>
+#include <plsl/Compiler.hpp>
 
 #include <iostream>
 

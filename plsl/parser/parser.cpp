@@ -4,7 +4,7 @@
  * the 'LICENSE' file at the root of this repository, or online at <https://opensource.org/licenses/MS-PL>.
  */
 
-#include "./parser.hpp"
+#include "./Parser.hpp"
 #include "../../generated/PLSLLexer.h"
 #include "../../generated/PLSL.h"
 

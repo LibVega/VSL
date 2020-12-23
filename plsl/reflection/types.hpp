@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <plsl/config.hpp>
+#include <plsl/Config.hpp>
 
 #include <vector>
 
