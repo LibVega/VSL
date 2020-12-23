@@ -116,7 +116,11 @@ VISIT_FUNC(ShaderInputOutputStatement)
 	}
 	const auto index = uint32(indexLiteral.u);
 
-	// TODO: Validate the name
+	// Validate the name
+	const auto varDecl = ctx->variableDeclaration();
+	if (scopes_.hasGlobal(varDecl->name->getText())) {
+		ERROR(varDecl->name, mkstr("A variable with the name '%s' already exists", varDecl->name->getText().c_str()));
+	}
 
 	// Validate index
 	if (isIn) {
@@ -144,7 +148,6 @@ VISIT_FUNC(ShaderInputOutputStatement)
 	}
 
 	// Get and validate the type
-	const auto varDecl = ctx->variableDeclaration();
 	const auto ioType = types_.getType(varDecl->type->getText());
 	const auto arrSizeLiteral = varDecl->arraySize ? ParseLiteral(this, varDecl->arraySize) : Literal{ 1ull };
 	if (!ioType) {
@@ -176,7 +179,7 @@ VISIT_FUNC(ShaderInputOutputStatement)
 		}
 	}
 
-	// Add to shader info (TODO: Variable Manager)
+	// Add to shader info
 	InterfaceVariable iovar{ varDecl->name->getText(), index, *ioType, uint8(arrSize) };
 	if (isIn) {
 		shaderInfo_.inputs().push_back(iovar);
@@ -184,6 +187,7 @@ VISIT_FUNC(ShaderInputOutputStatement)
 	else {
 		shaderInfo_.outputs().push_back(iovar);
 	}
+	scopes_.addGlobal({ isIn ? VariableType::Input : VariableType::Output, iovar.name, ioType, iovar.arraySize });
 
 	return nullptr;
 }

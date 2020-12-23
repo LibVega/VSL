@@ -12,6 +12,7 @@
 #include "../../generated/PLSLBaseVisitor.h"
 #include "../reflection/ShaderInfo.hpp"
 #include "../reflection/TypeManager.hpp"
+#include "./ScopeManager.hpp"
 
 #include <antlr4/CommonTokenStream.h>
 #include <antlr4/RuleContext.h>
@@ -136,6 +137,7 @@ private:
 	antlr4::CommonTokenStream* tokens_;
 	ShaderInfo shaderInfo_;
 	TypeManager types_;
+	ScopeManager scopes_;
 
 	PLSL_NO_COPY(Parser)
 	PLSL_NO_MOVE(Parser)

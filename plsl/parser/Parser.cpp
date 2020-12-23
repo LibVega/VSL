@@ -21,6 +21,7 @@ Parser::Parser()
 	, tokens_{ nullptr }
 	, shaderInfo_{ }
 	, types_{ }
+	, scopes_{ }
 {
 	
 }
