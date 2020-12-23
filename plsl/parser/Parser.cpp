@@ -152,4 +152,61 @@ Literal Parser::ParseLiteral(Parser* parser, const antlr4::Token* token)
 	}
 }
 
+// ====================================================================================================================
+Variable Parser::parseVariableDeclaration(const grammar::PLSL::VariableDeclarationContext* ctx)
+{
+	// TODO: Validate name against scope tree
+	if (scopes_.hasGlobalName(ctx->name->getText())) {
+		ERROR(ctx->name, mkstr("Duplicate variable name '%s'", ctx->name->getText().c_str()));
+	}
+
+	// Get type
+	const auto vType = types_.getType(ctx->type->getText());
+	if (!vType) {
+		ERROR(ctx->type, mkstr("Unknown type '%s'", ctx->type->getText().c_str()));
+	}
+	if (!vType->isComplete()) {
+		ERROR(ctx->type, mkstr("Incomplete type '%s' (missing subtype specification)", ctx->type->getText().c_str()));
+	}
+
+	// TODO: Type-specific checks (like Image/Texel buffer type validation)
+
+	// Get array size
+	uint32 arrSize = 1;
+	if (ctx->arraySize) {
+		if (ctx->arraySize->getType() == grammar::PLSL::INTEGER_LITERAL) {
+			const auto arrSizeLiteral = ParseLiteral(this, ctx->arraySize);
+			if (arrSizeLiteral.isNegative() || arrSizeLiteral.isZero()) {
+				ERROR(ctx->arraySize, "Array size cannot be zero or negative");
+			}
+			if (arrSizeLiteral.u > PLSL_MAX_ARRAY_SIZE) {
+				ERROR(ctx->arraySize, "Array size literal is out of range");
+			}
+			arrSize = uint32(arrSizeLiteral.u);
+		}
+		else if (ctx->arraySize->getType() == grammar::PLSL::IDENTIFIER) {
+			const auto cnst = scopes_.getConstant(ctx->arraySize->getText());
+			if (!cnst) {
+				ERROR(ctx->arraySize, mkstr("No constant '%s' found for array size", ctx->arraySize->getText().c_str()));
+			}
+			if (cnst->type == Constant::Float) {
+				ERROR(ctx->arraySize, "Cannot use a floating point constant as an array size");
+			}
+			if (cnst->i <= 0) {
+				ERROR(ctx->arraySize, "Array size constant cannot be negative or zero");
+			}
+			if (cnst->u > PLSL_MAX_ARRAY_SIZE) {
+				ERROR(ctx->arraySize, "Array size constant is out of range");
+			}
+			arrSize = cnst->u;
+		}
+		else {
+			ERROR(ctx->arraySize, "Invalid array literal - compiler bug");
+		}
+	}
+
+	// Return
+	return { VariableType::Unknown, ctx->name->getText(), vType, uint8(arrSize) };
+}
+
 } // namespace plsl

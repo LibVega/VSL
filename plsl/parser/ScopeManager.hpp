@@ -18,6 +18,7 @@ namespace plsl
 // The different variable types
 enum class VariableType
 {
+	Unknown,    // Special intermediate type
 	Input,      // Vertex input
 	Output,     // Fragment output
 	Binding,    // Uniform resource binding
@@ -57,6 +58,32 @@ private:
 }; // class Variable
 
 
+// Represents a constant literal
+struct Constant final
+{
+public:
+	Constant() : name{ "INVALID" }, u{ 0 }, type{ Unsigned } { }
+	Constant(const string& name, uint32 val) : name{ name }, u{ val }, type{ Unsigned } { }
+	Constant(const string& name, int32 val) : name{ name }, i{ val }, type{ Signed } { }
+	Constant(const string& name, float val) : name{ name }, f{ val }, type{ Float } { }
+
+public:
+	string name;
+	union
+	{
+		uint32 u;
+		int32 i;
+		float f;
+	};
+	enum
+	{
+		Unsigned,
+		Signed,
+		Float
+	} type;
+}; // struct Constant
+
+
 // Manages the tree of variable and name scopes that are entered and exited during parsing
 class ScopeManager final
 {
@@ -67,9 +94,14 @@ public:
 	/* Globals */
 	bool addGlobal(const Variable& var);
 	bool hasGlobal(const string& name) const;
+	bool addConstant(const Constant& c);
+	bool hasConstant(const string& name) const;
+	const Constant* getConstant(const string& name) const;
+	bool hasGlobalName(const string& name) const;  // Checks global and constants for used name
 
 private:
 	std::vector<Variable> allGlobals_;
+	std::vector<Constant> constants_;
 
 	PLSL_NO_COPY(ScopeManager)
 	PLSL_NO_MOVE(ScopeManager)

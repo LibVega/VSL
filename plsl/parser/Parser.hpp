@@ -110,12 +110,14 @@ public:
 	/* Utilities */
 	static Literal ParseLiteral(const string& txt);
 	static Literal ParseLiteral(Parser* parser, const antlr4::Token* token);
+	Variable parseVariableDeclaration(const grammar::PLSL::VariableDeclarationContext* ctx);
 
 	/* File-Level Rules */
 	VISIT_DECL(File)
 	VISIT_DECL(ShaderTypeStatement)
 	VISIT_DECL(ShaderUserTypeDefinition)
 	VISIT_DECL(ShaderInputOutputStatement)
+	VISIT_DECL(ShaderConstantStatement)
 
 private:
 	/* Error Functions */

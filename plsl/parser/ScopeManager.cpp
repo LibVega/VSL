@@ -15,6 +15,7 @@ namespace plsl
 // ====================================================================================================================
 ScopeManager::ScopeManager()
 	: allGlobals_{ }
+	, constants_{ }
 {
 
 }
@@ -42,6 +43,40 @@ bool ScopeManager::hasGlobal(const string& name) const
 		return var.name() == name;
 	});
 	return it != allGlobals_.end();
+}
+
+// ====================================================================================================================
+bool ScopeManager::addConstant(const Constant& c)
+{
+	if (hasConstant(c.name)) {
+		return false;
+	}
+	constants_.push_back(c);
+	return true;
+}
+
+// ====================================================================================================================
+bool ScopeManager::hasConstant(const string& name) const
+{
+	const auto it = std::find_if(constants_.begin(), constants_.end(), [&name](const Constant& c) {
+		return c.name == name;
+	});
+	return it != constants_.end();
+}
+
+// ====================================================================================================================
+const Constant* ScopeManager::getConstant(const string& name) const
+{
+	const auto it = std::find_if(constants_.begin(), constants_.end(), [&name](const Constant& c) {
+		return c.name == name;
+	});
+	return (it != constants_.end()) ? &(*it) : nullptr;
+}
+
+// ====================================================================================================================
+bool ScopeManager::hasGlobalName(const string& name) const
+{
+	return hasGlobal(name) || hasConstant(name);
 }
 
 } // namespace plsl

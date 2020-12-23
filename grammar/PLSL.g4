@@ -26,6 +26,7 @@ shaderTypeStatement
 topLevelStatement
     : shaderUserTypeDefinition
     | shaderInputOutputStatement
+    | shaderConstantStatement
     ;
 
 // Shader type statement, for defining new POD types
@@ -38,7 +39,12 @@ shaderInputOutputStatement
     : io=('in'|'out') '(' index=INTEGER_LITERAL ')' variableDeclaration ';'
     ;
 
+// Shader constant declaration
+shaderConstantStatement
+    : 'const' variableDeclaration '=' value=(INTEGER_LITERAL|FLOAT_LITERAL) ';'
+    ;
+
 // Variable declaration, for globals, type fields, and function locals
 variableDeclaration
-    : type=IDENTIFIER name=IDENTIFIER ('[' arraySize=INTEGER_LITERAL ']')?
+    : type=IDENTIFIER name=IDENTIFIER ('[' arraySize=(INTEGER_LITERAL|IDENTIFIER) ']')?
     ;

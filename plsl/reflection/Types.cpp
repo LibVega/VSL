@@ -13,6 +13,37 @@ namespace plsl
 {
 
 // ====================================================================================================================
+bool ShaderType::isComplete() const
+{
+	switch (baseType)
+	{
+	case ShaderBaseType::Void: 
+		return true;
+	case ShaderBaseType::Boolean:
+	case ShaderBaseType::UInteger:
+	case ShaderBaseType::SInteger:
+	case ShaderBaseType::Float:
+		return (numeric.size != 0) && (numeric.dims[0] != 0) && (numeric.dims[1] != 0);
+	case ShaderBaseType::Sampler: 
+		return true;
+	case ShaderBaseType::BoundSampler: 
+		return (image.dims != ImageDims::None);
+	case ShaderBaseType::Texture:
+	case ShaderBaseType::Image:
+	case ShaderBaseType::Input:
+		return (image.dims != ImageDims::None) && (image.texel.type != ShaderBaseType::Void) &&
+			(image.texel.size != 0) && (image.texel.components != 0);
+	case ShaderBaseType::Uniform:
+	case ShaderBaseType::ROBuffer:
+	case ShaderBaseType::RWBuffer:
+	case ShaderBaseType::ROTexels:
+	case ShaderBaseType::RWTexels:
+		return !buffer.structName.empty();
+	}
+	return false;
+}
+
+// ====================================================================================================================
 bool ShaderType::hasMember(const string& memberName) const
 {
 	if (baseType != ShaderBaseType::Struct) {

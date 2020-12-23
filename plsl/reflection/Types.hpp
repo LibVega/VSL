@@ -26,14 +26,14 @@ enum class ShaderBaseType : uint8
 	UInteger,      // Unsigned integer scalar/vector
 	Float,         // Floating point scalar/vector/matrix
 	Sampler,       // Vk sampler, glsl 'sampler'
-	BoundSampler,  // Vk combined image/sampler, glsl '[ ui]sampler*D'
+	BoundSampler,  // Vk combined image/sampler, glsl 'sampler*D'
 	Texture,       // Vk sampled image, glsl `[ ui]texture*D`
-	Image,         // Vk storage image, glsl `writeonly image*D` w/o layout
+	Image,         // Vk storage image, glsl `image*D` w/ layout
 	Uniform,       // Vk uniform buffer, glsl `uniform <name> { ... }`
 	ROBuffer,      // Vk readonly storage buffer, glsl `readonly buffer <name> { ... }`
 	RWBuffer,      // Vk read/write storage buffer, glsl `buffer <name> { ... }`
 	ROTexels,      // Vk uniform texel buffer, glsl `samplerBuffer`
-	RWTexels,      // Vk storage texel buffer, glsl `writeonly imageBuffer` w/o layout
+	RWTexels,      // Vk storage texel buffer, glsl `imageBuffer` w/ layout
 	Input,         // Vk input attachment, glsl `[ ui]subpassInput`
 	Struct,        // User-defined POD struct
 }; // enum class ShaderBaseType
@@ -117,6 +117,7 @@ public:
 	inline bool isStruct() const { return (baseType == ShaderBaseType::Struct); }
 
 	/* Type-Specific Checks */
+	bool isComplete() const; // Checks if types with subtypes are fully specified
 	bool hasMember(const string& memberName) const; // For struct types, check if it has a member
 	uint32 getBindingCount() const; // For numeric types, gets the number of binding slots the type takes up for inputs
 
