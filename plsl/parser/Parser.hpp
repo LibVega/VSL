@@ -118,6 +118,7 @@ public:
 	VISIT_DECL(ShaderUserTypeDefinition)
 	VISIT_DECL(ShaderInputOutputStatement)
 	VISIT_DECL(ShaderConstantStatement)
+	VISIT_DECL(ShaderBindingStatement)
 
 private:
 	/* Error Functions */

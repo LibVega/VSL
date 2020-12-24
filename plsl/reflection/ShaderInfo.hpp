@@ -14,6 +14,7 @@
 #define PLSL_MAX_INPUT_INDEX      (31u)  // Max binding index for vertex inputs
 #define PLSL_MAX_OUTPUT_INDEX     (7u)   // Max binding index for fragment outputs
 #define PLSL_MAX_INPUT_ARRAY_SIZE (8u)   // Max array size for vertex inputs
+#define PLSL_MAX_BINDING_INDEX    (31u)  // Max binding index for bindings
 
 
 namespace plsl
@@ -38,6 +39,32 @@ public:
 }; // struct InterfaceVariable
 
 
+// The different binding groups
+enum class BindingGroup : uint8
+{
+	Texture,  // Texture types (Sampler, BoundSampler, Texture, Image, ROTexels, RWTexels)
+	Buffer,   // Buffer types (Uniform, ROBuffer, RWBuffer)
+	Input     // Input attachments (Input)
+}; // enum class BindingGroup
+
+
+// Describes a binding variable
+struct BindingVariable final
+{
+public:
+	BindingVariable() : name{}, type{}, group{}, slotIndex{} { }
+	BindingVariable(const string& name, const ShaderType& type, BindingGroup group, uint8 slot)
+		: name{ name }, type{ type }, group{ group }, slotIndex{ slot }
+	{ }
+
+public:
+	string name;
+	ShaderType type;
+	BindingGroup group;
+	uint8 slotIndex;
+}; // struct BindingVariable
+
+
 // Contains information about the public-facing interface of a shader program
 class ShaderInfo final
 {
@@ -50,6 +77,8 @@ public:
 	inline std::vector<InterfaceVariable>& inputs() { return inputs_; }
 	inline const std::vector<InterfaceVariable>& outputs() const { return outputs_; }
 	inline std::vector<InterfaceVariable>& outputs() { return outputs_; }
+	inline const std::vector<BindingVariable>& bindings() const { return bindings_; }
+	inline std::vector<BindingVariable>& bindings() { return bindings_; }
 
 	// Interface Variables
 	const InterfaceVariable* getInput(const string& name) const;
@@ -57,9 +86,14 @@ public:
 	const InterfaceVariable* getOutput(const string& name) const;
 	const InterfaceVariable* getOutput(uint32 location) const;
 
+	// Bindings
+	const BindingVariable* getBinding(const string& name) const;
+	const BindingVariable* getBinding(BindingGroup group, uint8 slotIndex) const;
+
 private:
 	std::vector<InterfaceVariable> inputs_;
 	std::vector<InterfaceVariable> outputs_;
+	std::vector<BindingVariable> bindings_;
 
 	PLSL_NO_COPY(ShaderInfo)
 	PLSL_NO_MOVE(ShaderInfo)

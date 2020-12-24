@@ -52,7 +52,7 @@ const ShaderType* TypeManager::getType(const string& typeName) const
 const ShaderType* TypeManager::getOrAddType(const string& typeName)
 {
 	// Check if it exists already
-	if (const auto type = getType(typeName); type) {
+	if (const auto type = getType(typeName); type && type->isComplete()) {
 		return type;
 	}
 
@@ -175,8 +175,8 @@ const std::unordered_map<string, ShaderType> TypeManager::BuiltinTypes_ {
 	{ "Uniform",  { ShaderBaseType::Uniform, "" } },
 	{ "ROBuffer", { ShaderBaseType::ROBuffer, "" } },
 	{ "RWBuffer", { ShaderBaseType::RWBuffer, "" } },
-	{ "ROTexels", { ShaderBaseType::ROTexels, ImageDims::E1D } },
-	{ "RWTexels", { ShaderBaseType::RWTexels, "" } },
+	{ "ROTexels", { ShaderBaseType::ROTexels, ImageDims::Buffer } },
+	{ "RWTexels", { ShaderBaseType::RWTexels, ImageDims::Buffer } },
 	// Subpass Input
 	{ "Input",  { ShaderBaseType::Input, ImageDims::E2D, ShaderBaseType::Float, 4 } },
 	{ "IInput", { ShaderBaseType::Input, ImageDims::E2D, ShaderBaseType::SInteger, 4 } },

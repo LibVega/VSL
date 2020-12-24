@@ -27,6 +27,7 @@ bool ShaderType::isComplete() const
 	switch (baseType)
 	{
 	case ShaderBaseType::Void: 
+	case ShaderBaseType::Struct:
 		return true;
 	case ShaderBaseType::Boolean:
 	case ShaderBaseType::UInteger:

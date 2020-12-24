@@ -56,6 +56,9 @@ void ErrorListener::syntaxError(antlr4::Recognizer* recognizer, antlr4::Token* b
 	else if (STRMATCH("missing INTEGER_LITERAL at ']'")) {
 		errorMsg = "missing array size specifier";
 	}
+	else if (STRMATCH("expecting BINDING_SLOT")) {
+		errorMsg = "invalid binding slot name";
+	}
 	else {
 		// Fallback for errors we have not customized a response to
 		errorMsg = mkstr("(Rule '%s') (Bad Text: '%s') - %s",

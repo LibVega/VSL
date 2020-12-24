@@ -169,8 +169,6 @@ Variable Parser::parseVariableDeclaration(const grammar::PLSL::VariableDeclarati
 		ERROR(ctx->type, mkstr("Incomplete type '%s' (missing subtype specification)", ctx->type->getText().c_str()));
 	}
 
-	// TODO: Type-specific checks (like Image/Texel buffer type validation)
-
 	// Get array size
 	uint32 arrSize = 1;
 	if (ctx->arraySize) {
@@ -202,6 +200,13 @@ Variable Parser::parseVariableDeclaration(const grammar::PLSL::VariableDeclarati
 		}
 		else {
 			ERROR(ctx->arraySize, "Invalid array literal - compiler bug");
+		}
+	}
+
+	// Type-specific checks
+	if (!vType->isNumeric() && (vType->baseType != ShaderBaseType::Boolean)) { // Handle types
+		if (arrSize != 1) {
+			ERROR(ctx->arraySize, "Non-numeric types cannot be arrays");
 		}
 	}
 

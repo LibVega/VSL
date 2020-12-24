@@ -42,7 +42,7 @@ enum class ShaderBaseType : uint8
 // The different dimensionalities that BoundSampler/Texture/Image can take on
 enum class ImageDims : uint8
 {
-	None,       // Un-dimensioned texture
+	None,       // Un-dimensioned texture (error type)
 	E1D,        // Single 1D texture
 	E2D,        // Single 2D texture
 	E3D,        // Single 3D texture
@@ -51,6 +51,7 @@ enum class ImageDims : uint8
 	Cube,       // Single cubemap texture
 	CubeArray,  // Array of cubemap textures
 	Shadow,     // Sampler-specific type for shadows
+	Buffer,     // The dims specific to a ROTexels object
 }; // enum class ImageDims
 
 

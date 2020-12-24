@@ -10,6 +10,7 @@ lexer grammar PLSLLexer;
 
 
 // Keywords
+KW_BIND   : 'bind' ;
 KW_CONST  : 'const' ;
 KW_IN     : 'in' ;
 KW_OUT    : 'out' ;
@@ -29,6 +30,11 @@ fragment DecimalLiteral : DigitChar+ ;
 fragment HexLiteral     : '0x' HexDigitChar+ ;
 fragment ExponentPart   : [eE] ('-'|'+')? DigitChar+ ;
 
+// Binding slot names
+BINDING_SLOT
+    : [bti] DigitChar DigitChar?
+    ;
+
 // Identifiers, valid for variable and type names, and built-ins
 IDENTIFIER
     : (AlphaChar|'_') (AlnumChar|'_')*
@@ -46,9 +52,11 @@ RPAREN    : ')' ;
 SEMICOLON : ';' ;
 
 // Operators
-OP_ADD    : '+' ;
-OP_ASSIGN : '=';
-OP_SUB    : '-' ;
+OP_ADD     : '+' ;
+OP_ASSIGN  : '=';
+OP_GREATER : '>' ;
+OP_LESS    : '<' ;
+OP_SUB     : '-' ;
 
 // Whitespace and comments (ignore to hidden channel)
 WS

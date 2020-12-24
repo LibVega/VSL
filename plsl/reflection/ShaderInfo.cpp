@@ -14,6 +14,7 @@ namespace plsl
 ShaderInfo::ShaderInfo()
 	: inputs_{ }
 	, outputs_{ }
+	, bindings_{ }
 {
 
 }
@@ -58,6 +59,24 @@ const InterfaceVariable* ShaderInfo::getOutput(uint32 location) const
 		return var.location == location;
 	});
 	return (it != outputs_.end()) ? &(*it) : nullptr;
+}
+
+// ====================================================================================================================
+const BindingVariable* ShaderInfo::getBinding(const string& name) const
+{
+	const auto it = std::find_if(bindings_.begin(), bindings_.end(), [&name](const BindingVariable& bind) {
+		return bind.name == name;
+	});
+	return (it != bindings_.end()) ? &(*it) : nullptr;
+}
+
+// ====================================================================================================================
+const BindingVariable* ShaderInfo::getBinding(BindingGroup group, uint8 slotIndex) const
+{
+	const auto it = std::find_if(bindings_.begin(), bindings_.end(), [group, slotIndex](const BindingVariable& bind) {
+		return bind.group == group && bind.slotIndex == slotIndex;
+	});
+	return (it != bindings_.end()) ? &(*it) : nullptr;
 }
 
 } // namespace plsl

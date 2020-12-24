@@ -168,34 +168,26 @@ VISIT_FUNC(ShaderInputOutputStatement)
 // ====================================================================================================================
 VISIT_FUNC(ShaderConstantStatement)
 {
-	// Validate the name
+	// Validate the variable
 	const auto varDecl = ctx->variableDeclaration();
-	if (scopes_.hasGlobalName(varDecl->name->getText())) {
-		ERROR(varDecl->name, mkstr("A variable with the name '%s' already exists", varDecl->name->getText().c_str()));
-	}
-
-	// Get and validate the type
-	const auto cType = types_.getType(varDecl->type->getText());
-	if (!cType) {
-		ERROR(varDecl->type, mkstr("Unknown type '%s'", varDecl->type->getText().c_str()));
-	}
+	const auto cVar = parseVariableDeclaration(varDecl);
 	if (varDecl->arraySize) {
 		ERROR(varDecl->arraySize, "Constants cannot be arrays");
 	}
-	if (!cType->isNumeric()) {
+	if (!cVar.dataType()->isNumeric()) {
 		ERROR(varDecl->type, "Constants must be a numeric type");
 	}
-	if ((cType->numeric.dims[0] != 1) || (cType->numeric.dims[1] != 1)) {
+	if ((cVar.dataType()->numeric.dims[0] != 1) || (cVar.dataType()->numeric.dims[1] != 1)) {
 		ERROR(varDecl->type, "Constants must be a scalar numeric type");
 	}
-	if (cType->numeric.size != 4) {
+	if (cVar.dataType()->numeric.size != 4) {
 		ERROR(varDecl->type, "Constants must be a 4-byte scalar type");
 	}
 
 	// Parse the literal
 	const auto valueLiteral = ParseLiteral(this, ctx->value);
 	Constant cnst;
-	if (cType->baseType == ShaderBaseType::UInteger) {
+	if (cVar.dataType()->baseType == ShaderBaseType::UInteger) {
 		if (valueLiteral.type == Literal::Float) {
 			ERROR(ctx->value, "Cannot initialize integer constant with float literal");
 		}
@@ -207,7 +199,7 @@ VISIT_FUNC(ShaderConstantStatement)
 		}
 		cnst = { varDecl->name->getText(), uint32(valueLiteral.u) };
 	}
-	else if (cType->baseType == ShaderBaseType::SInteger) {
+	else if (cVar.dataType()->baseType == ShaderBaseType::SInteger) {
 		if (valueLiteral.type == Literal::Float) {
 			ERROR(ctx->value, "Cannot initialize integer constant with float literal");
 		}
@@ -229,6 +221,48 @@ VISIT_FUNC(ShaderConstantStatement)
 
 	// Add the constant
 	scopes_.addConstant(cnst);
+
+	return nullptr;
+}
+
+// ====================================================================================================================
+VISIT_FUNC(ShaderBindingStatement)
+{
+	// Check for binding limit
+	if (shaderInfo_.bindings().size() == (PLSL_MAX_BINDING_INDEX + 1)) {
+		ERROR(ctx, mkstr("Cannot have more than %u bindings in a shader", PLSL_MAX_BINDING_INDEX + 1));
+	}
+
+	// Parse the variable declaration
+	const auto varDecl = ctx->variableDeclaration();
+	const auto bVar = parseVariableDeclaration(varDecl);
+	if (bVar.dataType()->isNumeric() || (bVar.dataType()->baseType == ShaderBaseType::Boolean)) {
+		ERROR(varDecl->type, "Bindings cannot be numeric or boolean types");
+	}
+	if (bVar.dataType()->isStruct()) {
+		ERROR(varDecl->type, "Bindings that are structs must be a buffer type");
+	}
+
+	// Get the binding slot
+	const auto slot = ctx->slot->getText();
+	const BindingGroup bGroup =
+		(slot[0] == 't') ? BindingGroup::Texture :
+		(slot[0] == 'b') ? BindingGroup::Buffer : BindingGroup::Input;
+	const auto slotIndex = uint8(std::strtoul(slot.substr(1).data(), nullptr, 10));
+	if (slotIndex > PLSL_MAX_BINDING_INDEX) {
+		ERROR(ctx->slot, mkstr("Slot index out of range (max %u)", PLSL_MAX_BINDING_INDEX));
+	}
+
+	// Check and add to the shader info
+	if (shaderInfo_.getBinding(bGroup, slotIndex)) {
+		ERROR(ctx->slot, mkstr("Binding slot %s is already filled by another binding", ctx->slot->getText().c_str()));
+	}
+	shaderInfo_.bindings().push_back({ bVar.name(), *bVar.dataType(), bGroup, slotIndex });
+
+	// Add to the scope manager
+	Variable scopeVar = bVar;
+	scopeVar.type(VariableType::Binding);
+	scopes_.addGlobal(scopeVar);
 
 	return nullptr;
 }
