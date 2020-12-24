@@ -8,6 +8,7 @@
 
 #include <plsl/Config.hpp>
 #include "../reflection/Types.hpp"
+#include "../reflection/ShaderInfo.hpp"
 
 #include <vector>
 
@@ -34,27 +35,24 @@ class Variable final
 {
 public:
 	Variable()
-		: type_{}, name_{ "INVALID" }, dataType_{ nullptr }, arraySize_{ 0 }
+		: type{}, name{ "INVALID" }, dataType{ nullptr }, arraySize{ 0 }, extra{}
 	{ }
 	Variable(VariableType type, const string& name, const ShaderType* dataType, uint8 arrSize = 1)
-		: type_{ type }, name_{ name }, dataType_{ dataType }, arraySize_{ arrSize }
+		: type{ type }, name{ name }, dataType{ dataType }, arraySize{ arrSize }, extra{}
 	{ }
 
-	/* Get/Set */
-	inline VariableType type() const { return type_; }
-	inline void type(VariableType type) { type_ = type; }
-	inline const string& name() const { return name_; }
-	inline void name(const string& name) { name_ = name; }
-	inline const ShaderType* dataType() const { return dataType_; }
-	inline void dataType(const ShaderType* type) { dataType_ = type; }
-	inline uint8 arraySize() const { return arraySize_; }
-	inline void arraySize(uint8 size) { arraySize_ = size; }
-
-private:
-	VariableType type_;
-	string name_;
-	const ShaderType* dataType_;
-	uint8 arraySize_;
+public:
+	VariableType type;
+	string name;
+	const ShaderType* dataType;
+	uint8 arraySize;
+	union {
+		struct {
+			ShaderStages pStage;
+			ShaderStages cStage;
+			bool flat;
+		} local;
+	} extra;
 }; // class Variable
 
 

@@ -12,7 +12,9 @@ lexer grammar PLSLLexer;
 // Keywords
 KW_BIND   : 'bind' ;
 KW_CONST  : 'const' ;
+KW_FLAT   : 'flat' ;
 KW_IN     : 'in' ;
+KW_LOCAL  : 'local' ;
 KW_OUT    : 'out' ;
 KW_SHADER : 'shader' ;
 KW_TYPE   : '@type' ;
@@ -42,6 +44,7 @@ IDENTIFIER
     ;
 
 // Punctuation
+COMMA     : ',' ;
 LBRACE    : '{' ;
 LBRACKET  : '[' ;
 LPAREN    : '(' ;

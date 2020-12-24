@@ -11,6 +11,42 @@ namespace plsl
 {
 
 // ====================================================================================================================
+ShaderStages StrToShaderStage(const string& str)
+{
+	if (str == "vert") {
+		return ShaderStages::Vertex;
+	}
+	if (str == "tesc") {
+		return ShaderStages::TessControl;
+	}
+	if (str == "tese") {
+		return ShaderStages::TessEval;
+	}
+	if (str == "geom") {
+		return ShaderStages::Geometry;
+	}
+	if (str == "frag") {
+		return ShaderStages::Fragment;
+	}
+	return ShaderStages::None;
+}
+
+// ====================================================================================================================
+string ShaderStageToStr(ShaderStages stage)
+{
+	switch (stage)
+	{
+	case ShaderStages::Vertex: return "vert";
+	case ShaderStages::TessControl: return "tesc";
+	case ShaderStages::TessEval: return "tese";
+	case ShaderStages::Geometry: return "geom";
+	case ShaderStages::Fragment: return "frag";
+	default: return "";
+	}
+}
+
+// ====================================================================================================================
+// ====================================================================================================================
 ShaderInfo::ShaderInfo()
 	: inputs_{ }
 	, outputs_{ }

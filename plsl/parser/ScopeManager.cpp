@@ -29,7 +29,7 @@ ScopeManager::~ScopeManager()
 // ====================================================================================================================
 bool ScopeManager::addGlobal(const Variable& var)
 {
-	if (hasGlobal(var.name())) {
+	if (hasGlobal(var.name)) {
 		return false;
 	}
 	allGlobals_.push_back(var);
@@ -40,7 +40,7 @@ bool ScopeManager::addGlobal(const Variable& var)
 bool ScopeManager::hasGlobal(const string& name) const
 {
 	const auto it = std::find_if(allGlobals_.begin(), allGlobals_.end(), [&name](const Variable& var) {
-		return var.name() == name;
+		return var.name == name;
 	});
 	return it != allGlobals_.end();
 }

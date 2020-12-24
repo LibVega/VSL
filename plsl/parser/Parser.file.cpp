@@ -63,23 +63,23 @@ VISIT_FUNC(ShaderUserTypeDefinition)
 		const auto fVar = parseVariableDeclaration(field);
 
 		// Check name
-		if (structType.hasMember(fVar.name())) {
-			ERROR(field->name, mkstr("Duplicate field name '%s'", fVar.name().c_str()));
+		if (structType.hasMember(fVar.name)) {
+			ERROR(field->name, mkstr("Duplicate field name '%s'", fVar.name.c_str()));
 		}
 
 		// Check field type
-		if (!fVar.dataType()->isNumeric()) {
-			ERROR(field->type, mkstr("Invalid field '%s' - type fields must be numeric", fVar.name().c_str()));
+		if (!fVar.dataType->isNumeric()) {
+			ERROR(field->type, mkstr("Invalid field '%s' - type fields must be numeric", fVar.name.c_str()));
 		}
 
 		// Add the member
 		StructMember mem{};
-		mem.name = fVar.name();
-		mem.baseType = fVar.dataType()->baseType;
-		mem.size = fVar.dataType()->numeric.size;
-		mem.dims[0] = fVar.dataType()->numeric.dims[0];
-		mem.dims[1] = fVar.dataType()->numeric.dims[1];
-		mem.arraySize = fVar.arraySize();
+		mem.name = fVar.name;
+		mem.baseType = fVar.dataType->baseType;
+		mem.size = fVar.dataType->numeric.size;
+		mem.dims[0] = fVar.dataType->numeric.dims[0];
+		mem.dims[1] = fVar.dataType->numeric.dims[1];
+		mem.arraySize = fVar.arraySize;
 		structType.userStruct.members.push_back(mem);
 	}
 
@@ -128,37 +128,37 @@ VISIT_FUNC(ShaderInputOutputStatement)
 	// Get and validate the type
 	const auto varDecl = ctx->variableDeclaration();
 	auto ioVar = parseVariableDeclaration(varDecl);
-	if (!ioVar.dataType()->isNumeric()) {
+	if (!ioVar.dataType->isNumeric()) {
 		ERROR(varDecl->type, "Shader interface variables must be a numeric type");
 	}
 
 	// Input/Output specific type validation
 	if (isIn) {
-		if (ioVar.arraySize() > PLSL_MAX_INPUT_ARRAY_SIZE) {
+		if (ioVar.arraySize > PLSL_MAX_INPUT_ARRAY_SIZE) {
 			ERROR(varDecl->arraySize, mkstr("Vertex input arrays cannot be larger than %u", PLSL_MAX_INPUT_ARRAY_SIZE));
 		}
-		if ((ioVar.arraySize() != 1) && (ioVar.dataType()->numeric.dims[1] != 1)) {
+		if ((ioVar.arraySize != 1) && (ioVar.dataType->numeric.dims[1] != 1)) {
 			ERROR(varDecl->arraySize, "Vertex inputs that are matrix types cannot be arrays");
 		}
 	}
 	else { // Outputs must be non-arrays, and either scalars or vectors
-		if (ioVar.arraySize() != 1) {
+		if (ioVar.arraySize != 1) {
 			ERROR(varDecl->arraySize, "Fragment outputs cannot be arrays");
 		}
-		if (ioVar.dataType()->numeric.dims[1] != 1) {
+		if (ioVar.dataType->numeric.dims[1] != 1) {
 			ERROR(varDecl->type, "Fragment outputs cannot be matrix types");
 		}
 	}
 
 	// Add to shader info
-	InterfaceVariable iovar{ varDecl->name->getText(), index, *ioVar.dataType(), ioVar.arraySize() };
+	InterfaceVariable iovar{ varDecl->name->getText(), index, *ioVar.dataType, ioVar.arraySize };
 	if (isIn) {
 		shaderInfo_.inputs().push_back(iovar);
-		ioVar.type(VariableType::Input);
+		ioVar.type = VariableType::Input;
 	}
 	else {
 		shaderInfo_.outputs().push_back(iovar);
-		ioVar.type(VariableType::Output);
+		ioVar.type = VariableType::Output;
 	}
 	scopes_.addGlobal(ioVar);
 
@@ -174,20 +174,20 @@ VISIT_FUNC(ShaderConstantStatement)
 	if (varDecl->arraySize) {
 		ERROR(varDecl->arraySize, "Constants cannot be arrays");
 	}
-	if (!cVar.dataType()->isNumeric()) {
+	if (!cVar.dataType->isNumeric()) {
 		ERROR(varDecl->type, "Constants must be a numeric type");
 	}
-	if ((cVar.dataType()->numeric.dims[0] != 1) || (cVar.dataType()->numeric.dims[1] != 1)) {
+	if ((cVar.dataType->numeric.dims[0] != 1) || (cVar.dataType->numeric.dims[1] != 1)) {
 		ERROR(varDecl->type, "Constants must be a scalar numeric type");
 	}
-	if (cVar.dataType()->numeric.size != 4) {
+	if (cVar.dataType->numeric.size != 4) {
 		ERROR(varDecl->type, "Constants must be a 4-byte scalar type");
 	}
 
 	// Parse the literal
 	const auto valueLiteral = ParseLiteral(this, ctx->value);
 	Constant cnst;
-	if (cVar.dataType()->baseType == ShaderBaseType::UInteger) {
+	if (cVar.dataType->baseType == ShaderBaseType::UInteger) {
 		if (valueLiteral.type == Literal::Float) {
 			ERROR(ctx->value, "Cannot initialize integer constant with float literal");
 		}
@@ -199,7 +199,7 @@ VISIT_FUNC(ShaderConstantStatement)
 		}
 		cnst = { varDecl->name->getText(), uint32(valueLiteral.u) };
 	}
-	else if (cVar.dataType()->baseType == ShaderBaseType::SInteger) {
+	else if (cVar.dataType->baseType == ShaderBaseType::SInteger) {
 		if (valueLiteral.type == Literal::Float) {
 			ERROR(ctx->value, "Cannot initialize integer constant with float literal");
 		}
@@ -236,10 +236,10 @@ VISIT_FUNC(ShaderBindingStatement)
 	// Parse the variable declaration
 	const auto varDecl = ctx->variableDeclaration();
 	const auto bVar = parseVariableDeclaration(varDecl);
-	if (bVar.dataType()->isNumeric() || (bVar.dataType()->baseType == ShaderBaseType::Boolean)) {
+	if (bVar.dataType->isNumeric() || (bVar.dataType->baseType == ShaderBaseType::Boolean)) {
 		ERROR(varDecl->type, "Bindings cannot be numeric or boolean types");
 	}
-	if (bVar.dataType()->isStruct()) {
+	if (bVar.dataType->isStruct()) {
 		ERROR(varDecl->type, "Bindings that are structs must be a buffer type");
 	}
 
@@ -257,12 +257,55 @@ VISIT_FUNC(ShaderBindingStatement)
 	if (shaderInfo_.getBinding(bGroup, slotIndex)) {
 		ERROR(ctx->slot, mkstr("Binding slot %s is already filled by another binding", ctx->slot->getText().c_str()));
 	}
-	shaderInfo_.bindings().push_back({ bVar.name(), *bVar.dataType(), bGroup, slotIndex });
+	shaderInfo_.bindings().push_back({ bVar.name, *bVar.dataType, bGroup, slotIndex });
 
 	// Add to the scope manager
 	Variable scopeVar = bVar;
-	scopeVar.type(VariableType::Binding);
+	scopeVar.type = VariableType::Binding;
 	scopes_.addGlobal(scopeVar);
+
+	return nullptr;
+}
+
+// ====================================================================================================================
+VISIT_FUNC(ShaderLocalStatement)
+{
+	// Parse and validate variable
+	const auto isFlat = !!ctx->KW_FLAT();
+	const auto varDecl = ctx->variableDeclaration();
+	const auto lVar = parseVariableDeclaration(varDecl);
+	if (lVar.arraySize != 1) {
+		ERROR(varDecl->arraySize, "Shader locals cannot be arrays");
+	}
+	if (!lVar.dataType->isNumeric() || (lVar.dataType->numeric.dims[1] != 1)) {
+		ERROR(varDecl->type, "Shader locals must be numeric scalars or vectors");
+	}
+	if ((lVar.dataType->baseType == ShaderBaseType::UInteger) || (lVar.dataType->baseType == ShaderBaseType::SInteger)) {
+		if (!isFlat) {
+			ERROR(varDecl->type, "Shader locals with integer types must be declared as 'flat'");
+		}
+	}
+
+	// Parse and validate stages
+	const auto pStage = StrToShaderStage(ctx->pstage->getText());
+	if (pStage == ShaderStages::None) {
+		ERROR(ctx->pstage, mkstr("Unknown shader stage '%s'", ctx->pstage->getText().c_str()));
+	}
+	const auto cStage = StrToShaderStage(ctx->cstage->getText());
+	if (cStage == ShaderStages::None) {
+		ERROR(ctx->cstage, mkstr("Unknown shader stage '%s'", ctx->cstage->getText().c_str()));
+	}
+	if (pStage >= cStage) {
+		ERROR(ctx->cstage, "Local consumer stage must come after the producer stage");
+	}
+
+	// Add variable
+	Variable newVar = lVar;
+	newVar.type = VariableType::Local;
+	newVar.extra.local.pStage = pStage;
+	newVar.extra.local.cStage = cStage;
+	newVar.extra.local.flat = isFlat;
+	scopes_.addGlobal(newVar);
 
 	return nullptr;
 }

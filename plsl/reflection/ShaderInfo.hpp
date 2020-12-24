@@ -65,6 +65,22 @@ public:
 }; // struct BindingVariable
 
 
+// The different shader stages as a bitmask
+enum class ShaderStages : uint16
+{
+	None        = 0,
+	Vertex      = (1 << 0),
+	TessControl = (1 << 1),
+	TessEval    = (1 << 2),
+	Geometry    = (1 << 3),
+	Fragment    = (1 << 4),
+	AllGraphics = Vertex | TessControl | TessEval | Geometry | Fragment
+}; // enum class ShaderStages
+
+ShaderStages StrToShaderStage(const string& str);
+string ShaderStageToStr(ShaderStages stage);
+
+
 // Contains information about the public-facing interface of a shader program
 class ShaderInfo final
 {
