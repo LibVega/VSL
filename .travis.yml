@@ -10,5 +10,5 @@ script:
   - chmod +x ./tools/premake5_l
   - (cd ./grammar && ./generate.sh)
   - ./generate.sh
-  - (cd ./build && make -j2 config=shared all)
-  - (cd ./build && make -j2 config=static all)
+  - (cd ./build && make -j2 config=shared_x64 all)
+  - (cd ./build && make -j2 config=static_x64 all)
