@@ -2,6 +2,15 @@ os: linux
 dist: bionic
 language: cpp
 compiler: gcc
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-8
+
+before_install:
+  - eval "CC=gcc-8 && CXX=g++-8"
 
 script:
   - g++ --version
