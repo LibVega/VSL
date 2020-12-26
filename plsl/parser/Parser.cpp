@@ -8,6 +8,8 @@
 #include "../../generated/PLSLLexer.h"
 #include "../../generated/PLSL.h"
 
+#include <cmath>
+
 #define SET_ERROR(stage,...) lastError_ = CompilerError(CompilerStage::stage, ##__VA_ARGS__);
 
 

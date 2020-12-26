@@ -6,6 +6,8 @@
 
 #include "./Parser.hpp"
 
+#include <cfloat>
+
 #define VISIT_FUNC(type) antlrcpp::Any Parser::visit##type(grammar::PLSL::type##Context* ctx)
 
 
