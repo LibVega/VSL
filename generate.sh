@@ -25,7 +25,7 @@ else
 fi
 
 if [ $IsMac -eq 1 ]; then
-	./premake/premake5_m --file=./polaris.project gmake2
+	./tools/premake5_m --file=./polaris.project gmake2
 elif [ $IsLinux -eq 1 ]; then
-	./premake/premake5_l --file=./polaris.project gmake2
+	./tools/premake5_l --file=./polaris.project gmake2
 fi
