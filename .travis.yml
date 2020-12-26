@@ -1,0 +1,13 @@
+os: linux
+dist: bionic
+language: cpp
+compiler: gcc
+
+script:
+  - g++ --version
+  - chmod +x ./grammar/generate.sh
+  - chmod +x ./tools/premake5_l
+  - (cd ./grammar && ./generate.sh)
+  - ./generate.sh
+  - (cd ./build && make -j2 config=shared all)
+  - (cd ./build && make -j2 config=static all)

@@ -1,4 +1,7 @@
 # Polaris
+
+[![Build Status](https://travis-ci.com/VegaLib/Polaris.svg?branch=master)](https://travis-ci.com/VegaLib/Polaris)
+
 Polaris is a custom shader language for the [Vega](https://github.com/VegaLib) library. 
 
 Because Vega utilizes a unique binding model and reduced subset of normal GLSL and SPIR-V features, it was decided to implement a custom language that matched this specific use case more directly. The resulting syntax should be familiar and easy to learn for those already versed in GLSL or HLSL.
