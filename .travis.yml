@@ -5,6 +5,7 @@ compiler: gcc
 
 script:
   - g++ --version
+  - chmod +x ./generate.sh
   - chmod +x ./grammar/generate.sh
   - chmod +x ./tools/premake5_l
   - (cd ./grammar && ./generate.sh)
