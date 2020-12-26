@@ -5,6 +5,7 @@
  */
 
 #include "./ScopeManager.hpp"
+#include "../reflection/TypeManager.hpp"
 
 #include <algorithm>
 
@@ -51,14 +52,60 @@ ScopeManager::~ScopeManager()
 }
 
 // ====================================================================================================================
-void ScopeManager::pushGlobalScope(ShaderStages stages)
+void ScopeManager::pushGlobalScope(ShaderStages stage)
 {
+	if (scopes_.size() != 0) {
+		throw std::exception("COMPILER BUG - Invalid scope push");
+	}
+	auto& scope = scopes_.emplace_back(std::make_unique<Scope>());
+
+	// Get builtins
+	PopulateBuiltins(stage, scope->variables());
+
+	// Get specific variables for the stages
+	for (const auto& glob : allGlobals_) {
+		switch (glob.type)
+		{
+		case VariableType::Input: {
+			if (stage == ShaderStages::Vertex) {
+				scope->variables().push_back(glob);
+			}
+		} break;
+		case VariableType::Output: {
+			if (stage == ShaderStages::Fragment) {
+				scope->variables().push_back(glob);
+			}
+		} break;
+		case VariableType::Binding: {
+			scope->variables().push_back(glob);
+		} break;
+		case VariableType::Constant: {
+			scope->variables().push_back(glob);
+		} break;
+		case VariableType::Local: {
+			if ((stage == glob.extra.local.pStage) || (stage == glob.extra.local.cStage)) {
+				scope->variables().push_back(glob);
+			}
+		} break;
+		}
+	}
+}
+
+// ====================================================================================================================
+void ScopeManager::pushScope()
+{
+	if (scopes_.size() == 0) {
+		throw std::exception("COMPILER BUG - Invalid scope pop");
+	}
 	scopes_.emplace_back(std::make_unique<Scope>());
 }
 
 // ====================================================================================================================
 void ScopeManager::popScope()
 {
+	if (scopes_.size() == 0) {
+		throw std::exception("COMPILER BUG - Invalid scope pop");
+	}
 	scopes_.pop_back();
 }
 
@@ -124,6 +171,38 @@ const Constant* ScopeManager::getConstant(const string& name) const
 bool ScopeManager::hasGlobalName(const string& name) const
 {
 	return hasGlobal(name) || hasConstant(name);
+}
+
+// ====================================================================================================================
+void ScopeManager::PopulateBuiltins(ShaderStages stage, std::vector<Variable>& vars)
+{
+	const auto& bit = TypeManager::BuiltinTypes();
+
+	if (stage == ShaderStages::Vertex) {
+		vars.push_back(Variable::Builtin("$VertexIndex", &bit.at("int"), stage, Variable::READONLY));
+		vars.push_back(Variable::Builtin("$InstanceIndex", &bit.at("int"), stage, Variable::READONLY));
+		vars.push_back(Variable::Builtin("$DrawIndex", &bit.at("int"), stage, Variable::READONLY));
+		vars.push_back(Variable::Builtin("$VertexBase", &bit.at("int"), stage, Variable::READONLY));
+		vars.push_back(Variable::Builtin("$InstanceBase", &bit.at("int"), stage, Variable::READONLY));
+
+		vars.push_back(Variable::Builtin("$Position", &bit.at("float4"), stage, Variable::WRITEONLY));
+		vars.push_back(Variable::Builtin("$PointSize", &bit.at("float"), stage, Variable::WRITEONLY));
+	}
+	else if (stage == ShaderStages::TessControl) {
+		// TODO
+	}
+	else if (stage == ShaderStages::TessEval) {
+		// TODO
+	}
+	else if (stage == ShaderStages::Geometry) {
+		// TODO
+	}
+	else if (stage == ShaderStages::Fragment) {
+		vars.push_back(Variable::Builtin("$FragCoord", &bit.at("float4"), stage, Variable::READONLY));
+		vars.push_back(Variable::Builtin("$FrontFacing", &bit.at("bool"), stage, Variable::READONLY));
+		vars.push_back(Variable::Builtin("$PointCoord", &bit.at("float2"), stage, Variable::READONLY));
+		vars.push_back(Variable::Builtin("$PrimitiveID", &bit.at("int"), stage, Variable::READONLY));
+	}
 }
 
 } // namespace plsl

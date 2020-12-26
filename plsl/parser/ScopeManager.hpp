@@ -23,6 +23,7 @@ enum class VariableType
 	Input,      // Vertex input
 	Output,     // Fragment output
 	Binding,    // Uniform resource binding
+	Builtin,    // A stage-specific builtin variable
 	Constant,   // Specialization constant
 	Local,      // Local value passed between stages
 	Parameter,  // Parameter to a function
@@ -34,12 +35,21 @@ enum class VariableType
 class Variable final
 {
 public:
+	enum Access : uint8 { READONLY, WRITEONLY, READWRITE };
+
 	Variable()
 		: type{}, name{ "INVALID" }, dataType{ nullptr }, arraySize{ 0 }, extra{}
 	{ }
 	Variable(VariableType type, const string& name, const ShaderType* dataType, uint8 arrSize = 1)
 		: type{ type }, name{ name }, dataType{ dataType }, arraySize{ arrSize }, extra{}
 	{ }
+
+	inline static Variable Builtin(const string& name, const ShaderType* dataType, ShaderStages stage, Access access) {
+		Variable var{ VariableType::Builtin, name, dataType, 1 };
+		var.extra.builtin.stage = stage;
+		var.extra.builtin.access = access;
+		return var;
+	}
 
 public:
 	VariableType type;
@@ -52,6 +62,10 @@ public:
 			ShaderStages cStage;
 			bool flat;
 		} local;
+		struct {
+			ShaderStages stage;
+			Access access;
+		} builtin;
 	} extra;
 }; // class Variable
 
@@ -91,6 +105,9 @@ public:
 
 	bool hasName(const string& name) const;
 
+	inline const std::vector<Variable>& variables() const { return variables_; }
+	inline std::vector<Variable>& variables() { return variables_; }
+
 private:
 	std::vector<Variable> variables_;
 }; // class Scope
@@ -112,9 +129,13 @@ public:
 	bool hasGlobalName(const string& name) const;  // Checks global and constants for used name
 
 	/* Scopes */
-	void pushGlobalScope(ShaderStages stages); // Starts a new scope stack for the given stage
+	void pushGlobalScope(ShaderStages stage); // Starts a new scope stack for the given stage
+	void pushScope(); // Push a new scope to the stack, must already have an active scope stack
 	void popScope();
 	bool hasName(const string& name) const; // If the name exists in the current scope stack
+
+private:
+	static void PopulateBuiltins(ShaderStages stage, std::vector<Variable>& vars);
 
 private:
 	std::vector<Variable> allGlobals_;

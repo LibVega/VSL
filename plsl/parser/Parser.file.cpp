@@ -321,11 +321,22 @@ VISIT_FUNC(ShaderStageFunction)
 	if ((shaderInfo_.stages() & stage) == stage) {
 		ERROR(ctx->stage, mkstr("Duplicate shader function for stage '%s'", ctx->stage->getText().c_str()));
 	}
+	
+	// Temp remove support for tess/geom until the system is well built for vert/frag
+	if (stage == ShaderStages::TessControl) {
+		ERROR(ctx->stage, "Tessellation control stage is not yet supported");
+	}
+	if (stage == ShaderStages::TessEval) {
+		ERROR(ctx->stage, "Tessellation evaluation stage is not yet supported");
+	}
+	if (stage == ShaderStages::Geometry) {
+		ERROR(ctx->stage, "Geometry stage is not yet supported");
+	}
 
 	// Push the global scope for the stage
 	scopes_.pushGlobalScope(stage);
 
-	// Pop the scopes
+	// Pop the global scope
 	scopes_.popScope();
 
 	// Update shader info

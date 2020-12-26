@@ -156,6 +156,9 @@ Literal Parser::ParseLiteral(Parser* parser, const antlr4::Token* token)
 Variable Parser::parseVariableDeclaration(const grammar::PLSL::VariableDeclarationContext* ctx, bool global)
 {
 	// Validate name against either the globals, or the current scope tree
+	if (ctx->name->getText()[0] == '$') {
+		ERROR(ctx->name, "Identifiers starting with '$' are reserved for builtins");
+	}
 	if ((global && scopes_.hasGlobalName(ctx->name->getText())) || scopes_.hasName(ctx->name->getText())) {
 		ERROR(ctx->name, mkstr("Duplicate variable name '%s'", ctx->name->getText().c_str()));
 	}
