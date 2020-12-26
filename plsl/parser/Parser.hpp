@@ -110,7 +110,7 @@ public:
 	/* Utilities */
 	static Literal ParseLiteral(const string& txt);
 	static Literal ParseLiteral(Parser* parser, const antlr4::Token* token);
-	Variable parseVariableDeclaration(const grammar::PLSL::VariableDeclarationContext* ctx);
+	Variable parseVariableDeclaration(const grammar::PLSL::VariableDeclarationContext* ctx, bool global);
 
 	/* File-Level Rules */
 	VISIT_DECL(File)
@@ -120,6 +120,7 @@ public:
 	VISIT_DECL(ShaderConstantStatement)
 	VISIT_DECL(ShaderBindingStatement)
 	VISIT_DECL(ShaderLocalStatement)
+	VISIT_DECL(ShaderStageFunction)
 
 private:
 	/* Error Functions */

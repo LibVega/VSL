@@ -29,6 +29,7 @@ topLevelStatement
     | shaderConstantStatement
     | shaderBindingStatement
     | shaderLocalStatement
+    | shaderStageFunction
     ;
 
 // Shader type statement, for defining new POD types
@@ -54,6 +55,11 @@ shaderBindingStatement
 // Shader local statement
 shaderLocalStatement
     : 'local' '(' pstage=IDENTIFIER ',' cstage=IDENTIFIER ')' 'flat'? variableDeclaration ';'
+    ;
+
+// Shader stage function statement
+shaderStageFunction
+    : '@' stage=IDENTIFIER '{' '}'
     ;
 
 // Variable declaration, for globals, type fields, and function locals

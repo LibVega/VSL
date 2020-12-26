@@ -60,7 +60,7 @@ VISIT_FUNC(ShaderUserTypeDefinition)
 	ShaderType structType{ typeName, {} };
 	for (const auto field : ctx->variableDeclaration()) {
 		// Create variable
-		const auto fVar = parseVariableDeclaration(field);
+		const auto fVar = parseVariableDeclaration(field, true);
 
 		// Check name
 		if (structType.hasMember(fVar.name)) {
@@ -127,7 +127,7 @@ VISIT_FUNC(ShaderInputOutputStatement)
 
 	// Get and validate the type
 	const auto varDecl = ctx->variableDeclaration();
-	auto ioVar = parseVariableDeclaration(varDecl);
+	auto ioVar = parseVariableDeclaration(varDecl, true);
 	if (!ioVar.dataType->isNumeric()) {
 		ERROR(varDecl->type, "Shader interface variables must be a numeric type");
 	}
@@ -170,7 +170,7 @@ VISIT_FUNC(ShaderConstantStatement)
 {
 	// Validate the variable
 	const auto varDecl = ctx->variableDeclaration();
-	const auto cVar = parseVariableDeclaration(varDecl);
+	const auto cVar = parseVariableDeclaration(varDecl, true);
 	if (varDecl->arraySize) {
 		ERROR(varDecl->arraySize, "Constants cannot be arrays");
 	}
@@ -235,7 +235,7 @@ VISIT_FUNC(ShaderBindingStatement)
 
 	// Parse the variable declaration
 	const auto varDecl = ctx->variableDeclaration();
-	const auto bVar = parseVariableDeclaration(varDecl);
+	const auto bVar = parseVariableDeclaration(varDecl, true);
 	if (bVar.dataType->isNumeric() || (bVar.dataType->baseType == ShaderBaseType::Boolean)) {
 		ERROR(varDecl->type, "Bindings cannot be numeric or boolean types");
 	}
@@ -273,7 +273,7 @@ VISIT_FUNC(ShaderLocalStatement)
 	// Parse and validate variable
 	const auto isFlat = !!ctx->KW_FLAT();
 	const auto varDecl = ctx->variableDeclaration();
-	const auto lVar = parseVariableDeclaration(varDecl);
+	const auto lVar = parseVariableDeclaration(varDecl, true);
 	if (lVar.arraySize != 1) {
 		ERROR(varDecl->arraySize, "Shader locals cannot be arrays");
 	}
@@ -306,6 +306,30 @@ VISIT_FUNC(ShaderLocalStatement)
 	newVar.extra.local.cStage = cStage;
 	newVar.extra.local.flat = isFlat;
 	scopes_.addGlobal(newVar);
+
+	return nullptr;
+}
+
+// ====================================================================================================================
+VISIT_FUNC(ShaderStageFunction)
+{
+	// Validate stage
+	const auto stage = StrToShaderStage(ctx->stage->getText());
+	if (stage == ShaderStages::None) {
+		ERROR(ctx->stage, mkstr("Unknown shader stage '%s' for function", ctx->stage->getText().c_str()));
+	}
+	if ((shaderInfo_.stages() & stage) == stage) {
+		ERROR(ctx->stage, mkstr("Duplicate shader function for stage '%s'", ctx->stage->getText().c_str()));
+	}
+
+	// Push the global scope for the stage
+	scopes_.pushGlobalScope(stage);
+
+	// Pop the scopes
+	scopes_.popScope();
+
+	// Update shader info
+	shaderInfo_.addStage(stage);
 
 	return nullptr;
 }

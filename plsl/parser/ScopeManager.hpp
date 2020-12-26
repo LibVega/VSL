@@ -82,6 +82,20 @@ public:
 }; // struct Constant
 
 
+// Manages a specific variable and name scope within the scope stack
+class Scope final
+{
+public:
+	Scope();
+	~Scope();
+
+	bool hasName(const string& name) const;
+
+private:
+	std::vector<Variable> variables_;
+}; // class Scope
+
+
 // Manages the tree of variable and name scopes that are entered and exited during parsing
 class ScopeManager final
 {
@@ -97,9 +111,15 @@ public:
 	const Constant* getConstant(const string& name) const;
 	bool hasGlobalName(const string& name) const;  // Checks global and constants for used name
 
+	/* Scopes */
+	void pushGlobalScope(ShaderStages stages); // Starts a new scope stack for the given stage
+	void popScope();
+	bool hasName(const string& name) const; // If the name exists in the current scope stack
+
 private:
 	std::vector<Variable> allGlobals_;
 	std::vector<Constant> constants_;
+	std::vector<uptr<Scope>> scopes_;
 
 	PLSL_NO_COPY(ScopeManager)
 	PLSL_NO_MOVE(ScopeManager)

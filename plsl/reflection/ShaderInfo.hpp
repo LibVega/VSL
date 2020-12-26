@@ -76,7 +76,16 @@ enum class ShaderStages : uint16
 	Fragment    = (1 << 4),
 	AllGraphics = Vertex | TessControl | TessEval | Geometry | Fragment
 }; // enum class ShaderStages
-
+inline ShaderStages operator | (ShaderStages l, ShaderStages r) { return ShaderStages(uint16(l) | uint16(r)); }
+inline ShaderStages operator & (ShaderStages l, ShaderStages r) { return ShaderStages(uint16(l) & uint16(r)); }
+inline ShaderStages& operator |= (ShaderStages& l, ShaderStages r) {
+	l = l | r;
+	return l;
+}
+inline ShaderStages& operator &= (ShaderStages& l, ShaderStages r) {
+	l = l & r;
+	return l;
+}
 ShaderStages StrToShaderStage(const string& str);
 string ShaderStageToStr(ShaderStages stage);
 
@@ -87,6 +96,10 @@ class ShaderInfo final
 public:
 	ShaderInfo();
 	~ShaderInfo();
+
+	// Top-Level Info
+	inline ShaderStages stages() const { return stages_; }
+	inline void addStage(ShaderStages stage) { stages_ |= stage; }
 
 	// Accessors
 	inline const std::vector<InterfaceVariable>& inputs() const { return inputs_; }
@@ -107,6 +120,7 @@ public:
 	const BindingVariable* getBinding(BindingGroup group, uint8 slotIndex) const;
 
 private:
+	ShaderStages stages_;
 	std::vector<InterfaceVariable> inputs_;
 	std::vector<InterfaceVariable> outputs_;
 	std::vector<BindingVariable> bindings_;

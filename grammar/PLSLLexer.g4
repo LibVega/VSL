@@ -44,6 +44,7 @@ IDENTIFIER
     ;
 
 // Punctuation
+ATSIGN    : '@' ;
 COMMA     : ',' ;
 LBRACE    : '{' ;
 LBRACKET  : '[' ;

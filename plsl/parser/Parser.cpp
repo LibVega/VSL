@@ -153,10 +153,10 @@ Literal Parser::ParseLiteral(Parser* parser, const antlr4::Token* token)
 }
 
 // ====================================================================================================================
-Variable Parser::parseVariableDeclaration(const grammar::PLSL::VariableDeclarationContext* ctx)
+Variable Parser::parseVariableDeclaration(const grammar::PLSL::VariableDeclarationContext* ctx, bool global)
 {
-	// TODO: Validate name against scope tree
-	if (scopes_.hasGlobalName(ctx->name->getText())) {
+	// Validate name against either the globals, or the current scope tree
+	if ((global && scopes_.hasGlobalName(ctx->name->getText())) || scopes_.hasName(ctx->name->getText())) {
 		ERROR(ctx->name, mkstr("Duplicate variable name '%s'", ctx->name->getText().c_str()));
 	}
 
