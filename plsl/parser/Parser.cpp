@@ -97,7 +97,7 @@ Literal Parser::ParseLiteral(const string& txt)
 		if (errno == ERANGE) {
 			return { Literal::EOutOfRange };
 		}
-		else if (isnan(val) || isinf(val)) {
+		else if (std::isnan(val) || std::isinf(val)) {
 			return { Literal::EOutOfRange };
 		}
 		else if (end == beg) {

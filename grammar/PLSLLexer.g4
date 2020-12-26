@@ -9,6 +9,9 @@
 lexer grammar PLSLLexer;
 
 
+// Booleans
+BOOLEAN_LITERAL : 'true' | 'false' ;
+
 // Keywords
 KW_BIND   : 'bind' ;
 KW_CONST  : 'const' ;
@@ -18,6 +21,11 @@ KW_LOCAL  : 'local' ;
 KW_OUT    : 'out' ;
 KW_SHADER : 'shader' ;
 KW_TYPE   : '@type' ;
+
+// Vector swizzle
+SWIZZLE
+    : [xyzw]+ | [rgba]+ | [stpq]+
+    ;
 
 // Number literals
 INTEGER_LITERAL
@@ -45,22 +53,52 @@ IDENTIFIER
 
 // Punctuation
 ATSIGN    : '@' ;
+COLON     : ':' ;
 COMMA     : ',' ;
 LBRACE    : '{' ;
 LBRACKET  : '[' ;
 LPAREN    : '(' ;
 PERIOD    : '.' ;
+QMARK     : '?' ;
 RBRACE    : '}' ;
 RBRACKET  : ']' ;
 RPAREN    : ')' ;
 SEMICOLON : ';' ;
 
 // Operators
-OP_ADD     : '+' ;
-OP_ASSIGN  : '=';
-OP_GREATER : '>' ;
-OP_LESS    : '<' ;
-OP_SUB     : '-' ;
+OP_ADD      : '+' ;
+OP_ASSIGN   : '=';
+OP_ASN_ADD  : '+=' ;
+OP_ASN_BAND : '&=' ;
+OP_ASN_BOR  : '|=' ;
+OP_ASN_BXOR : '^=' ;
+OP_ASN_DIV  : '/=' ;
+OP_ASN_LSH  : '<<=' ;
+OP_ASN_MOD  : '%=' ;
+OP_ASN_MUL  : '*=' ;
+OP_ASN_RSH  : '>>=' ;
+OP_ASN_SUB  : '-=' ;
+OP_BAND     : '&' ;
+OP_BNOT     : '~' ;
+OP_BOR      : '|' ;
+OP_BXOR     : '^' ;
+OP_DEC      : '--' ;
+OP_DIV      : '/' ;
+OP_EQUAL    : '==' ;
+OP_GEQUAL   : '>=' ;
+OP_GREATER  : '>' ;
+OP_INC      : '++' ;
+OP_LAND     : '&&' ;
+OP_LEQUAL   : '<=' ;
+OP_LESS     : '<' ;
+OP_LNOT     : '!' ;
+OP_LOR      : '||' ;
+OP_LSHIFT   : '<<' ;
+OP_MOD      : '%' ;
+OP_MUL      : '*' ;
+OP_NEQUAL   : '!=' ;
+OP_RSHIFT   : '>>' ;
+OP_SUB      : '-' ;
 
 // Whitespace and comments (ignore to hidden channel)
 WS

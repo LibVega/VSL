@@ -55,7 +55,7 @@ ScopeManager::~ScopeManager()
 void ScopeManager::pushGlobalScope(ShaderStages stage)
 {
 	if (scopes_.size() != 0) {
-		throw std::exception("COMPILER BUG - Invalid scope push");
+		throw std::runtime_error("COMPILER BUG - Invalid scope push");
 	}
 	auto& scope = scopes_.emplace_back(std::make_unique<Scope>());
 
@@ -95,7 +95,7 @@ void ScopeManager::pushGlobalScope(ShaderStages stage)
 void ScopeManager::pushScope()
 {
 	if (scopes_.size() == 0) {
-		throw std::exception("COMPILER BUG - Invalid scope pop");
+		throw std::runtime_error("COMPILER BUG - Invalid scope pop");
 	}
 	scopes_.emplace_back(std::make_unique<Scope>());
 }
@@ -104,7 +104,7 @@ void ScopeManager::pushScope()
 void ScopeManager::popScope()
 {
 	if (scopes_.size() == 0) {
-		throw std::exception("COMPILER BUG - Invalid scope pop");
+		throw std::runtime_error("COMPILER BUG - Invalid scope pop");
 	}
 	scopes_.pop_back();
 }

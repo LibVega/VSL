@@ -122,6 +122,32 @@ public:
 	VISIT_DECL(ShaderLocalStatement)
 	VISIT_DECL(ShaderStageFunction)
 
+	/* Statements */
+	VISIT_DECL(Statement)
+	VISIT_DECL(VariableDefinition)
+	VISIT_DECL(VariableDeclaration)
+	VISIT_DECL(Assignment)
+
+	/* Expressions */
+	VISIT_DECL(PostfixExpr)
+	VISIT_DECL(PrefixExpr)
+	VISIT_DECL(FactorExpr)
+	VISIT_DECL(NegateExpr)
+	VISIT_DECL(MulDivModExpr)
+	VISIT_DECL(AddSubExpr)
+	VISIT_DECL(ShiftExpr)
+	VISIT_DECL(RelationalExpr)
+	VISIT_DECL(EqualityExpr)
+	VISIT_DECL(BitwiseExpr)
+	VISIT_DECL(LogicalExpr)
+	VISIT_DECL(TernaryExpr)
+	VISIT_DECL(IndexAtom)
+	VISIT_DECL(SwizzleAtom)
+	VISIT_DECL(MemberAtom)
+	VISIT_DECL(CallAtom)
+	VISIT_DECL(LiteralAtom)
+	VISIT_DECL(NameAtom)
+
 private:
 	/* Error Functions */
 	NORETURN inline void ERROR(const antlr4::Token* tk, const string& msg) {

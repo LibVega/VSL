@@ -338,6 +338,11 @@ VISIT_FUNC(ShaderStageFunction)
 	// Push the global scope for the stage
 	scopes_.pushGlobalScope(stage);
 
+	// Visit the function statements
+	for (const auto stmt : ctx->statement()) {
+		visit(stmt);
+	}
+
 	// Pop the global scope
 	scopes_.popScope();
 

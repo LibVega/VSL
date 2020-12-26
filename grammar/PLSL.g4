@@ -12,6 +12,7 @@ options {
 }
 
 
+/////
 // Top-level file unit
 file
     : shaderTypeStatement topLevelStatement* EOF
@@ -59,7 +60,21 @@ shaderLocalStatement
 
 // Shader stage function statement
 shaderStageFunction
-    : '@' stage=IDENTIFIER '{' '}'
+    : '@' stage=IDENTIFIER '{' statement* '}'
+    ;
+
+
+/////
+// Statements
+statement
+    : variableDefinition ';'
+    | variableDeclaration ';'
+    | assignment ';'
+    ;
+
+// Variable definition (declaration with immediate assignment)
+variableDefinition
+    : decl=variableDeclaration '=' value=expression
     ;
 
 // Variable declaration, for globals, type fields, and function locals
@@ -70,4 +85,62 @@ variableDeclaration
 // A type name
 typeName
     : basetype=IDENTIFIER ('<' subtype=IDENTIFIER '>')?
+    ;
+
+// Variable assignment
+assignment
+    : lval=lvalue op=('='|'+='|'-='|'*='|'/='|'%='|'<<='|'>>='|'&='|'|='|'^=') value=expression
+    ;
+
+// Lvalue - anything that can occur as the destination of an assignment operation
+lvalue
+    : name=IDENTIFIER
+    | val=lvalue '[' index=expression ']'
+    | val=lvalue '.' SWIZZLE
+    | val=lvalue '.' IDENTIFIER
+    ;
+
+
+/////
+// Expressions
+expression
+    : atom  # AtomExpr
+    // Unary Operators
+    | val=lvalue op=('++'|'--')  # PostfixExpr
+    | op=('++'|'--') val=lvalue  # PrefixExpr
+    | op=('+'|'-') val=lvalue    # FactorExpr
+    | op=('!'|'~') val=lvalue    # NegateExpr
+    // Binary Operators
+    | left=expression op=('*'|'/'|'%') right=expression        # MulDivModExpr
+    | left=expression op=('+'|'-') right=expression            # AddSubExpr
+    | left=expression op=('<<'|'>>') right=expression          # ShiftExpr
+    | left=expression op=('<'|'>'|'<='|'>=') right=expression  # RelationalExpr
+    | left=expression op=('=='|'!=') right=expression          # EqualityExpr
+    | left=expression op=('&'|'|'|'^') right=expression        # BitwiseExpr
+    | left=expression op=('&&'|'||') right=expression          # LogicalExpr
+    // Ternary (Selector) Operator
+    | cond=expression '?' texpr=expression ':' fexpr=expression  # TernaryExpr
+    ;
+
+// Atom - smallest indivisible expression type
+atom
+    : '(' expression ')'             # GroupAtom
+    | atom '[' index=expression ']'  # IndexAtom
+    | atom '.' SWIZZLE               # SwizzleAtom
+    | atom '.' IDENTIFIER            # MemberAtom
+    | functionCall                   # CallAtom
+    | scalarLiteral                  # LiteralAtom
+    | IDENTIFIER                     # NameAtom
+    ;
+
+// Function or constructor call
+functionCall
+    : name=IDENTIFIER '(' args+=expression (',' args+=expression )* ')'
+    ;
+
+// Scalar literal (number or bool)
+scalarLiteral
+    : INTEGER_LITERAL
+    | FLOAT_LITERAL
+    | BOOLEAN_LITERAL
     ;

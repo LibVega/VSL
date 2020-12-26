@@ -15,7 +15,7 @@ before_install:
   - export CXX=g++-8
 
 script:
-  - g++ --version
+  - ${CXX} --version
   - chmod +x ./generate.sh
   - chmod +x ./grammar/generate.sh
   - chmod +x ./tools/premake5_l
