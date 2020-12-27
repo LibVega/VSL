@@ -339,9 +339,11 @@ VISIT_FUNC(ShaderStageFunction)
 	scopes_.pushGlobalScope(stage);
 
 	// Visit the function statements
+	currentStage_ = stage;
 	for (const auto stmt : ctx->statement()) {
 		visit(stmt);
 	}
+	currentStage_ = ShaderStages::None;
 
 	// Pop the global scope
 	scopes_.popScope();

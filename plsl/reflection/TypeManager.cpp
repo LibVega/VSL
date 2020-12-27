@@ -110,6 +110,18 @@ const ShaderType* TypeManager::getOrAddType(const string& typeName)
 }
 
 // ====================================================================================================================
+const ShaderType* TypeManager::getNumericType(ShaderBaseType type, uint32 dim0, uint32 dim1) const
+{
+	for (const auto& pair : BuiltinTypes_) {
+		if ((pair.second.baseType == type) && (pair.second.numeric.dims[0] == dim0) &&
+				(pair.second.numeric.dims[1] == dim1)) {
+			return &(pair.second);
+		}
+	}
+	return nullptr;
+}
+
+// ====================================================================================================================
 const std::unordered_map<string, ShaderType> TypeManager::BuiltinTypes_ {
 	{ "void", { } },
 	// Boolean

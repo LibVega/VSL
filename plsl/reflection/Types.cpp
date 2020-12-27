@@ -68,6 +68,20 @@ bool ShaderType::hasMember(const string& memberName) const
 }
 
 // ====================================================================================================================
+const StructMember* ShaderType::getMember(const string& memberName) const
+{
+	if (baseType != ShaderBaseType::Struct) {
+		return nullptr;
+	}
+
+	const auto it =
+		std::find_if(userStruct.members.begin(), userStruct.members.end(), [&memberName](const StructMember& mem) {
+			return mem.name == memberName;
+		});
+	return (it != userStruct.members.end()) ? &(*it) : nullptr;
+}
+
+// ====================================================================================================================
 uint32 ShaderType::getBindingCount() const
 {
 	if (!isNumeric()) {

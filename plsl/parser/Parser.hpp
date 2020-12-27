@@ -111,6 +111,7 @@ public:
 	static Literal ParseLiteral(const string& txt);
 	static Literal ParseLiteral(Parser* parser, const antlr4::Token* token);
 	Variable parseVariableDeclaration(const grammar::PLSL::VariableDeclarationContext* ctx, bool global);
+	void validateSwizzle(uint32 compCount, antlr4::tree::TerminalNode* swizzle) const;
 
 	/* File-Level Rules */
 	VISIT_DECL(File)
@@ -127,6 +128,7 @@ public:
 	VISIT_DECL(VariableDefinition)
 	VISIT_DECL(VariableDeclaration)
 	VISIT_DECL(Assignment)
+	VISIT_DECL(Lvalue)
 
 	/* Expressions */
 	VISIT_DECL(PostfixExpr)
@@ -150,14 +152,14 @@ public:
 
 private:
 	/* Error Functions */
-	NORETURN inline void ERROR(const antlr4::Token* tk, const string& msg) {
+	NORETURN inline void ERROR(const antlr4::Token* tk, const string& msg) const {
 		throw ParserError(msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()));
 	}
-	NORETURN inline void ERROR(antlr4::RuleContext* ctx, const string& msg) {
+	NORETURN inline void ERROR(antlr4::RuleContext* ctx, const string& msg) const {
 		const auto tk = tokens_->get(ctx->getSourceInterval().a);
 		throw ParserError(msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()));
 	}
-	NORETURN inline void ERROR(antlr4::tree::TerminalNode* node, const string& msg) {
+	NORETURN inline void ERROR(antlr4::tree::TerminalNode* node, const string& msg) const {
 		const auto tk = tokens_->get(node->getSourceInterval().a);
 		throw ParserError(msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()));
 	}
@@ -169,6 +171,7 @@ private:
 	ShaderInfo shaderInfo_;
 	TypeManager types_;
 	ScopeManager scopes_;
+	ShaderStages currentStage_;
 
 	PLSL_NO_COPY(Parser)
 	PLSL_NO_MOVE(Parser)

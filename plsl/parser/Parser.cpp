@@ -24,6 +24,7 @@ Parser::Parser()
 	, shaderInfo_{ }
 	, types_{ }
 	, scopes_{ }
+	, currentStage_{ }
 {
 	
 }
@@ -217,6 +218,28 @@ Variable Parser::parseVariableDeclaration(const grammar::PLSL::VariableDeclarati
 
 	// Return
 	return { VariableType::Unknown, ctx->name->getText(), vType, uint8(arrSize) };
+}
+
+// ====================================================================================================================
+void Parser::validateSwizzle(uint32 compCount, antlr4::tree::TerminalNode* swizzle) const
+{
+	if (swizzle->getText().length() > 4) {
+		ERROR(swizzle, "Swizzles have a max length of 4");
+	}
+
+	for (const auto ch : swizzle->getText()) {
+		uint32 idx = UINT32_MAX;
+		switch (ch)
+		{
+		case 'x': case 'r': case 's': idx = 1; break;
+		case 'y': case 'g': case 't': idx = 2; break;
+		case 'z': case 'b': case 'p': idx = 3; break;
+		case 'w': case 'a': case 'q': idx = 4; break;
+		}
+		if (idx > compCount) {
+			ERROR(swizzle, mkstr("Invalid swizzle character '%c' for vector size", ch));
+		}
+	}
 }
 
 } // namespace plsl

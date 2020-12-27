@@ -14,6 +14,50 @@ namespace plsl
 {
 
 // ====================================================================================================================
+// ====================================================================================================================
+bool Variable::canRead(ShaderStages stage) const
+{
+	switch (type)
+	{
+	case VariableType::Unknown: return false;
+	case VariableType::Input: return true;
+	case VariableType::Output: return false;
+	case VariableType::Binding: return true;
+	case VariableType::Builtin: return (extra.builtin.access == READONLY) || (extra.builtin.access == READWRITE);
+	case VariableType::Constant: return true;
+	case VariableType::Local: return (extra.local.cStage == stage);
+	case VariableType::Parameter: return true;
+	case VariableType::Private: return true;
+	default: return false;
+	}
+}
+
+// ====================================================================================================================
+bool Variable::canWrite(ShaderStages stage) const
+{
+	switch (type)
+	{
+	case VariableType::Unknown: return false;
+	case VariableType::Input: return false;
+	case VariableType::Output: return true;
+	case VariableType::Binding: {
+		return
+			(dataType->baseType == ShaderBaseType::Image) ||
+			(dataType->baseType == ShaderBaseType::RWBuffer) ||
+			(dataType->baseType == ShaderBaseType::RWTexels);
+	} break;
+	case VariableType::Builtin: return (extra.builtin.access == WRITEONLY) || (extra.builtin.access == READWRITE);
+	case VariableType::Constant: return false;
+	case VariableType::Local: return (extra.local.pStage == stage);
+	case VariableType::Parameter: return false;
+	case VariableType::Private: return true;
+	default: return false;
+	}
+}
+
+
+// ====================================================================================================================
+// ====================================================================================================================
 Scope::Scope()
 	: variables_{ }
 {
@@ -118,6 +162,30 @@ bool ScopeManager::hasName(const string& name) const
 		}
 	}
 	return false;
+}
+
+// ====================================================================================================================
+const Variable* ScopeManager::getVariable(const string& name) const
+{
+	for (size_t i = 0; i < scopes_.size(); ++i) {
+		const auto& vars = scopes_[i]->variables();
+		const auto it = std::find_if(vars.begin(), vars.end(), [&name](const Variable& var) {
+			return var.name == name;
+		});
+		if (it != vars.end()) {
+			return &(*it);
+		}
+	}
+	return nullptr;
+}
+
+// ====================================================================================================================
+void ScopeManager::addVariable(const Variable& var)
+{
+	if (scopes_.size() == 0) {
+		throw std::runtime_error("COMPILER BUG - Invalid scope stack with variable");
+	}
+	scopes_.rbegin()->get()->variables().push_back(var);
 }
 
 // ====================================================================================================================

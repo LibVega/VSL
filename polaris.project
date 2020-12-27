@@ -37,7 +37,7 @@ workspace "Polaris"
         staticruntime "off"
         defines { "_CRT_SECURE_NO_WARNINGS" }
     filter { "toolset:gcc or clang" }
-        buildoptions { "-fpermissive", "-fvisibility=hidden", "-fPIC" }
+        buildoptions { "-fpermissive", "-fvisibility=hidden" }
     filter {}
 
     -- Shared Defines

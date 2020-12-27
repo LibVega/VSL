@@ -28,6 +28,7 @@ public:
 	const ShaderType* addType(const string& name, const ShaderType& type);
 	const ShaderType* getType(const string& typeName) const;
 	const ShaderType* getOrAddType(const string& typeName);
+	const ShaderType* getNumericType(ShaderBaseType type, uint32 dim0, uint32 dim1) const;
 
 	/* Type Map Access */
 	inline const std::unordered_map<string, ShaderType>& addedTypes() const { return addedTypes_; }

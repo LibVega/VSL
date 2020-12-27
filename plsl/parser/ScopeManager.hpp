@@ -44,6 +44,9 @@ public:
 		: type{ type }, name{ name }, dataType{ dataType }, arraySize{ arrSize }, extra{}
 	{ }
 
+	bool canRead(ShaderStages stage) const;
+	bool canWrite(ShaderStages stage) const;
+
 	inline static Variable Builtin(const string& name, const ShaderType* dataType, ShaderStages stage, Access access) {
 		Variable var{ VariableType::Builtin, name, dataType, 1 };
 		var.extra.builtin.stage = stage;
@@ -133,6 +136,8 @@ public:
 	void pushScope(); // Push a new scope to the stack, must already have an active scope stack
 	void popScope();
 	bool hasName(const string& name) const; // If the name exists in the current scope stack
+	const Variable* getVariable(const string& name) const;
+	void addVariable(const Variable& var);
 
 private:
 	static void PopulateBuiltins(ShaderStages stage, std::vector<Variable>& vars);

@@ -123,6 +123,7 @@ public:
 	bool hasSubtype() const; // Checks if the base type supports (requires) subtypes
 	bool isComplete() const; // Checks if types with subtypes are fully specified
 	bool hasMember(const string& memberName) const; // For struct types, check if it has a member
+	const StructMember* getMember(const string& memberName) const;
 	uint32 getBindingCount() const; // For numeric types, gets the number of binding slots the type takes up for inputs
 
 public:
