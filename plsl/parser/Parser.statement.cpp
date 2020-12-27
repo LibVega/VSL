@@ -116,7 +116,7 @@ VISIT_FUNC(Lvalue)
 			// TODO: Visit the expression
 			string index{ "TODO" };
 
-			// A few different types can be used as arrays
+			// A few different types can be used as arrays (TODO: Add image/texel stores)
 			string refName{};
 			const ShaderType* refType{};
 			if (var->dataType->isBuffer()) { // Would only be RWBuffer at this point

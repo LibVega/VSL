@@ -143,6 +143,7 @@ public:
 	VISIT_DECL(BitwiseExpr)
 	VISIT_DECL(LogicalExpr)
 	VISIT_DECL(TernaryExpr)
+	VISIT_DECL(GroupAtom)
 	VISIT_DECL(IndexAtom)
 	VISIT_DECL(SwizzleAtom)
 	VISIT_DECL(MemberAtom)

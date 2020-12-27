@@ -102,7 +102,7 @@ OP_SUB      : '-' ;
 
 // Whitespace and comments (ignore to hidden channel)
 WS
-    : [ \t\r\n\u000C]+ -> skip
+    : [ \t\r\n\u000C]+ -> channel(HIDDEN)
     ;
 COMMENT
     : '/*' .*? '*/' -> channel(HIDDEN)
