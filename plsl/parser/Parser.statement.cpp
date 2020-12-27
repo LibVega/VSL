@@ -110,41 +110,70 @@ VISIT_FUNC(Lvalue)
 	else {
 		// Get the lvalue
 		const std::shared_ptr<Variable> var{ visit(ctx->val).as<Variable*>() };
+		if (var->name.find("imageStore") != string::npos) {
+			ERROR(ctx->val, "Image or RWTexel stores must be top-level lvalue");
+		}
 		
 		// Switch based on the lvalue type
 		if (ctx->index) {
-			// TODO: Visit the expression
-			string index{ "TODO" };
+			// Visit the index expression
+			const auto index = visit(ctx->index).as<std::shared_ptr<Expr>>();
+			if (!index->type()->isNumeric() || (index->type()->numeric.dims[1] != 1) || (index->arraySize() != 1)) {
+				ERROR(ctx->index, "Indexer argument must by a non-array numeric scalar or vector");
+			}
+			if (index->type()->baseType == ShaderBaseType::Float) {
+				ERROR(ctx->index, "Indexer argument must be an integer type");
+			}
 
-			// A few different types can be used as arrays (TODO: Add image/texel stores)
-			string refName{};
+			// A few different types can be used as arrays
+			string refStr{};
 			const ShaderType* refType{};
-			if (var->dataType->isBuffer()) { // Would only be RWBuffer at this point
-				refName = mkstr("%s._data_", var->name.c_str());
+			if (var->dataType->baseType == ShaderBaseType::Image) {
+				const auto dimcount = GetImageDimsComponentCount(var->dataType->image.dims);
+				if (dimcount != index->type()->numeric.dims[0]) {
+					ERROR(ctx->index, mkstr("Image type expects indexer with %u components", dimcount));
+				}
+				refStr = mkstr("imageStore(%s, %s, {})", var->name.c_str(), index->refString().c_str());
+				refType = 
+					types_.getNumericType(var->dataType->image.texel.type, var->dataType->image.texel.components, 1);
+			}
+			else if (var->dataType->baseType == ShaderBaseType::RWBuffer) {
+				if (index->type()->numeric.dims[0] != 1) {
+					ERROR(ctx->index, "RWBuffer expects a scalar integer indexer");
+				}
+				refStr = mkstr("(%s._data_[%s])", var->name.c_str(), ctx->index->getText().c_str());
 				refType = types_.getType(var->dataType->buffer.structName);
 			}
+			else if (var->dataType->baseType == ShaderBaseType::RWTexels) {
+				if (index->type()->numeric.dims[0] != 1) {
+					ERROR(ctx->index, "RWTexels expects a scalar integer indexer");
+				}
+				refStr = mkstr("imageStore(%s, %s, {})", var->name.c_str(), index->refString().c_str());
+				refType =
+					types_.getNumericType(var->dataType->image.texel.type, var->dataType->image.texel.components, 1);
+			}
 			else if (var->arraySize != 1) {
-				refName = var->name;
+				refStr = var->name;
 				refType = var->dataType;
 			}
 			else if (var->dataType->isNumeric()) {
 				if (var->dataType->numeric.dims[1] != 1) { // Matrix
-					refName = var->name;
+					refStr = var->name;
 					refType = types_.getNumericType(var->dataType->baseType, var->dataType->numeric.dims[0], 1);
 				}
 				else if (var->dataType->numeric.dims[0] != 1) { // Vector
-					refName = var->name;
+					refStr = var->name;
 					refType = types_.getNumericType(var->dataType->baseType, 1, 1);
 				}
 				else {
-					ERROR(ctx->index, "Cannot apply array index to scalar type");
+					ERROR(ctx->index, "Cannot apply indexer to scalar type");
 				}
 			}
 			else {
-				ERROR(ctx->index, "Type cannot receive an array index");
+				ERROR(ctx->index, "Type cannot receive an indexer");
 			}
 
-			return new Variable({}, mkstr("(%s[%s])", refName.c_str(), index.c_str()), refType, 1);
+			return new Variable({}, refStr, refType, 1);
 		}
 		else if (ctx->SWIZZLE()) {
 			// Validate data type

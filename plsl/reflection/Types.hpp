@@ -32,7 +32,7 @@ enum class ShaderBaseType : uint8
 	Uniform,       // Vk uniform buffer, glsl `uniform <name> { ... }`
 	ROBuffer,      // Vk readonly storage buffer, glsl `readonly buffer <name> { ... }`
 	RWBuffer,      // Vk read/write storage buffer, glsl `buffer <name> { ... }`
-	ROTexels,      // Vk uniform texel buffer, glsl `samplerBuffer`
+	ROTexels,      // Vk uniform texel buffer, glsl `textureBuffer`
 	RWTexels,      // Vk storage texel buffer, glsl `imageBuffer` w/ layout
 	Input,         // Vk input attachment, glsl `[ ui]subpassInput`
 	Struct,        // User-defined POD struct
@@ -49,10 +49,10 @@ enum class ImageDims : uint8
 	E1DArray,   // Array of 1D textures
 	E2DArray,   // Array of 2D textures
 	Cube,       // Single cubemap texture
-	CubeArray,  // Array of cubemap textures
-	Shadow,     // Sampler-specific type for shadows
 	Buffer,     // The dims specific to a ROTexels object
 }; // enum class ImageDims
+
+uint32 GetImageDimsComponentCount(ImageDims dims);
 
 
 // Contains information about a struct member (similar to ShaderType)

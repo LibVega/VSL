@@ -13,6 +13,24 @@ namespace plsl
 {
 
 // ====================================================================================================================
+// ====================================================================================================================
+uint32 GetImageDimsComponentCount(ImageDims dims)
+{
+	switch (dims)
+	{
+	case ImageDims::E1D: return 1;
+	case ImageDims::E2D: return 2;
+	case ImageDims::E3D: return 3;
+	case ImageDims::E1DArray: return 2;
+	case ImageDims::E2DArray: return 3;
+	case ImageDims::Cube: return 2;
+	case ImageDims::Buffer: return 1;
+	default: return 0;
+	}
+}
+
+// ====================================================================================================================
+// ====================================================================================================================
 bool ShaderType::hasSubtype() const
 {
 	return 

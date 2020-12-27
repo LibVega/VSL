@@ -124,13 +124,13 @@ expression
 
 // Atom - smallest indivisible expression type
 atom
-    : '(' expression ')'             # GroupAtom
-    | atom '[' index=expression ']'  # IndexAtom
-    | atom '.' SWIZZLE               # SwizzleAtom
-    | atom '.' IDENTIFIER            # MemberAtom
-    | functionCall                   # CallAtom
-    | scalarLiteral                  # LiteralAtom
-    | IDENTIFIER                     # NameAtom
+    : '(' expression ')'                                      # GroupAtom
+    | atom '[' index=expression (',' index2=expression)? ']'  # IndexAtom
+    | atom '.' SWIZZLE                                        # SwizzleAtom
+    | atom '.' IDENTIFIER                                     # MemberAtom
+    | functionCall                                            # CallAtom
+    | scalarLiteral                                           # LiteralAtom
+    | IDENTIFIER                                              # NameAtom
     ;
 
 // Function or constructor call

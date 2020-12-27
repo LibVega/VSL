@@ -96,43 +96,137 @@ VISIT_FUNC(GroupAtom)
 // ====================================================================================================================
 VISIT_FUNC(IndexAtom)
 {
-	// Visit the left atom and index
+	// Visit the left atom and indices
 	const auto left = VISIT_EXPR(ctx->atom());
 	const auto index = VISIT_EXPR(ctx->index);
+	const auto index2 = ctx->index2 ? VISIT_EXPR(ctx->index2) : nullptr;
 
-	// Validate the index
+	// Validate the index (not fully, since different types have different index type requirements)
+	const auto ltype = left->type();
 	const auto itype = index->type();
-	if ((itype->baseType != ShaderBaseType::UInteger) && (itype->baseType != ShaderBaseType::SInteger)) {
-		ERROR(ctx->index, "Array access indices must be integer types");
+	const auto i2type = index2 ? index2->type() : nullptr;
+	if (!itype->isNumeric()) {
+		ERROR(ctx->index, "Index operators must have a numeric type");
 	}
-	if ((index->arraySize() != 1) || (itype->numeric.dims[0] != 1) || (itype->numeric.dims[1] != 1)) {
-		ERROR(ctx->index, "Array access indices must be non-array scalar integers");
+	if (i2type && !i2type->isNumeric()) {
+		ERROR(ctx->index2, "Index operators must have a numeric type");
+	}
+	if ((index->arraySize() != 1) || (itype->numeric.dims[1] != 1)) {
+		ERROR(ctx->index, "Index operators must be a non-array scalar or vector type");
+	}
+	if (i2type && (ltype->baseType != ShaderBaseType::BoundSampler) && (ltype->baseType != ShaderBaseType::Texture)) {
+		ERROR(ctx->index2, "Type does not expect a second indexer");
+	}
+	if (i2type && ((index2->arraySize() != 1) || (i2type->numeric.dims[1] != 1) || (i2type->numeric.dims[0] != 1))) {
+		ERROR(ctx->index2, "Second index operators must be a non-array scalar type");
 	}
 
 	// Switch based on left hand type (TODO: Other texture and buffer types)
-	if ((left->type()->baseType == ShaderBaseType::ROBuffer) || (left->type()->baseType == ShaderBaseType::RWBuffer)) {
-		const auto structType = types_.getType(left->type()->buffer.structName);
+	if ((ltype->baseType == ShaderBaseType::ROBuffer) || (ltype->baseType == ShaderBaseType::RWBuffer)) {
+		const auto structType = types_.getType(ltype->buffer.structName);
 		return MAKE_EXPR(mkstr("(%s._data_[%s])", left->refString().c_str(), index->refString().c_str()), 
 			structType, 1);
 	}
-	else if (left->arraySize() != 1) {
-		return MAKE_EXPR(mkstr("%s[%s]", left->refString().c_str(), index->refString().c_str()), left->type(), 1);
+	else if (ltype->baseType == ShaderBaseType::Sampler) {
+		ERROR(ctx->atom(), "Unbound samplers cannot be indexed directly");
 	}
-	else if (left->type()->isNumeric()) {
-		if (left->type()->numeric.dims[1] != 1) { // Matrix
-			return MAKE_EXPR(mkstr("%s[%s]", left->refString().c_str(), index->refString().c_str()), 
-				types_.getNumericType(left->type()->baseType, left->type()->numeric.dims[0], 1), 1);
+	else if (ltype->baseType == ShaderBaseType::BoundSampler) { // `sampler*D` -> texture(...)
+		const auto dimcount = GetImageDimsComponentCount(ltype->image.dims);
+		if (itype->baseType != ShaderBaseType::Float) {
+			ERROR(ctx->index, "Sampler type expects floating point indexer");
 		}
-		else if (left->type()->numeric.dims[0] != 1) { // Vector
+		if (dimcount != itype->numeric.dims[0]) {
+			ERROR(ctx->index, mkstr("Sampler type expects indexer with %u components", dimcount));
+		}
+
+		if (ctx->index2) {
+			return MAKE_EXPR(
+				mkstr("texture(%s, %s, %s)", 
+					left->refString().c_str(), index->refString().c_str(), index2->refString().c_str()), 
+				types_.getType("float4"), 1);
+		}
+		else {
+			return MAKE_EXPR(mkstr("texture(%s, %s)", left->refString().c_str(), index->refString().c_str()),
+				types_.getType("float4"), 1);
+		}
+	}
+	else if (ltype->baseType == ShaderBaseType::Texture) { // `texture*D` -> texelFetch(...)
+		const auto dimcount = GetImageDimsComponentCount(ltype->image.dims);
+		if (itype->baseType != ShaderBaseType::SInteger && itype->baseType != ShaderBaseType::UInteger) {
+			ERROR(ctx->index, "Texture type expects integer indexer");
+		}
+		if (dimcount != itype->numeric.dims[0]) {
+			ERROR(ctx->index, mkstr("Texture type expects indexer with %u components", dimcount));
+		}
+		if (i2type && (i2type->baseType == ShaderBaseType::Float)) {
+			ERROR(ctx->index2, "Texture type expects integer for second indexer");
+		}
+
+		const string lod = index2 ? index2->refString() : "0";
+		return MAKE_EXPR(
+			mkstr("texelFetch(%s, %s, %s)", left->refString().c_str(), index->refString().c_str(), lod.c_str()),
+			types_.getNumericType(ltype->image.texel.type, 4, 1), 1);
+	}
+	else if (ltype->baseType == ShaderBaseType::Image) { // `image*D` -> imageLoad(...)
+		const auto dimcount = GetImageDimsComponentCount(ltype->image.dims);
+		if (itype->baseType != ShaderBaseType::SInteger && itype->baseType != ShaderBaseType::UInteger) {
+			ERROR(ctx->index, "Image type expects integer indexer");
+		}
+		if (dimcount != itype->numeric.dims[0]) {
+			ERROR(ctx->index, mkstr("Image type expects indexer with %u components", dimcount));
+		}
+
+		const auto swizzle =
+			(ltype->image.texel.components == 1) ? ".x" :
+			(ltype->image.texel.components == 2) ? ".xy" : "";
+		return MAKE_EXPR(
+			mkstr("(imageLoad(%s, %s)%s)", left->refString().c_str(), index->refString().c_str(), swizzle),
+			types_.getNumericType(ltype->image.texel.type, ltype->image.texel.components, 1), 1);
+	}
+	else if (ltype->baseType == ShaderBaseType::ROTexels) { // `*textureBuffer` -> `texelFetch(...)`
+		if (itype->baseType != ShaderBaseType::SInteger && itype->baseType != ShaderBaseType::UInteger) {
+			ERROR(ctx->index, "ROTexels type expects integer indexer");
+		}
+		if (itype->numeric.dims[0] != 1) {
+			ERROR(ctx->index, "ROTexels expects scalar indexer");
+		}
+
+		return MAKE_EXPR(mkstr("texelFetch(%s, %s)", left->refString().c_str(), index->refString().c_str()),
+			types_.getNumericType(ltype->image.texel.type, 4, 1), 1);
+	}
+	else if (ltype->baseType == ShaderBaseType::RWTexels) { // `imageBuffer` -> imageLoad(...)
+		if (itype->baseType != ShaderBaseType::SInteger && itype->baseType != ShaderBaseType::UInteger) {
+			ERROR(ctx->index, "RWTexels type expects integer indexer");
+		}
+		if (itype->numeric.dims[0] != 1) {
+			ERROR(ctx->index, "RWTexels expects scalar indexer");
+		}
+
+		const auto swizzle =
+			(ltype->image.texel.components == 1) ? ".x" :
+			(ltype->image.texel.components == 2) ? ".xy" : "";
+		return MAKE_EXPR(
+			mkstr("(imageLoad(%s, %s)%s)", left->refString().c_str(), index->refString().c_str(), swizzle),
+			types_.getNumericType(ltype->image.texel.type, ltype->image.texel.components, 1), 1);
+	}
+	else if (left->arraySize() != 1) {
+		return MAKE_EXPR(mkstr("%s[%s]", left->refString().c_str(), index->refString().c_str()), ltype, 1);
+	}
+	else if (ltype->isNumeric()) {
+		if (ltype->numeric.dims[1] != 1) { // Matrix
+			return MAKE_EXPR(mkstr("%s[%s]", left->refString().c_str(), index->refString().c_str()), 
+				types_.getNumericType(ltype->baseType, ltype->numeric.dims[0], 1), 1);
+		}
+		else if (ltype->numeric.dims[0] != 1) { // Vector
 			return MAKE_EXPR(mkstr("%s[%s]", left->refString().c_str(), index->refString().c_str()),
-				types_.getNumericType(left->type()->baseType, 1, 1), 1);
+				types_.getNumericType(ltype->baseType, 1, 1), 1);
 		}
 		else {
 			ERROR(ctx->index, "Scalar numeric types cannot have an array indexer applied");
 		}
 	}
-	else if (left->type()->baseType == ShaderBaseType::Boolean) {
-		if (left->type()->numeric.dims[0] != 1) {
+	else if (ltype->baseType == ShaderBaseType::Boolean) {
+		if (ltype->numeric.dims[0] != 1) {
 			return MAKE_EXPR(mkstr("%s[%s]", left->refString().c_str(), index->refString().c_str()),
 				types_.getType("bool"), 1);
 		}
@@ -247,14 +341,21 @@ VISIT_FUNC(NameAtom)
 
 	// Calculate the correct type
 	const ShaderType* type;
+	string refStr{};
 	if (var->dataType->baseType == ShaderBaseType::Uniform) {
 		type = types_.getType(var->dataType->buffer.structName);
+		refStr = var->name;
+	}
+	else if (var->dataType->baseType == ShaderBaseType::Input) {
+		type = types_.getNumericType(var->dataType->image.texel.type, 4, 1);
+		refStr = mkstr("subpassLoad(%s)", var->name.c_str());
 	}
 	else {
 		type = var->dataType;
+		refStr = var->name;
 	}
 
-	return MAKE_EXPR(var->name, type, var->arraySize);
+	return MAKE_EXPR(refStr, type, var->arraySize);
 }
 
 } // namespace plsl
