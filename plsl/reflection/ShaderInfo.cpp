@@ -108,10 +108,10 @@ const BindingVariable* ShaderInfo::getBinding(const string& name) const
 }
 
 // ====================================================================================================================
-const BindingVariable* ShaderInfo::getBinding(BindingGroup group, uint8 slotIndex) const
+const BindingVariable* ShaderInfo::getBinding(uint8 slotIndex) const
 {
-	const auto it = std::find_if(bindings_.begin(), bindings_.end(), [group, slotIndex](const BindingVariable& bind) {
-		return bind.group == group && bind.slotIndex == slotIndex;
+	const auto it = std::find_if(bindings_.begin(), bindings_.end(), [slotIndex](const BindingVariable& bind) {
+		return bind.slot == slotIndex;
 	});
 	return (it != bindings_.end()) ? &(*it) : nullptr;
 }

@@ -8,6 +8,7 @@
 #include "./Parser.hpp"
 
 #define STRMATCH(mstr) (msg.find(mstr)!=string::npos) 
+#define ISRULE(rule) (ruleIdx==grammar::PLSL::Rule##rule)
 
 
 namespace plsl
@@ -53,8 +54,8 @@ void ErrorListener::syntaxError(antlr4::Recognizer* recognizer, antlr4::Token* b
 	if (STRMATCH("expecting ';'")) {
 		errorMsg = "expected end of statement ';'";
 	}
-	else if (STRMATCH("expecting BINDING_SLOT")) {
-		errorMsg = "invalid binding slot name";
+	else if (ISRULE(ShaderBindingStatement) && STRMATCH("expecting INTEGER_LITERAL")) {
+		errorMsg = "invalid binding slot index";
 	}
 	else if (STRMATCH("IDENTIFIER} at ']'")) {
 		errorMsg = "missing array index or size specifier";

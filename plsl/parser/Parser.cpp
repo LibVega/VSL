@@ -165,14 +165,18 @@ Variable Parser::parseVariableDeclaration(const grammar::PLSL::VariableDeclarati
 	if ((global && scopes_.hasGlobalName(ctx->name->getText())) || scopes_.hasName(ctx->name->getText())) {
 		ERROR(ctx->name, mkstr("Duplicate variable name '%s'", ctx->name->getText().c_str()));
 	}
+	if (ctx->name->getText()[0] == '_' && *(ctx->name->getText().rbegin()) == '_') {
+		ERROR(ctx->name, "Names that start and end with '_' are reserved");
+	}
 
 	// Get type
-	const auto vType = types_.getOrAddType(ctx->type->getText());
+	const auto typeName = ctx->baseType->getText() + (ctx->subType ? '<' + ctx->subType->getText() + '>' : "");
+	const auto vType = types_.getOrAddType(typeName);
 	if (!vType) {
-		ERROR(ctx->type, mkstr("Unknown type: %s", types_.lastError().c_str()));
+		ERROR(ctx->baseType, mkstr("Unknown type: %s", types_.lastError().c_str()));
 	}
 	if (!vType->isComplete()) {
-		ERROR(ctx->type, mkstr("Incomplete type '%s' (missing subtype specification)", ctx->type->getText().c_str()));
+		ERROR(ctx->baseType, mkstr("Incomplete type '%s' (missing subtype specification)", typeName.c_str()));
 	}
 
 	// Get array size

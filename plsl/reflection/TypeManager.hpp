@@ -34,6 +34,9 @@ public:
 	inline const std::unordered_map<string, ShaderType>& addedTypes() const { return addedTypes_; }
 	inline static const std::unordered_map<string, ShaderType>& BuiltinTypes() { return BuiltinTypes_; }
 
+	/* Parsing */
+	static bool ParseTexelFormat(const string& format, ShaderType::ImageInfo::TexelInfo* info);
+
 private:
 	mutable string lastError_;
 	std::unordered_map<string, ShaderType> addedTypes_; // Added types, does not duplicate BuiltinTypes_ entries

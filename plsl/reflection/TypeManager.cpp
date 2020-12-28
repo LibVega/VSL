@@ -71,25 +71,18 @@ const ShaderType* TypeManager::getOrAddType(const string& typeName)
 		lastError_ = mkstr("cannot apply subtype to invalid base type '%s'", typeName.substr(0, stIndex).c_str());
 		return nullptr;
 	}
-	const auto subTypeName = typeName.substr(stIndex + 1, typeName.length() - stIndex - 2);
-	const auto subType = getType(subTypeName);
 	
 	// Subtype validation
-	if (!subType) {
-		lastError_ = mkstr("could not find subtype '%s'", subTypeName.c_str());
-		return nullptr;
-	}
+	const auto subTypeName = typeName.substr(stIndex + 1, typeName.length() - stIndex - 2);
+	ShaderType::ImageInfo::TexelInfo texelInfo{};
 	if ((baseType->baseType == ShaderBaseType::Image) || (baseType->baseType == ShaderBaseType::RWTexels)) {
-		if (!subType->isNumeric() || (subType->numeric.dims[1] != 1)) {
-			lastError_ = "texel-like subtype must be a numeric scalar or vector";
-			return nullptr;
-		}
-		if (subType->numeric.dims[0] == 3) {
-			lastError_ = "texel-like subtype cannot be a three-component vector";
+		if (!ParseTexelFormat(subTypeName, &texelInfo)) {
+			lastError_ = mkstr("invalid texel format name '%s'", subTypeName.c_str());
 			return nullptr;
 		}
 	}
 	else { // Buffer types
+		const auto subType = getType(subTypeName);
 		if (!subType->isStruct()) {
 			lastError_ = "buffer subtype must be a user-defined struct";
 			return nullptr;
@@ -99,9 +92,7 @@ const ShaderType* TypeManager::getOrAddType(const string& typeName)
 	// Create the new type
 	ShaderType newType = *baseType;
 	if ((baseType->baseType == ShaderBaseType::Image) || (baseType->baseType == ShaderBaseType::RWTexels)) {
-		newType.image.texel.type = subType->baseType;
-		newType.image.texel.size = subType->numeric.size;
-		newType.image.texel.components = subType->numeric.dims[0];
+		newType.image.texel = texelInfo;
 	}
 	else {
 		newType.buffer.structName = subTypeName;
@@ -119,6 +110,32 @@ const ShaderType* TypeManager::getNumericType(ShaderBaseType type, uint32 dim0, 
 		}
 	}
 	return nullptr;
+}
+
+// ====================================================================================================================
+bool TypeManager::ParseTexelFormat(const string& format, ShaderType::ImageInfo::TexelInfo* info)
+{
+	static const std::unordered_map<string, ShaderType::ImageInfo::TexelInfo> TEXELS {
+		{ "float4",  { ShaderBaseType::Float, 4, 4 } },
+		{ "float2",  { ShaderBaseType::Float, 4, 2 } },
+		{ "float",   { ShaderBaseType::Float, 4, 1 } },
+		{ "int4",    { ShaderBaseType::Signed, 4, 4 } },
+		{ "int2",    { ShaderBaseType::Signed, 4, 2 } },
+		{ "int",     { ShaderBaseType::Signed, 4, 1 } },
+		{ "uint4",   { ShaderBaseType::Unsigned, 4, 4 } },
+		{ "uint2",   { ShaderBaseType::Unsigned, 4, 2 } },
+		{ "uint",    { ShaderBaseType::Unsigned, 4, 1 } },
+		{ "unorm4",  { ShaderBaseType::Float, 1, 4 } },
+		{ "unorm2",  { ShaderBaseType::Float, 1, 2 } },
+		{ "unorm",   { ShaderBaseType::Float, 1, 1 } }
+	};
+
+	const auto it = TEXELS.find(format);
+	if (it != TEXELS.end()) {
+		*info = it->second;
+		return true;
+	}
+	return false;
 }
 
 // ====================================================================================================================
@@ -143,31 +160,24 @@ const std::unordered_map<string, ShaderType> TypeManager::BuiltinTypes_ {
 	{ "float2x4", { ShaderBaseType::Float, 4, 4, 2 } }, { "float4x2", { ShaderBaseType::Float, 4, 2, 4 } },
 	{ "float3x4", { ShaderBaseType::Float, 4, 4, 3 } }, { "float4x3", { ShaderBaseType::Float, 4, 3, 4 } },
 	// Bound Sampler
-	{ "Sampler1D",        { ShaderBaseType::Sampler, ImageDims::E1D } },
-	{ "Sampler2D",        { ShaderBaseType::Sampler, ImageDims::E2D } },
-	{ "Sampler3D",        { ShaderBaseType::Sampler, ImageDims::E3D } },
-	{ "Sampler1DArray",   { ShaderBaseType::Sampler, ImageDims::E1DArray } },
-	{ "Sampler2DArray",   { ShaderBaseType::Sampler, ImageDims::E2DArray } },
-	{ "SamplerCube",      { ShaderBaseType::Sampler, ImageDims::Cube } },
-	// ROTexture
-	/*{ "Texture1D",         { ShaderBaseType::ROTexture, ImageDims::E1D, ShaderBaseType::Float, 4 } },
-	{ "Texture2D",         { ShaderBaseType::ROTexture, ImageDims::E2D, ShaderBaseType::Float, 4 } },
-	{ "Texture3D",         { ShaderBaseType::ROTexture, ImageDims::E3D, ShaderBaseType::Float, 4 } },
-	{ "Texture1DArray",    { ShaderBaseType::ROTexture, ImageDims::E1DArray, ShaderBaseType::Float, 4 } },
-	{ "Texture2DArray",    { ShaderBaseType::ROTexture, ImageDims::E2DArray, ShaderBaseType::Float, 4 } },
-	{ "TextureCube",       { ShaderBaseType::ROTexture, ImageDims::Cube, ShaderBaseType::Float, 4 } },
-	{ "ITexture1D",        { ShaderBaseType::ROTexture, ImageDims::E1D, ShaderBaseType::Signed, 4 } },
-	{ "ITexture2D",        { ShaderBaseType::ROTexture, ImageDims::E2D, ShaderBaseType::Signed, 4 } },
-	{ "ITexture3D",        { ShaderBaseType::ROTexture, ImageDims::E3D, ShaderBaseType::Signed, 4 } },
-	{ "ITexture1DArray",   { ShaderBaseType::ROTexture, ImageDims::E1DArray, ShaderBaseType::Signed, 4 } },
-	{ "ITexture2DArray",   { ShaderBaseType::ROTexture, ImageDims::E2DArray, ShaderBaseType::Signed, 4 } },
-	{ "ITextureCube",      { ShaderBaseType::ROTexture, ImageDims::Cube, ShaderBaseType::Signed, 4 } },
-	{ "UTexture1D",        { ShaderBaseType::ROTexture, ImageDims::E1D, ShaderBaseType::Unsigned, 4 } },
-	{ "UTexture2D",        { ShaderBaseType::ROTexture, ImageDims::E2D, ShaderBaseType::Unsigned, 4 } },
-	{ "UTexture3D",        { ShaderBaseType::ROTexture, ImageDims::E3D, ShaderBaseType::Unsigned, 4 } },
-	{ "UTexture1DArray",   { ShaderBaseType::ROTexture, ImageDims::E1DArray, ShaderBaseType::Unsigned, 4 } },
-	{ "UTexture2DArray",   { ShaderBaseType::ROTexture, ImageDims::E2DArray, ShaderBaseType::Unsigned, 4 } },
-	{ "UTextureCube",      { ShaderBaseType::ROTexture, ImageDims::Cube, ShaderBaseType::Unsigned, 4 } },*/
+	{ "Sampler1D",        { ShaderBaseType::Sampler, ImageDims::E1D, ShaderBaseType::Float, 4 } },
+	{ "Sampler2D",        { ShaderBaseType::Sampler, ImageDims::E2D, ShaderBaseType::Float, 4 } },
+	{ "Sampler3D",        { ShaderBaseType::Sampler, ImageDims::E3D, ShaderBaseType::Float, 4 } },
+	{ "Sampler1DArray",   { ShaderBaseType::Sampler, ImageDims::E1DArray, ShaderBaseType::Float, 4 } },
+	{ "Sampler2DArray",   { ShaderBaseType::Sampler, ImageDims::E2DArray, ShaderBaseType::Float, 4 } },
+	{ "SamplerCube",      { ShaderBaseType::Sampler, ImageDims::Cube, ShaderBaseType::Float, 4 } },
+	{ "ISampler1D",       { ShaderBaseType::Sampler, ImageDims::E1D, ShaderBaseType::Signed, 4 } },
+	{ "ISampler2D",       { ShaderBaseType::Sampler, ImageDims::E2D, ShaderBaseType::Signed, 4 } },
+	{ "ISampler3D",       { ShaderBaseType::Sampler, ImageDims::E3D, ShaderBaseType::Signed, 4 } },
+	{ "ISampler1DArray",  { ShaderBaseType::Sampler, ImageDims::E1DArray, ShaderBaseType::Signed, 4 } },
+	{ "ISampler2DArray",  { ShaderBaseType::Sampler, ImageDims::E2DArray, ShaderBaseType::Signed, 4 } },
+	{ "ISamplerCube",     { ShaderBaseType::Sampler, ImageDims::Cube, ShaderBaseType::Signed, 4 } },
+	{ "USampler1D",       { ShaderBaseType::Sampler, ImageDims::E1D, ShaderBaseType::Unsigned, 4 } },
+	{ "USampler2D",       { ShaderBaseType::Sampler, ImageDims::E2D, ShaderBaseType::Unsigned, 4 } },
+	{ "USampler3D",       { ShaderBaseType::Sampler, ImageDims::E3D, ShaderBaseType::Unsigned, 4 } },
+	{ "USampler1DArray",  { ShaderBaseType::Sampler, ImageDims::E1DArray, ShaderBaseType::Unsigned, 4 } },
+	{ "USampler2DArray",  { ShaderBaseType::Sampler, ImageDims::E2DArray, ShaderBaseType::Unsigned, 4 } },
+	{ "USamplerCube",     { ShaderBaseType::Sampler, ImageDims::Cube, ShaderBaseType::Unsigned, 4 } },
 	// Image (Incomplete Descriptions)
 	{ "Image1D",        { ShaderBaseType::Image, ImageDims::E1D } },
 	{ "Image2D",        { ShaderBaseType::Image, ImageDims::E2D } },

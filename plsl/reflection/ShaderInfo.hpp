@@ -39,29 +39,19 @@ public:
 }; // struct InterfaceVariable
 
 
-// The different binding groups
-enum class BindingGroup : uint8
-{
-	Texture,  // Texture types (Sampler, Sampler, ROTexture, Image, ROTexels, RWTexels)
-	Buffer,   // Buffer types (Uniform, ROBuffer, RWBuffer)
-	Input     // Input attachments (Input)
-}; // enum class BindingGroup
-
-
 // Describes a binding variable
 struct BindingVariable final
 {
 public:
-	BindingVariable() : name{}, type{}, group{}, slotIndex{} { }
-	BindingVariable(const string& name, const ShaderType& type, BindingGroup group, uint8 slot)
-		: name{ name }, type{ type }, group{ group }, slotIndex{ slot }
+	BindingVariable() : name{}, type{}, slot{} { }
+	BindingVariable(const string& name, const ShaderType& type, uint8 slot)
+		: name{ name }, type{ type }, slot{ slot }
 	{ }
 
 public:
 	string name;
 	ShaderType type;
-	BindingGroup group;
-	uint8 slotIndex;
+	uint8 slot;
 }; // struct BindingVariable
 
 
@@ -117,7 +107,7 @@ public:
 
 	// Bindings
 	const BindingVariable* getBinding(const string& name) const;
-	const BindingVariable* getBinding(BindingGroup group, uint8 slotIndex) const;
+	const BindingVariable* getBinding(uint8 slotIndex) const;
 
 private:
 	ShaderStages stages_;

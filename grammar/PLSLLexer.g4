@@ -40,11 +40,6 @@ fragment DecimalLiteral : DigitChar+ ;
 fragment HexLiteral     : '0x' HexDigitChar+ ;
 fragment ExponentPart   : [eE] ('-'|'+')? DigitChar+ ;
 
-// Binding slot names
-BINDING_SLOT
-    : [bti] DigitChar DigitChar?
-    ;
-
 // Identifiers, valid for variable and type names, and built-ins
 IDENTIFIER
     : (AlphaChar|'_') (AlnumChar|'_')*

@@ -50,7 +50,7 @@ shaderConstantStatement
 
 // Shader binding declaration
 shaderBindingStatement
-    : 'bind' '(' slot=BINDING_SLOT ')' variableDeclaration ';'
+    : 'bind' '(' slot=INTEGER_LITERAL ')' variableDeclaration ';'
     ;
 
 // Shader local statement
@@ -72,19 +72,14 @@ statement
     | assignment ';'
     ;
 
+// Variable declaration, for globals, type fields, and function locals
+variableDeclaration
+    : baseType=IDENTIFIER ('<' subType=IDENTIFIER '>')? name=IDENTIFIER ('[' arraySize=(INTEGER_LITERAL|IDENTIFIER) ']')?
+    ;
+
 // Variable definition (declaration with immediate assignment)
 variableDefinition
     : decl=variableDeclaration '=' value=expression
-    ;
-
-// Variable declaration, for globals, type fields, and function locals
-variableDeclaration
-    : type=typeName name=IDENTIFIER ('[' arraySize=(INTEGER_LITERAL|IDENTIFIER) ']')?
-    ;
-
-// A type name
-typeName
-    : basetype=IDENTIFIER ('<' subtype=IDENTIFIER '>')?
     ;
 
 // Variable assignment

@@ -71,7 +71,7 @@ VISIT_FUNC(ShaderUserTypeDefinition)
 
 		// Check field type
 		if (!fVar.dataType->isNumeric()) {
-			ERROR(field->type, mkstr("Invalid field '%s' - type fields must be numeric", fVar.name.c_str()));
+			ERROR(field->baseType, mkstr("Invalid field '%s' - type fields must be numeric", fVar.name.c_str()));
 		}
 
 		// Add the member
@@ -131,7 +131,7 @@ VISIT_FUNC(ShaderInputOutputStatement)
 	const auto varDecl = ctx->variableDeclaration();
 	auto ioVar = parseVariableDeclaration(varDecl, true);
 	if (!ioVar.dataType->isNumeric()) {
-		ERROR(varDecl->type, "Shader interface variables must be a numeric type");
+		ERROR(varDecl->baseType, "Shader interface variables must be a numeric type");
 	}
 
 	// Input/Output specific type validation
@@ -148,7 +148,7 @@ VISIT_FUNC(ShaderInputOutputStatement)
 			ERROR(varDecl->arraySize, "Fragment outputs cannot be arrays");
 		}
 		if (ioVar.dataType->numeric.dims[1] != 1) {
-			ERROR(varDecl->type, "Fragment outputs cannot be matrix types");
+			ERROR(varDecl->baseType, "Fragment outputs cannot be matrix types");
 		}
 	}
 
@@ -177,13 +177,13 @@ VISIT_FUNC(ShaderConstantStatement)
 		ERROR(varDecl->arraySize, "Constants cannot be arrays");
 	}
 	if (!cVar.dataType->isNumeric()) {
-		ERROR(varDecl->type, "Constants must be a numeric type");
+		ERROR(varDecl->baseType, "Constants must be a numeric type");
 	}
 	if ((cVar.dataType->numeric.dims[0] != 1) || (cVar.dataType->numeric.dims[1] != 1)) {
-		ERROR(varDecl->type, "Constants must be a scalar numeric type");
+		ERROR(varDecl->baseType, "Constants must be a scalar numeric type");
 	}
 	if (cVar.dataType->numeric.size != 4) {
-		ERROR(varDecl->type, "Constants must be a 4-byte scalar type");
+		ERROR(varDecl->baseType, "Constants must be a 4-byte scalar type");
 	}
 
 	// Parse the literal
@@ -239,27 +239,27 @@ VISIT_FUNC(ShaderBindingStatement)
 	const auto varDecl = ctx->variableDeclaration();
 	const auto bVar = parseVariableDeclaration(varDecl, true);
 	if (bVar.dataType->isNumeric() || (bVar.dataType->baseType == ShaderBaseType::Boolean)) {
-		ERROR(varDecl->type, "Bindings cannot be numeric or boolean types");
+		ERROR(varDecl->baseType, "Bindings cannot be numeric or boolean types");
 	}
 	if (bVar.dataType->isStruct()) {
-		ERROR(varDecl->type, "Bindings that are structs must be a buffer type");
+		ERROR(varDecl->baseType, "Bindings that are structs must be a buffer type");
 	}
 
 	// Get the binding slot
-	const auto slot = ctx->slot->getText();
-	const BindingGroup bGroup =
-		(slot[0] == 't') ? BindingGroup::Texture :
-		(slot[0] == 'b') ? BindingGroup::Buffer : BindingGroup::Input;
-	const auto slotIndex = uint8(std::strtoul(slot.substr(1).data(), nullptr, 10));
-	if (slotIndex > PLSL_MAX_BINDING_INDEX) {
+	const auto slotLiteral = ParseLiteral(this, ctx->slot);
+	if (slotLiteral.isNegative() || (slotLiteral.type == Literal::Float)) {
+		ERROR(ctx->slot, "Binding slot index must be non-negative integer");
+	}
+	if (slotLiteral.u > PLSL_MAX_BINDING_INDEX) {
 		ERROR(ctx->slot, mkstr("Slot index out of range (max %u)", PLSL_MAX_BINDING_INDEX));
 	}
+	const auto slotIndex = uint8(slotLiteral.u);
 
 	// Check and add to the shader info
-	if (shaderInfo_.getBinding(bGroup, slotIndex)) {
+	if (shaderInfo_.getBinding(slotIndex)) {
 		ERROR(ctx->slot, mkstr("Binding slot %s is already filled by another binding", ctx->slot->getText().c_str()));
 	}
-	shaderInfo_.bindings().push_back({ bVar.name, *bVar.dataType, bGroup, slotIndex });
+	shaderInfo_.bindings().push_back({ bVar.name, *bVar.dataType, slotIndex });
 
 	// Add to the scope manager
 	Variable scopeVar = bVar;
@@ -280,11 +280,11 @@ VISIT_FUNC(ShaderLocalStatement)
 		ERROR(varDecl->arraySize, "Shader locals cannot be arrays");
 	}
 	if (!lVar.dataType->isNumeric() || (lVar.dataType->numeric.dims[1] != 1)) {
-		ERROR(varDecl->type, "Shader locals must be numeric scalars or vectors");
+		ERROR(varDecl->baseType, "Shader locals must be numeric scalars or vectors");
 	}
 	if ((lVar.dataType->baseType == ShaderBaseType::Unsigned) || (lVar.dataType->baseType == ShaderBaseType::Signed)) {
 		if (!isFlat) {
-			ERROR(varDecl->type, "Shader locals with integer types must be declared as 'flat'");
+			ERROR(varDecl->baseType, "Shader locals with integer types must be declared as 'flat'");
 		}
 	}
 

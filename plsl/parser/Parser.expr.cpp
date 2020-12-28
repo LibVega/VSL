@@ -121,13 +121,13 @@ VISIT_FUNC(IndexAtom)
 		ERROR(ctx->index2, "Second index operators must be a non-array scalar type");
 	}
 
-	// Switch based on left hand type (TODO: Other texture and buffer types)
+	// Switch based on left hand type
 	if ((ltype->baseType == ShaderBaseType::ROBuffer) || (ltype->baseType == ShaderBaseType::RWBuffer)) {
 		const auto structType = types_.getType(ltype->buffer.structName);
 		return MAKE_EXPR(mkstr("(%s._data_[%s])", left->refString().c_str(), index->refString().c_str()), 
 			structType, 1);
 	}
-	else if (ltype->baseType == ShaderBaseType::Sampler) { // `sampler*D` -> texture(...)
+	else if (ltype->baseType == ShaderBaseType::Sampler) { // `*sampler*D` -> texture(...)
 		const auto dimcount = GetImageDimsComponentCount(ltype->image.dims);
 		if (itype->baseType != ShaderBaseType::Float) {
 			ERROR(ctx->index, "Sampler type expects floating point indexer");
@@ -140,17 +140,17 @@ VISIT_FUNC(IndexAtom)
 			return MAKE_EXPR(
 				mkstr("texture(%s, %s, %s)", 
 					left->refString().c_str(), index->refString().c_str(), index2->refString().c_str()), 
-				types_.getType("float4"), 1);
+				types_.getNumericType(ltype->image.texel.type, 4, 1), 1);
 		}
 		else {
 			return MAKE_EXPR(mkstr("texture(%s, %s)", left->refString().c_str(), index->refString().c_str()),
-				types_.getType("float4"), 1);
+				types_.getNumericType(ltype->image.texel.type, 4, 1), 1);
 		}
 	}
-	else if (ltype->baseType == ShaderBaseType::Image) { // `image*D` -> imageLoad(...)
+	else if (ltype->baseType == ShaderBaseType::Image) { // `*image*D` -> imageLoad(...)
 		const auto dimcount = GetImageDimsComponentCount(ltype->image.dims);
-		if (itype->baseType != ShaderBaseType::Signed && itype->baseType != ShaderBaseType::Unsigned) {
-			ERROR(ctx->index, "Image type expects integer indexer");
+		if (itype->baseType != ShaderBaseType::Signed) {
+			ERROR(ctx->index, "Image type expects signed integer indexer");
 		}
 		if (dimcount != itype->numeric.dims[0]) {
 			ERROR(ctx->index, mkstr("Image type expects indexer with %u components", dimcount));
@@ -164,8 +164,8 @@ VISIT_FUNC(IndexAtom)
 			types_.getNumericType(ltype->image.texel.type, ltype->image.texel.components, 1), 1);
 	}
 	else if (ltype->baseType == ShaderBaseType::ROTexels) { // `*textureBuffer` -> `texelFetch(...)`
-		if (itype->baseType != ShaderBaseType::Signed && itype->baseType != ShaderBaseType::Unsigned) {
-			ERROR(ctx->index, "ROTexels type expects integer indexer");
+		if (itype->baseType != ShaderBaseType::Signed) {
+			ERROR(ctx->index, "ROTexels type expects signed integer indexer");
 		}
 		if (itype->numeric.dims[0] != 1) {
 			ERROR(ctx->index, "ROTexels expects scalar indexer");
@@ -175,8 +175,8 @@ VISIT_FUNC(IndexAtom)
 			types_.getNumericType(ltype->image.texel.type, 4, 1), 1);
 	}
 	else if (ltype->baseType == ShaderBaseType::RWTexels) { // `imageBuffer` -> imageLoad(...)
-		if (itype->baseType != ShaderBaseType::Signed && itype->baseType != ShaderBaseType::Unsigned) {
-			ERROR(ctx->index, "RWTexels type expects integer indexer");
+		if (itype->baseType != ShaderBaseType::Signed) {
+			ERROR(ctx->index, "RWTexels type expects signed integer indexer");
 		}
 		if (itype->numeric.dims[0] != 1) {
 			ERROR(ctx->index, "RWTexels expects scalar indexer");
@@ -269,7 +269,27 @@ VISIT_FUNC(MemberAtom)
 // ====================================================================================================================
 VISIT_FUNC(CallAtom)
 {
-	return nullptr;
+	// TODO: Actually check function calls, right now just do a passthrough
+
+	// Visit the argument expressions
+	std::vector<ExprPtr> arguments{};
+	for (const auto arg : ctx->functionCall()->args) {
+		const auto argexpr = VISIT_EXPR(arg);
+		arguments.push_back(argexpr);
+	}
+
+	// Create the call string
+	std::stringstream ss{ std::stringstream::out };
+	ss << ctx->functionCall()->name->getText() << "( ";
+	for (const auto& arg : arguments) {
+		ss << arg->refString() << ", ";
+	}
+	ss.seekp(-2, std::stringstream::cur);
+	ss << " )"; // Overwrite last ", " with function close " )"
+
+	// TODO: Emit call as temporary assignment
+
+	return MAKE_EXPR(ss.str(), types_.getType("float"), 1);
 }
 
 // ====================================================================================================================

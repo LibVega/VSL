@@ -40,7 +40,7 @@ VISIT_FUNC(VariableDefinition)
 		ERROR(varDecl->arraySize, "Function-local variables cannot be arrays");
 	}
 	if (!var.dataType->isNumeric() && (var.dataType->baseType != ShaderBaseType::Boolean)) {
-		ERROR(varDecl->type, "Function-local variable must be numeric or boolean types");
+		ERROR(varDecl->baseType, "Function-local variable must be numeric or boolean types");
 	}
 
 	// TODO: Visit and check expression
@@ -63,7 +63,7 @@ VISIT_FUNC(VariableDeclaration)
 		ERROR(ctx->arraySize, "Function-local variables cannot be arrays");
 	}
 	if (!var.dataType->isNumeric() && (var.dataType->baseType != ShaderBaseType::Boolean)) {
-		ERROR(ctx->type, "Function-local variables must be numeric or boolean type");
+		ERROR(ctx->baseType, "Function-local variables must be numeric or boolean type");
 	}
 
 	// Add variable
@@ -110,7 +110,7 @@ VISIT_FUNC(Lvalue)
 	else {
 		// Get the lvalue
 		const std::shared_ptr<Variable> var{ visit(ctx->val).as<Variable*>() };
-		if (var->name.find("imageStore") != string::npos) {
+		if (var->name.find("imageStore") == 0) {
 			ERROR(ctx->val, "Image or RWTexel stores must be top-level lvalue");
 		}
 		
