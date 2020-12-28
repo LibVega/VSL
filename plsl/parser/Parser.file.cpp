@@ -189,7 +189,7 @@ VISIT_FUNC(ShaderConstantStatement)
 	// Parse the literal
 	const auto valueLiteral = ParseLiteral(this, ctx->value);
 	Constant cnst;
-	if (cVar.dataType->baseType == ShaderBaseType::UInteger) {
+	if (cVar.dataType->baseType == ShaderBaseType::Unsigned) {
 		if (valueLiteral.type == Literal::Float) {
 			ERROR(ctx->value, "Cannot initialize integer constant with float literal");
 		}
@@ -201,7 +201,7 @@ VISIT_FUNC(ShaderConstantStatement)
 		}
 		cnst = { varDecl->name->getText(), uint32(valueLiteral.u) };
 	}
-	else if (cVar.dataType->baseType == ShaderBaseType::SInteger) {
+	else if (cVar.dataType->baseType == ShaderBaseType::Signed) {
 		if (valueLiteral.type == Literal::Float) {
 			ERROR(ctx->value, "Cannot initialize integer constant with float literal");
 		}
@@ -282,7 +282,7 @@ VISIT_FUNC(ShaderLocalStatement)
 	if (!lVar.dataType->isNumeric() || (lVar.dataType->numeric.dims[1] != 1)) {
 		ERROR(varDecl->type, "Shader locals must be numeric scalars or vectors");
 	}
-	if ((lVar.dataType->baseType == ShaderBaseType::UInteger) || (lVar.dataType->baseType == ShaderBaseType::SInteger)) {
+	if ((lVar.dataType->baseType == ShaderBaseType::Unsigned) || (lVar.dataType->baseType == ShaderBaseType::Signed)) {
 		if (!isFlat) {
 			ERROR(varDecl->type, "Shader locals with integer types must be declared as 'flat'");
 		}

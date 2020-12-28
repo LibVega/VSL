@@ -48,16 +48,14 @@ bool ShaderType::isComplete() const
 	case ShaderBaseType::Struct:
 		return true;
 	case ShaderBaseType::Boolean:
-	case ShaderBaseType::UInteger:
-	case ShaderBaseType::SInteger:
+	case ShaderBaseType::Unsigned:
+	case ShaderBaseType::Signed:
 	case ShaderBaseType::Float:
 		return (numeric.size != 0) && (numeric.dims[0] != 0) && (numeric.dims[1] != 0);
-	case ShaderBaseType::Sampler: 
 	case ShaderBaseType::ROTexels:
 		return true;
-	case ShaderBaseType::BoundSampler: 
+	case ShaderBaseType::Sampler: 
 		return (image.dims != ImageDims::None);
-	case ShaderBaseType::Texture:
 	case ShaderBaseType::Image:
 	case ShaderBaseType::Input:
 	case ShaderBaseType::RWTexels:

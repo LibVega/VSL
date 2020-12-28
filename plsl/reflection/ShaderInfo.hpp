@@ -42,7 +42,7 @@ public:
 // The different binding groups
 enum class BindingGroup : uint8
 {
-	Texture,  // Texture types (Sampler, BoundSampler, Texture, Image, ROTexels, RWTexels)
+	Texture,  // Texture types (Sampler, Sampler, ROTexture, Image, ROTexels, RWTexels)
 	Buffer,   // Buffer types (Uniform, ROBuffer, RWBuffer)
 	Input     // Input attachments (Input)
 }; // enum class BindingGroup

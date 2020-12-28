@@ -22,12 +22,10 @@ enum class ShaderBaseType : uint8
 {
 	Void,          // Special type for errors and function returns
 	Boolean,       // Boolean scalar/vector
-	SInteger,      // Signed integer scalar/vector
-	UInteger,      // Unsigned integer scalar/vector
+	Signed,        // Signed integer scalar/vector
+	Unsigned,      // Unsigned integer scalar/vector
 	Float,         // Floating point scalar/vector/matrix
-	Sampler,       // Vk sampler, glsl 'sampler'
-	BoundSampler,  // Vk combined image/sampler, glsl 'sampler*D'
-	Texture,       // Vk sampled image, glsl `[ ui]texture*D`
+	Sampler,       // Vk combined image/sampler, glsl 'sampler*D' (no separate image and sampler objects)
 	Image,         // Vk storage image, glsl `image*D` w/ layout
 	Uniform,       // Vk uniform buffer, glsl `uniform <name> { ... }`
 	ROBuffer,      // Vk readonly storage buffer, glsl `readonly buffer <name> { ... }`
@@ -39,7 +37,7 @@ enum class ShaderBaseType : uint8
 }; // enum class ShaderBaseType
 
 
-// The different dimensionalities that BoundSampler/Texture/Image can take on
+// The different dimensionalities that Sampler/ROTexture/Image can take on
 enum class ImageDims : uint8
 {
 	None,       // Un-dimensioned texture (error type)
@@ -102,13 +100,10 @@ public:
 	/* Base Type Checks */
 	inline bool isVoid() const { return (baseType == ShaderBaseType::Void); }
 	inline bool isNumeric() const {
-		return (baseType == ShaderBaseType::Float) || (baseType == ShaderBaseType::SInteger) ||
-			(baseType == ShaderBaseType::UInteger);
+		return (baseType == ShaderBaseType::Float) || (baseType == ShaderBaseType::Signed) ||
+			(baseType == ShaderBaseType::Unsigned);
 	}
-	inline bool isSampler() const {
-		return (baseType == ShaderBaseType::Sampler) || (baseType == ShaderBaseType::BoundSampler);
-	}
-	inline bool isTexture() const { return (baseType == ShaderBaseType::Texture); }
+	inline bool isSampler() const { return (baseType == ShaderBaseType::Sampler); }
 	inline bool isImage() const { return (baseType == ShaderBaseType::Image); }
 	inline bool isBuffer() const {
 		return (baseType == ShaderBaseType::Uniform) || (baseType == ShaderBaseType::ROBuffer) ||

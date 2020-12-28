@@ -114,7 +114,7 @@ VISIT_FUNC(IndexAtom)
 	if ((index->arraySize() != 1) || (itype->numeric.dims[1] != 1)) {
 		ERROR(ctx->index, "Index operators must be a non-array scalar or vector type");
 	}
-	if (i2type && (ltype->baseType != ShaderBaseType::BoundSampler) && (ltype->baseType != ShaderBaseType::Texture)) {
+	if (i2type && (ltype->baseType != ShaderBaseType::Sampler)) {
 		ERROR(ctx->index2, "Type does not expect a second indexer");
 	}
 	if (i2type && ((index2->arraySize() != 1) || (i2type->numeric.dims[1] != 1) || (i2type->numeric.dims[0] != 1))) {
@@ -127,10 +127,7 @@ VISIT_FUNC(IndexAtom)
 		return MAKE_EXPR(mkstr("(%s._data_[%s])", left->refString().c_str(), index->refString().c_str()), 
 			structType, 1);
 	}
-	else if (ltype->baseType == ShaderBaseType::Sampler) {
-		ERROR(ctx->atom(), "Unbound samplers cannot be indexed directly");
-	}
-	else if (ltype->baseType == ShaderBaseType::BoundSampler) { // `sampler*D` -> texture(...)
+	else if (ltype->baseType == ShaderBaseType::Sampler) { // `sampler*D` -> texture(...)
 		const auto dimcount = GetImageDimsComponentCount(ltype->image.dims);
 		if (itype->baseType != ShaderBaseType::Float) {
 			ERROR(ctx->index, "Sampler type expects floating point indexer");
@@ -150,26 +147,9 @@ VISIT_FUNC(IndexAtom)
 				types_.getType("float4"), 1);
 		}
 	}
-	else if (ltype->baseType == ShaderBaseType::Texture) { // `texture*D` -> texelFetch(...)
-		const auto dimcount = GetImageDimsComponentCount(ltype->image.dims);
-		if (itype->baseType != ShaderBaseType::SInteger && itype->baseType != ShaderBaseType::UInteger) {
-			ERROR(ctx->index, "Texture type expects integer indexer");
-		}
-		if (dimcount != itype->numeric.dims[0]) {
-			ERROR(ctx->index, mkstr("Texture type expects indexer with %u components", dimcount));
-		}
-		if (i2type && (i2type->baseType == ShaderBaseType::Float)) {
-			ERROR(ctx->index2, "Texture type expects integer for second indexer");
-		}
-
-		const string lod = index2 ? index2->refString() : "0";
-		return MAKE_EXPR(
-			mkstr("texelFetch(%s, %s, %s)", left->refString().c_str(), index->refString().c_str(), lod.c_str()),
-			types_.getNumericType(ltype->image.texel.type, 4, 1), 1);
-	}
 	else if (ltype->baseType == ShaderBaseType::Image) { // `image*D` -> imageLoad(...)
 		const auto dimcount = GetImageDimsComponentCount(ltype->image.dims);
-		if (itype->baseType != ShaderBaseType::SInteger && itype->baseType != ShaderBaseType::UInteger) {
+		if (itype->baseType != ShaderBaseType::Signed && itype->baseType != ShaderBaseType::Unsigned) {
 			ERROR(ctx->index, "Image type expects integer indexer");
 		}
 		if (dimcount != itype->numeric.dims[0]) {
@@ -184,7 +164,7 @@ VISIT_FUNC(IndexAtom)
 			types_.getNumericType(ltype->image.texel.type, ltype->image.texel.components, 1), 1);
 	}
 	else if (ltype->baseType == ShaderBaseType::ROTexels) { // `*textureBuffer` -> `texelFetch(...)`
-		if (itype->baseType != ShaderBaseType::SInteger && itype->baseType != ShaderBaseType::UInteger) {
+		if (itype->baseType != ShaderBaseType::Signed && itype->baseType != ShaderBaseType::Unsigned) {
 			ERROR(ctx->index, "ROTexels type expects integer indexer");
 		}
 		if (itype->numeric.dims[0] != 1) {
@@ -195,7 +175,7 @@ VISIT_FUNC(IndexAtom)
 			types_.getNumericType(ltype->image.texel.type, 4, 1), 1);
 	}
 	else if (ltype->baseType == ShaderBaseType::RWTexels) { // `imageBuffer` -> imageLoad(...)
-		if (itype->baseType != ShaderBaseType::SInteger && itype->baseType != ShaderBaseType::UInteger) {
+		if (itype->baseType != ShaderBaseType::Signed && itype->baseType != ShaderBaseType::Unsigned) {
 			ERROR(ctx->index, "RWTexels type expects integer indexer");
 		}
 		if (itype->numeric.dims[0] != 1) {
