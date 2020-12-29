@@ -355,6 +355,7 @@ VISIT_FUNC(ShaderStageFunction)
 
 	// Push the global scope for the stage
 	scopes_.pushGlobalScope(stage);
+	generator_.setCurrentStage(stage);
 
 	// Visit the function statements
 	currentStage_ = stage;
@@ -364,6 +365,7 @@ VISIT_FUNC(ShaderStageFunction)
 	currentStage_ = ShaderStages::None;
 
 	// Pop the global scope
+	generator_.setCurrentStage(ShaderStages::None);
 	scopes_.popScope();
 
 	// Update shader info

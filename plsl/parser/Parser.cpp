@@ -25,6 +25,7 @@ Parser::Parser()
 	, types_{ }
 	, scopes_{ }
 	, currentStage_{ }
+	, generator_{ &lastError_ }
 {
 	
 }
@@ -70,8 +71,14 @@ bool Parser::parse(const string& source, const CompilerOptions& options) noexcep
 		SET_ERROR(Parse, mkstr("Unhanded error - %s", ex.what()));
 		goto end_parse;
 	}
-	result = true;
 
+	// Save the generated output
+	generator_.saveOutput();
+	if (hasError()) {
+		goto end_parse;
+	}
+
+	result = true;
 end_parse:
 	// Cleanup and return
 	tokens_ = nullptr;

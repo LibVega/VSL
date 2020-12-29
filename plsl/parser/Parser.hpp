@@ -13,6 +13,7 @@
 #include "../reflection/ShaderInfo.hpp"
 #include "../reflection/TypeManager.hpp"
 #include "./ScopeManager.hpp"
+#include "../glsl/Generator.hpp"
 
 #include <antlr4/CommonTokenStream.h>
 #include <antlr4/RuleContext.h>
@@ -173,6 +174,7 @@ private:
 	TypeManager types_;
 	ScopeManager scopes_;
 	ShaderStages currentStage_;
+	Generator generator_;
 
 	PLSL_NO_COPY(Parser)
 	PLSL_NO_MOVE(Parser)

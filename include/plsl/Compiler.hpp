@@ -21,6 +21,7 @@ enum class CompilerStage
 {
 	FileRead,
 	Parse,
+	Generate,
 	Compile,
 	FileWrite
 }; // enum class CompilerStage

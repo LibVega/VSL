@@ -31,6 +31,9 @@ int main(int argc, char* argv[])
 				}
 				std::cerr << " - " << err.message() << std::endl;
 			}
+			else if (err.stage() == CompilerStage::Generate) {
+				std::cerr << "Failed to generate - " << err.message() << std::endl;
+			}
 			else {
 				std::cerr << "Failed to compile - " << err.message() << std::endl;
 			}
