@@ -46,6 +46,15 @@ workspace "Polaris"
         defines { "UTF_CPP_CPLUSPLUS=_MSVC_LANG" }
     filter {}
 
+    -- Library Paths
+    filter { "system:windows" }
+        libdirs { "./lib/vs2019" }
+    filter { "system:linux" }
+        libdirs { "./lib/linux" }
+    filter { "system:macos" }
+        libdirs { "./lib/macos" }
+    filter {}
+
 
 -- Compiler Library
 project "plsl"
@@ -60,15 +69,6 @@ project "plsl"
         defines { "PLSL_STATIC" }
     filter { "configurations:Shared" }
         kind "SharedLib"
-    filter {}
-
-    -- Library Paths
-    filter { "system:windows" }
-        libdirs { "./lib/vs2019" }
-    filter { "system:linux" }
-        libdirs { "./lib/linux" }
-    filter { "system:macos" }
-        libdirs { "./lib/macos" }
     filter {}
 
     -- Linked Libraries
@@ -103,6 +103,12 @@ project "plslc"
     filter { "configurations:Static" }
         defines { "PLSL_STATIC" }
     filter {}
+
+    -- Linked Libraries
+    filter { "toolset:gcc" }
+        links { "stdc++fs" }
+    filter {}
+    links { "antlr4-runtime" }
 
     -- Project files
     files {
