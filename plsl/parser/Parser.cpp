@@ -25,7 +25,7 @@ Parser::Parser()
 	, types_{ }
 	, scopes_{ }
 	, currentStage_{ }
-	, generator_{ &lastError_ }
+	, generator_{ }
 {
 	
 }
@@ -67,9 +67,21 @@ bool Parser::parse(const string& source, const CompilerOptions& options) noexcep
 		lastError_ = pe.error();
 		goto end_parse;
 	}
+	catch (const GeneratorError& ge) {
+		lastError_ = ge.error();
+		goto end_parse;
+	}
 	catch (const std::exception& ex) {
 		SET_ERROR(Parse, mkstr("Unhanded error - %s", ex.what()));
 		goto end_parse;
+	}
+
+	// Check required stages
+	if ((shaderInfo_.stages() & ShaderStages::Vertex) != ShaderStages::Vertex) {
+		SET_ERROR(Parse, "Shader is missing required vertex stage");
+	}
+	if ((shaderInfo_.stages() & ShaderStages::Fragment) != ShaderStages::Fragment) {
+		SET_ERROR(Parse, "Shader is missing required fragment stage");
 	}
 
 	// Save the generated output

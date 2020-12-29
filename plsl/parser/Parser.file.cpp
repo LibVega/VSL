@@ -57,6 +57,9 @@ VISIT_FUNC(ShaderUserTypeDefinition)
 	if (types_.getType(typeName)) {
 		ERROR(ctx->name, mkstr("Duplicate type name '%s'", typeName.c_str()));
 	}
+	if (typeName[0] == '_' && *(typeName.rbegin()) == '_') {
+		ERROR(ctx->name, "Type names that start and end with '_' are reserved");
+	}
 
 	// Parse the field declarations
 	ShaderType structType{ typeName, {} };
@@ -84,6 +87,9 @@ VISIT_FUNC(ShaderUserTypeDefinition)
 		mem.arraySize = fVar.arraySize;
 		structType.userStruct.members.push_back(mem);
 	}
+
+	// Emit the struct
+	generator_.emitStruct(typeName, structType.userStruct.members);
 
 	// Add the struct type to the type manager
 	types_.addType(structType.userStruct.structName, structType);
@@ -157,10 +163,12 @@ VISIT_FUNC(ShaderInputOutputStatement)
 	if (isIn) {
 		shaderInfo_.inputs().push_back(iovar);
 		ioVar.type = VariableType::Input;
+		generator_.emitVertexInput(iovar);
 	}
 	else {
 		shaderInfo_.outputs().push_back(iovar);
 		ioVar.type = VariableType::Output;
+		generator_.emitFragmentOutput(iovar);
 	}
 	scopes_.addGlobal(ioVar);
 
@@ -270,13 +278,17 @@ VISIT_FUNC(ShaderBindingStatement)
 		if (shaderInfo_.subpassInputs().size() != slotIndex) {
 			ERROR(ctx->slot, "Subpass input indices must be contiguous");
 		}
-		shaderInfo_.subpassInputs().push_back({ bVar.name, bVar.dataType->image.texel.type, slotIndex });
+		const SubpassInput si{ bVar.name, bVar.dataType->image.texel.type, slotIndex };
+		generator_.emitSubpassInput(si);
+		shaderInfo_.subpassInputs().push_back(si);
 	}
 	else {
 		if (shaderInfo_.getBinding(slotIndex)) {
 			ERROR(ctx->slot, mkstr("Binding slot %s is already filled by another binding", ctx->slot->getText().c_str()));
 		}
-		shaderInfo_.bindings().push_back({ bVar.name, *bVar.dataType, slotIndex });
+		const BindingVariable bvar{ bVar.name, *bVar.dataType, slotIndex };
+		generator_.emitBinding(bvar);
+		shaderInfo_.bindings().push_back(bvar);
 	}
 
 	// Add to the scope manager
