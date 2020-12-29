@@ -59,20 +59,38 @@ private:
 }; // class CompilerError
 
 
+// Used to provide the sizes of the binding tables in generated shaders
+struct BindingTableSizes final
+{
+public:
+	uint16 samplers;
+	uint16 images;
+	uint16 buffers;
+	uint16 roTexels;
+	uint16 rwTexels;
+}; // struct BindingTableSizes
+
+
 // The set of options that can configure a compilation process
 class CompilerOptions final
 {
 public:
 	CompilerOptions() 
 		: outputFile_{ "" }
+		, tableSizes_{ DefaultTableSizes }
 	{ }
 	~CompilerOptions() { }
 
 	/* Field Access */
 	DECL_GETTER_SETTER(const string&, outputFile)
+	DECL_GETTER_SETTER(const BindingTableSizes&, tableSizes)
+
+public:
+	static constexpr BindingTableSizes DefaultTableSizes{ 4096, 512, 512, 512, 512 };
 
 private:
 	string outputFile_;
+	BindingTableSizes tableSizes_;
 }; // class CompilerOptions
 
 

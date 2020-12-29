@@ -10,6 +10,7 @@
 #include <plsl/Compiler.hpp>
 #include "../reflection/Types.hpp"
 #include "../reflection/ShaderInfo.hpp"
+#include "../parser/ScopeManager.hpp"
 
 #include <unordered_map>
 #include <sstream>
@@ -37,7 +38,7 @@ private:
 class Generator final
 {
 public:
-	Generator();
+	Generator(const BindingTableSizes& tableSizes);
 	~Generator();
 
 	/* Stages/Functions */
@@ -52,9 +53,10 @@ public:
 	void emitFragmentOutput(const InterfaceVariable& var);
 	void emitBinding(const BindingVariable& bind);
 	void emitSubpassInput(const SubpassInput& input);
+	void emitLocal(const Variable& var);
 
 	/* Utilities */
-	void getSetAndBinding(const BindingVariable& bind, uint32* set, uint32* binding);
+	void getSetAndBinding(const BindingVariable& bind, uint32* set, uint32* binding, uint16* tableSize);
 
 private:
 	NORETURN inline void ERROR(const string& msg) const {
@@ -62,11 +64,13 @@ private:
 	}
 
 private:
+	BindingTableSizes tableSizes_;
 	std::stringstream globals_; // The global generation (version, extensions, uniforms, push constants)
 	std::unordered_map<string, std::stringstream> stageHeaders_;   // The stage-specific headers (in/out)
 	std::unordered_map<string, std::stringstream> stageFunctions_; // The function bodies for stage entry points
 	std::stringstream* currentFunc_; // The current function being generated
 	uint32 uniqueId_; // A unqiue id that can be incremented during generation to give a unique number
+	uint32 localId_; // The monotonically increasing index used to assign local variable locations
 	string indentString_; // The current indent level string for function generation
 
 	PLSL_NO_COPY(Generator)

@@ -98,10 +98,10 @@ class Parser final :
 	friend class ErrorListener;
 
 public:
-	Parser();
+	Parser(const CompilerOptions* options);
 	virtual ~Parser();
 
-	bool parse(const string& source, const CompilerOptions& options) noexcept;
+	bool parse(const string& source) noexcept;
 
 	inline const CompilerError& lastError() const { return lastError_; }
 	inline bool hasError() const { return !lastError_.message().empty(); }
@@ -167,6 +167,7 @@ private:
 	}
 
 private:
+	const CompilerOptions* options_;
 	ErrorListener errorListener_;
 	CompilerError lastError_;
 	antlr4::CommonTokenStream* tokens_;

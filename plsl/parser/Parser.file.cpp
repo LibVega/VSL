@@ -323,21 +323,20 @@ VISIT_FUNC(ShaderLocalStatement)
 	if (pStage == ShaderStages::None) {
 		ERROR(ctx->pstage, mkstr("Unknown shader stage '%s'", ctx->pstage->getText().c_str()));
 	}
-	const auto cStage = StrToShaderStage(ctx->cstage->getText());
-	if (cStage == ShaderStages::None) {
-		ERROR(ctx->cstage, mkstr("Unknown shader stage '%s'", ctx->cstage->getText().c_str()));
-	}
-	if (pStage >= cStage) {
-		ERROR(ctx->cstage, "Local consumer stage must come after the producer stage");
+	if ((pStage == ShaderStages::TessControl) || (pStage == ShaderStages::TessEval) || 
+			(pStage == ShaderStages::Geometry)) {
+		ERROR(ctx->pstage, "Unsupported producer shader stage in local");
 	}
 
 	// Add variable
 	Variable newVar = lVar;
 	newVar.type = VariableType::Local;
 	newVar.extra.local.pStage = pStage;
-	newVar.extra.local.cStage = cStage;
 	newVar.extra.local.flat = isFlat;
 	scopes_.addGlobal(newVar);
+
+	// Emit
+	generator_.emitLocal(newVar);
 
 	return nullptr;
 }

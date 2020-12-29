@@ -17,12 +17,14 @@ namespace plsl
 {
 
 // ====================================================================================================================
-Generator::Generator()
-	: globals_{ }
+Generator::Generator(const BindingTableSizes& tableSizes)
+	: tableSizes_{ tableSizes }
+	, globals_{ }
 	, stageHeaders_{ }
 	, stageFunctions_{ }
 	, currentFunc_{ nullptr }
 	, uniqueId_{ 0 }
+	, localId_{ 0 }
 	, indentString_{ "" }
 {
 	// Setup initial globals content
@@ -119,7 +121,8 @@ void Generator::emitBinding(const BindingVariable& bind)
 
 	// Get the set and binding
 	uint32 set, binding;
-	getSetAndBinding(bind, &set, &binding);
+	uint16 tableSize;
+	getSetAndBinding(bind, &set, &binding, &tableSize);
 
 	// Emit
 	globals_ << "layout(set = " << set << ", binding = " << binding << (!extra.empty() ? (", " + extra) : "") << ") ";
@@ -135,11 +138,11 @@ void Generator::emitBinding(const BindingVariable& bind)
 		}
 		else {
 			globals_ << '\t' << bind.type.buffer.structName << "_t _data_[];\n";
-			globals_ << "} " << bind.name << '[' << "TODO" << ']';
+			globals_ << "} " << bind.name << '[' << tableSize << ']';
 		}
 	}
 	else {
-		globals_ << "uniform " << btype << ' ' << bind.name << '[' << "TODO" << ']';
+		globals_ << "uniform " << btype << ' ' << bind.name << '[' << tableSize << ']';
 	}
 	globals_ << ";\n" << std::endl;
 }
@@ -163,7 +166,35 @@ void Generator::emitSubpassInput(const SubpassInput& input)
 }
 
 // ====================================================================================================================
-void Generator::getSetAndBinding(const BindingVariable& bind, uint32* set, uint32* binding)
+void Generator::emitLocal(const Variable& var)
+{
+	// Check headers
+	if (stageHeaders_.find("vert") == stageHeaders_.end()) {
+		stageHeaders_["vert"] = {};
+	}
+	auto& vert = stageHeaders_["vert"];
+	if (stageHeaders_.find("frag") == stageHeaders_.end()) {
+		stageHeaders_["frag"] = {};
+	}
+	auto& frag = stageHeaders_["frag"];
+
+	// Get the type
+	const auto type = NameHelper::GetNumericTypeName(var.dataType->baseType, var.dataType->numeric.size, 
+		var.dataType->numeric.dims[0], 1);
+	const string flat = var.extra.local.flat ? "flat " : "";
+	
+	// Emit
+	vert
+		<< "layout(location = " << localId_ << ") " << flat << "out " << type << " _vert_" << var.name << ";\n" 
+		<< std::endl;
+	frag
+		<< "layout(location = " << localId_ << ") " << flat << "in " << type << " _frag_" << var.name << ";\n"
+		<< std::endl;
+	localId_ += 1;
+}
+
+// ====================================================================================================================
+void Generator::getSetAndBinding(const BindingVariable& bind, uint32* set, uint32* binding, uint16* tableSize)
 {
 	// Easy
 	*set = (bind.type.baseType == ShaderBaseType::Uniform) ? 1 : 0;
@@ -171,14 +202,14 @@ void Generator::getSetAndBinding(const BindingVariable& bind, uint32* set, uint3
 	// Less easy
 	switch (bind.type.baseType)
 	{
-	case ShaderBaseType::Sampler: *binding = 0; break;
-	case ShaderBaseType::Image: *binding = 1; break;
+	case ShaderBaseType::Sampler: *binding = 0; *tableSize = tableSizes_.samplers; break;
+	case ShaderBaseType::Image: *binding = 1; *tableSize = tableSizes_.images; break;
 	case ShaderBaseType::RWBuffer:
-	case ShaderBaseType::ROBuffer: *binding = 2; break;
-	case ShaderBaseType::ROTexels: *binding = 3; break;
-	case ShaderBaseType::RWTexels: *binding = 4; break;
+	case ShaderBaseType::ROBuffer: *binding = 2; *tableSize = tableSizes_.buffers; break;
+	case ShaderBaseType::ROTexels: *binding = 3; *tableSize = tableSizes_.roTexels; break;
+	case ShaderBaseType::RWTexels: *binding = 4; *tableSize = tableSizes_.rwTexels; break;
 
-	case ShaderBaseType::Uniform: *binding = 0; break;
+	case ShaderBaseType::Uniform: *binding = 0; *tableSize = 1; break;
 
 	default: ERROR("Invalid type for set and binding indices");
 	}

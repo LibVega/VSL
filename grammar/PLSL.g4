@@ -55,7 +55,7 @@ shaderBindingStatement
 
 // Shader local statement
 shaderLocalStatement
-    : 'local' '(' pstage=IDENTIFIER ',' cstage=IDENTIFIER ')' 'flat'? variableDeclaration ';'
+    : 'local' '(' pstage=IDENTIFIER ')' 'flat'? variableDeclaration ';'
     ;
 
 // Shader stage function statement

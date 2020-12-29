@@ -25,7 +25,7 @@ bool Variable::canRead(ShaderStages stage) const
 	case VariableType::Binding: return true;
 	case VariableType::Builtin: return (extra.builtin.access == READONLY) || (extra.builtin.access == READWRITE);
 	case VariableType::Constant: return true;
-	case VariableType::Local: return (extra.local.cStage == stage);
+	case VariableType::Local: return ((uint32(extra.local.pStage) << 1) == uint32(stage));
 	case VariableType::Parameter: return true;
 	case VariableType::Private: return true;
 	default: return false;
@@ -127,7 +127,7 @@ void ScopeManager::pushGlobalScope(ShaderStages stage)
 			scope->variables().push_back(glob);
 		} break;
 		case VariableType::Local: {
-			if ((stage == glob.extra.local.pStage) || (stage == glob.extra.local.cStage)) {
+			if ((stage == glob.extra.local.pStage) || ((uint32(glob.extra.local.pStage) << 1) == uint32(stage))) {
 				scope->variables().push_back(glob);
 			}
 		} break;

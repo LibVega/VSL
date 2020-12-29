@@ -62,7 +62,6 @@ public:
 	union {
 		struct {
 			ShaderStages pStage;
-			ShaderStages cStage;
 			bool flat;
 		} local;
 		struct {

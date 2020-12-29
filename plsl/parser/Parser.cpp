@@ -17,15 +17,16 @@ namespace plsl
 {
 
 // ====================================================================================================================
-Parser::Parser()
-	: errorListener_{ this }
+Parser::Parser(const CompilerOptions* options)
+	: options_{ options }
+	, errorListener_{ this }
 	, lastError_{ }
 	, tokens_{ nullptr }
 	, shaderInfo_{ }
 	, types_{ }
 	, scopes_{ }
 	, currentStage_{ }
-	, generator_{ }
+	, generator_{ options->tableSizes() }
 {
 	
 }
@@ -37,7 +38,7 @@ Parser::~Parser()
 }
 
 // ====================================================================================================================
-bool Parser::parse(const string& source, const CompilerOptions& options) noexcept
+bool Parser::parse(const string& source) noexcept
 {
 	// Create the lexer object
 	antlr4::ANTLRInputStream inStream{ source };

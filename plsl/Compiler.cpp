@@ -67,8 +67,8 @@ bool Compiler::compileFile(const string& path, const CompilerOptions& options) n
 bool Compiler::compileSource(const string& source, const CompilerOptions& options) noexcept
 {
 	// Perform parsing
-	Parser parser{};
-	if (!parser.parse(source, options)) {
+	Parser parser{ &options };
+	if (!parser.parse(source)) {
 		lastError_ = parser.lastError();
 		return false;
 	}
