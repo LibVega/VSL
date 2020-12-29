@@ -18,7 +18,6 @@ before_install:
 
 script:
   - ${CXX} --version
-  - wget -O ./lib/linux/libantlr4-runtime.a https://github.com/VegaLib/Polaris/raw/master/lib/linux/libantlr4-runtime.a
   - chmod +x ./generate.sh
   - chmod +x ./grammar/generate.sh
   - chmod +x ./tools/premake5_l
