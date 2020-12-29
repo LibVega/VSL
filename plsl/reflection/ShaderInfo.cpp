@@ -51,6 +51,7 @@ ShaderInfo::ShaderInfo()
 	: stages_{ ShaderStages::None }
 	, inputs_{ }
 	, outputs_{ }
+	, subpassInputs_{ }
 	, bindings_{ }
 {
 
@@ -96,6 +97,24 @@ const InterfaceVariable* ShaderInfo::getOutput(uint32 location) const
 		return var.location == location;
 	});
 	return (it != outputs_.end()) ? &(*it) : nullptr;
+}
+
+// ====================================================================================================================
+const SubpassInput* ShaderInfo::getSubpassInput(const string& name) const
+{
+	const auto it = std::find_if(subpassInputs_.begin(), subpassInputs_.end(), [&name](const SubpassInput& si) {
+		return si.name == name;
+	});
+	return (it != subpassInputs_.end()) ? &(*it) : nullptr;
+}
+
+// ====================================================================================================================
+const SubpassInput* ShaderInfo::getSubpassInput(uint8 index) const
+{
+	const auto it = std::find_if(subpassInputs_.begin(), subpassInputs_.end(), [index](const SubpassInput& si) {
+		return si.index == index;
+	});
+	return (it != subpassInputs_.end()) ? &(*it) : nullptr;
 }
 
 // ====================================================================================================================

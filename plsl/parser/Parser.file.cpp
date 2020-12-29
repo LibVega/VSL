@@ -230,11 +230,6 @@ VISIT_FUNC(ShaderConstantStatement)
 // ====================================================================================================================
 VISIT_FUNC(ShaderBindingStatement)
 {
-	// Check for binding limit
-	if (shaderInfo_.bindings().size() == (PLSL_MAX_BINDING_INDEX + 1)) {
-		ERROR(ctx, mkstr("Cannot have more than %u bindings in a shader", PLSL_MAX_BINDING_INDEX + 1));
-	}
-
 	// Parse the variable declaration
 	const auto varDecl = ctx->variableDeclaration();
 	const auto bVar = parseVariableDeclaration(varDecl, true);
@@ -245,21 +240,44 @@ VISIT_FUNC(ShaderBindingStatement)
 		ERROR(varDecl->baseType, "Bindings that are structs must be a buffer type");
 	}
 
+	// Check for binding limit
+	if (bVar.dataType->baseType == ShaderBaseType::Input) {
+		if (shaderInfo_.subpassInputs().size() == PLSL_MAX_SUBPASS_INPUTS) {
+			ERROR(ctx, mkstr("Cannot have more than %u subpass inputs", PLSL_MAX_SUBPASS_INPUTS));
+		}
+	}
+	else if (shaderInfo_.bindings().size() == (PLSL_MAX_BINDING_INDEX + 1)) {
+		ERROR(ctx, mkstr("Cannot have more than %u bindings in a shader", PLSL_MAX_BINDING_INDEX + 1));
+	}
+
 	// Get the binding slot
 	const auto slotLiteral = ParseLiteral(this, ctx->slot);
 	if (slotLiteral.isNegative() || (slotLiteral.type == Literal::Float)) {
 		ERROR(ctx->slot, "Binding slot index must be non-negative integer");
 	}
-	if (slotLiteral.u > PLSL_MAX_BINDING_INDEX) {
+	if (bVar.dataType->baseType == ShaderBaseType::Input) {
+		if (slotLiteral.u >= PLSL_MAX_SUBPASS_INPUTS) {
+			ERROR(ctx->slot, mkstr("Subpass input index out of range (max %u)", PLSL_MAX_SUBPASS_INPUTS - 1));
+		}
+	}
+	else if (slotLiteral.u > PLSL_MAX_BINDING_INDEX) {
 		ERROR(ctx->slot, mkstr("Slot index out of range (max %u)", PLSL_MAX_BINDING_INDEX));
 	}
 	const auto slotIndex = uint8(slotLiteral.u);
 
 	// Check and add to the shader info
-	if (shaderInfo_.getBinding(slotIndex)) {
-		ERROR(ctx->slot, mkstr("Binding slot %s is already filled by another binding", ctx->slot->getText().c_str()));
+	if (bVar.dataType->baseType == ShaderBaseType::Input) {
+		if (shaderInfo_.subpassInputs().size() != slotIndex) {
+			ERROR(ctx->slot, "Subpass input indices must be contiguous");
+		}
+		shaderInfo_.subpassInputs().push_back({ bVar.name, bVar.dataType->image.texel.type, slotIndex });
 	}
-	shaderInfo_.bindings().push_back({ bVar.name, *bVar.dataType, slotIndex });
+	else {
+		if (shaderInfo_.getBinding(slotIndex)) {
+			ERROR(ctx->slot, mkstr("Binding slot %s is already filled by another binding", ctx->slot->getText().c_str()));
+		}
+		shaderInfo_.bindings().push_back({ bVar.name, *bVar.dataType, slotIndex });
+	}
 
 	// Add to the scope manager
 	Variable scopeVar = bVar;

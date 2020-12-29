@@ -15,6 +15,7 @@
 #define PLSL_MAX_OUTPUT_INDEX     (7u)   // Max binding index for fragment outputs
 #define PLSL_MAX_INPUT_ARRAY_SIZE (8u)   // Max array size for vertex inputs
 #define PLSL_MAX_BINDING_INDEX    (31u)  // Max binding index for bindings
+#define PLSL_MAX_SUBPASS_INPUTS   (4u)   // Max number of subpass inputs
 
 
 namespace plsl
@@ -53,6 +54,22 @@ public:
 	ShaderType type;
 	uint8 slot;
 }; // struct BindingVariable
+
+
+// Describes an input attachment
+struct SubpassInput final
+{
+public:
+	SubpassInput() : name{}, type{}, index{} { }
+	SubpassInput(const string& name, ShaderBaseType type, uint8 index)
+		: name{ name }, type{ type }, index{ index }
+	{ }
+
+public:
+	string name;
+	ShaderBaseType type;
+	uint8 index;
+}; // struct SubpassInput
 
 
 // The different shader stages as a bitmask
@@ -96,6 +113,8 @@ public:
 	inline std::vector<InterfaceVariable>& inputs() { return inputs_; }
 	inline const std::vector<InterfaceVariable>& outputs() const { return outputs_; }
 	inline std::vector<InterfaceVariable>& outputs() { return outputs_; }
+	inline const std::vector<SubpassInput>& subpassInputs() const { return subpassInputs_; }
+	inline std::vector<SubpassInput>& subpassInputs() { return subpassInputs_; }
 	inline const std::vector<BindingVariable>& bindings() const { return bindings_; }
 	inline std::vector<BindingVariable>& bindings() { return bindings_; }
 
@@ -106,6 +125,8 @@ public:
 	const InterfaceVariable* getOutput(uint32 location) const;
 
 	// Bindings
+	const SubpassInput* getSubpassInput(const string& name) const;
+	const SubpassInput* getSubpassInput(uint8 index) const;
 	const BindingVariable* getBinding(const string& name) const;
 	const BindingVariable* getBinding(uint8 slotIndex) const;
 
@@ -113,6 +134,7 @@ private:
 	ShaderStages stages_;
 	std::vector<InterfaceVariable> inputs_;
 	std::vector<InterfaceVariable> outputs_;
+	std::vector<SubpassInput> subpassInputs_;
 	std::vector<BindingVariable> bindings_;
 
 	PLSL_NO_COPY(ShaderInfo)
