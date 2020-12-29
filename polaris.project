@@ -37,7 +37,7 @@ workspace "Polaris"
         staticruntime "off"
         defines { "_CRT_SECURE_NO_WARNINGS" }
     filter { "toolset:gcc or clang" }
-        buildoptions { "-fpermissive", "-fvisibility=hidden" }
+        buildoptions { "-fpermissive", "-fvisibility=hidden", "-fPIC" }
     filter {}
 
     -- Shared Defines
@@ -69,6 +69,11 @@ project "plsl"
         libdirs { "./lib/linux" }
     filter { "system:macos" }
         libdirs { "./lib/macos" }
+    filter {}
+
+    -- Linked Libraries
+    filter { "toolset:gcc" }
+        links { "stdc++fs" }
     filter {}
     links { "antlr4-runtime" }
 
