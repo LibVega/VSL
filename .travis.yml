@@ -9,6 +9,8 @@ addons:
     packages:
       - gcc-8
       - g++-8
+git:
+  lfs_skip_smudge: true
 
 before_install:
   - export CC=gcc-8
@@ -16,6 +18,7 @@ before_install:
 
 script:
   - ${CXX} --version
+  - wget -O ./lib/linux/ https://github.com/VegaLib/Polaris/raw/master/lib/linux/libantlr4-runtime.a
   - chmod +x ./generate.sh
   - chmod +x ./grammar/generate.sh
   - chmod +x ./tools/premake5_l
