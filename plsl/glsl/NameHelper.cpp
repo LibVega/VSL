@@ -6,6 +6,8 @@
 
 #include "./NameHelper.hpp"
 
+#include <algorithm>
+
 
 namespace plsl
 {
@@ -94,6 +96,40 @@ string NameHelper::GetBindingTypeName(const ShaderType* type, string* extra)
 }
 
 // ====================================================================================================================
+string NameHelper::GetBindingTableName(const ShaderType* type)
+{
+	string basename{};
+	switch (type->baseType)
+	{
+	case ShaderBaseType::Sampler: {
+		const auto postfix = GetImageDimsPostfix(type->image.dims);
+		basename = "sampler" + postfix;
+	} break;
+	case ShaderBaseType::Image: {
+		const auto postfix = GetImageDimsPostfix(type->image.dims);
+		const auto format = 
+			GetImageTexelFormat(type->image.texel.type, type->image.texel.size, type->image.texel.components);
+		basename = "image" + postfix + "_" + format;
+	} break;
+	case ShaderBaseType::Uniform:
+	case ShaderBaseType::ROBuffer:
+	case ShaderBaseType::RWBuffer: basename = "INVALID"; break;
+	case ShaderBaseType::ROTexels: {
+		basename = "rotexels";
+	} break;
+	case ShaderBaseType::RWTexels: {
+		const auto format =
+			GetImageTexelFormat(type->image.texel.type, type->image.texel.size, type->image.texel.components);
+		basename = "rwtexels_" + format;
+	} break;
+	}
+
+	// Create final name
+	std::transform(basename.begin(), basename.end(), basename.begin(), std::toupper);
+	return "_" + basename + "_TABLE_";
+}
+
+// ====================================================================================================================
 string NameHelper::GetImageDimsPostfix(ImageDims dims)
 {
 	switch (dims)
@@ -139,6 +175,34 @@ string NameHelper::GetImageTexelFormat(ShaderBaseType type, uint8 size, uint8 di
 	}
 	default: return "";
 	}
+}
+
+// ====================================================================================================================
+string NameHelper::GetBindingIndexText(uint32 index)
+{
+	return ((index & 1) == 0)
+		? mkstr("(_bidx_.index%u & 0x0000FFFF)", index / 2)
+		: mkstr("(_bidx_.index%u >> 16)", index / 2);
+}
+
+// ====================================================================================================================
+string NameHelper::GetBuiltinName(const string& plslName)
+{
+	static const std::unordered_map<string, string> BUILTIN_MAP {
+		{ "$VertexIndex", "gl_VertexIndex" }, { "$InstanceIndex", "gl_InstanceIndex" },
+		{ "$DrawIndex", "gl_DrawID" }, { "$VertexBase", "gl_BaseVertex" }, { "$InstanceBase", "gl_BaseInstance" },
+
+		{ "$Position", "gl_Position" }, { "$PointSize", "gl_PointSize" },
+
+		{ "$FragCoord", "gl_FragCoord" }, { "$FrontFacing", "gl_FrontFacing" }, { "$PointCoord", "gl_PointCoord" }, 
+		{ "$PrimitiveID", "gl_PrimitiveID" }
+	};
+
+	const auto it = BUILTIN_MAP.find(plslName);
+	if (it != BUILTIN_MAP.end()) {
+		return it->second;
+	}
+	return "";
 }
 
 } // namespace plsl

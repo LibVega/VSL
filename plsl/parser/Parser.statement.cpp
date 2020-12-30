@@ -105,7 +105,34 @@ VISIT_FUNC(Lvalue)
 			ERROR(ctx->name, mkstr("The variable '%s' is read-only in this context", varName.c_str()));
 		}
 
-		return new Variable({}, varName, var->dataType, var->arraySize);
+		// Get the name of the variable based on the variable type
+		string outname{};
+		switch (var->type)
+		{
+		case VariableType::Binding: {
+			if (var->dataType->baseType == ShaderBaseType::Uniform) {
+				outname = var->name;
+			}
+			else if (var->dataType->isBuffer()) {
+				const auto index = NameHelper::GetBindingIndexText(var->extra.binding.slot);
+				outname = mkstr("(%s[%s]._data_)", var->name.c_str(), index.c_str());
+			}
+			else {
+				const auto table = NameHelper::GetBindingTableName(var->dataType);
+				const auto index = NameHelper::GetBindingIndexText(var->extra.binding.slot);
+				outname = mkstr("(%s[%s])", table.c_str(), index.c_str());
+			}
+		} break;
+		case VariableType::Builtin: {
+			outname = NameHelper::GetBuiltinName(var->name);
+		} break;
+		case VariableType::Local: {
+			outname = mkstr("_%s_%s", ShaderStageToStr(currentStage_).c_str(), varName.c_str());
+		} break;
+		default: outname = varName;
+		}
+
+		return new Variable({}, outname, var->dataType, var->arraySize);
 	}
 	else {
 		// Get the lvalue

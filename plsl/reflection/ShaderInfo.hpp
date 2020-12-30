@@ -129,6 +129,7 @@ public:
 	const SubpassInput* getSubpassInput(uint8 index) const;
 	const BindingVariable* getBinding(const string& name) const;
 	const BindingVariable* getBinding(uint8 slotIndex) const;
+	uint32 getMaxBindingIndex() const;
 
 private:
 	ShaderStages stages_;

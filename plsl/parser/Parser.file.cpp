@@ -52,6 +52,11 @@ VISIT_FUNC(ShaderTypeStatement)
 // ====================================================================================================================
 VISIT_FUNC(ShaderUserTypeDefinition)
 {
+	// Check parse status
+	if (bool(shaderInfo_.stages())) {
+		ERROR(ctx, "All user-defined types must be provided before the first stage function");
+	}
+
 	// Get type name and check
 	const auto typeName = ctx->name->getText();
 	if (types_.getType(typeName)) {
@@ -100,6 +105,11 @@ VISIT_FUNC(ShaderUserTypeDefinition)
 // ====================================================================================================================
 VISIT_FUNC(ShaderInputOutputStatement)
 {
+	// Check parse status
+	if (bool(shaderInfo_.stages())) {
+		ERROR(ctx, "All interface variables must be provided before the first stage function");
+	}
+
 	// Get direction and interface index
 	const bool isIn = ctx->io->getText() == "in";
 	const auto indexLiteral = ParseLiteral(this, ctx->index);
@@ -178,6 +188,11 @@ VISIT_FUNC(ShaderInputOutputStatement)
 // ====================================================================================================================
 VISIT_FUNC(ShaderConstantStatement)
 {
+	// Check parse status
+	if (bool(shaderInfo_.stages())) {
+		ERROR(ctx, "All constants must be provided before the first stage function");
+	}
+
 	// Validate the variable
 	const auto varDecl = ctx->variableDeclaration();
 	const auto cVar = parseVariableDeclaration(varDecl, true);
@@ -238,6 +253,11 @@ VISIT_FUNC(ShaderConstantStatement)
 // ====================================================================================================================
 VISIT_FUNC(ShaderBindingStatement)
 {
+	// Check parse status
+	if (bool(shaderInfo_.stages())) {
+		ERROR(ctx, "All bindings must be provided before the first stage function");
+	}
+
 	// Parse the variable declaration
 	const auto varDecl = ctx->variableDeclaration();
 	const auto bVar = parseVariableDeclaration(varDecl, true);
@@ -294,6 +314,7 @@ VISIT_FUNC(ShaderBindingStatement)
 	// Add to the scope manager
 	Variable scopeVar = bVar;
 	scopeVar.type = VariableType::Binding;
+	scopeVar.extra.binding.slot = slotIndex;
 	scopes_.addGlobal(scopeVar);
 
 	return nullptr;
@@ -302,6 +323,11 @@ VISIT_FUNC(ShaderBindingStatement)
 // ====================================================================================================================
 VISIT_FUNC(ShaderLocalStatement)
 {
+	// Check parse status
+	if (bool(shaderInfo_.stages())) {
+		ERROR(ctx, "All locals must be provided before the first stage function");
+	}
+
 	// Parse and validate variable
 	const auto isFlat = !!ctx->KW_FLAT();
 	const auto varDecl = ctx->variableDeclaration();
@@ -362,6 +388,11 @@ VISIT_FUNC(ShaderStageFunction)
 	}
 	if (stage == ShaderStages::Geometry) {
 		ERROR(ctx->stage, "Geometry stage is not yet supported");
+	}
+
+	// If this is the first shader stage, do some global variable finialization
+	if (!bool(shaderInfo_.stages())) {
+		generator_.emitBindingIndices(shaderInfo_.getMaxBindingIndex());
 	}
 
 	// Push the global scope for the stage

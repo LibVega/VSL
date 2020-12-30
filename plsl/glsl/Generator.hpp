@@ -54,6 +54,7 @@ public:
 	void emitBinding(const BindingVariable& bind);
 	void emitSubpassInput(const SubpassInput& input);
 	void emitLocal(const Variable& var);
+	void emitBindingIndices(uint32 maxIndex); // Called on first stage function to finalize the binding indices
 
 	/* Utilities */
 	void getSetAndBinding(const BindingVariable& bind, uint32* set, uint32* binding, uint16* tableSize);

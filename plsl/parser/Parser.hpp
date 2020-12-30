@@ -14,6 +14,7 @@
 #include "../reflection/TypeManager.hpp"
 #include "./ScopeManager.hpp"
 #include "../glsl/Generator.hpp"
+#include "../glsl/NameHelper.hpp"
 
 #include <antlr4/CommonTokenStream.h>
 #include <antlr4/RuleContext.h>

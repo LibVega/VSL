@@ -19,10 +19,15 @@ class NameHelper final
 public:
 	static string GetNumericTypeName(ShaderBaseType type, uint8 size, uint8 dim0, uint8 dim1);
 	static string GetBindingTypeName(const ShaderType* type, string* extra);
+	static string GetBindingTableName(const ShaderType* type);
 
 	static string GetImageDimsPostfix(ImageDims dims);
 	static string GetImageTexelPrefix(ShaderBaseType type);
 	static string GetImageTexelFormat(ShaderBaseType type, uint8 size, uint8 dim0);
+
+	static string GetBindingIndexText(uint32 index);
+
+	static string GetBuiltinName(const string& plslName);
 
 	PLSL_NO_COPY(NameHelper)
 	PLSL_NO_MOVE(NameHelper)

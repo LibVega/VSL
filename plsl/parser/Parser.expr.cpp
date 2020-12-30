@@ -124,7 +124,7 @@ VISIT_FUNC(IndexAtom)
 	// Switch based on left hand type
 	if ((ltype->baseType == ShaderBaseType::ROBuffer) || (ltype->baseType == ShaderBaseType::RWBuffer)) {
 		const auto structType = types_.getType(ltype->buffer.structName);
-		return MAKE_EXPR(mkstr("(%s._data_[%s])", left->refString().c_str(), index->refString().c_str()), 
+		return MAKE_EXPR(mkstr("%s[%s]", left->refString().c_str(), index->refString().c_str()), 
 			structType, 1);
 	}
 	else if (ltype->baseType == ShaderBaseType::Sampler) { // `*sampler*D` -> texture(...)
@@ -339,16 +339,36 @@ VISIT_FUNC(NameAtom)
 		ERROR(ctx->IDENTIFIER(), mkstr("The variable '%s' is write-only in this context", varName.c_str()));
 	}
 
-	// Calculate the correct type
+	// Calculate the correct type and reference string
 	const ShaderType* type;
 	string refStr{};
 	if (var->dataType->baseType == ShaderBaseType::Uniform) {
 		type = types_.getType(var->dataType->buffer.structName);
 		refStr = var->name;
 	}
+	else if (var->dataType->isBuffer()) {
+		type = types_.getType(var->dataType->buffer.structName);
+		const auto index = NameHelper::GetBindingIndexText(var->extra.binding.slot);
+		refStr = mkstr("(%s[%s]._data_)", var->name.c_str(), index.c_str());
+	}
 	else if (var->dataType->baseType == ShaderBaseType::Input) {
 		type = types_.getNumericType(var->dataType->image.texel.type, 4, 1);
 		refStr = mkstr("subpassLoad(%s)", var->name.c_str());
+	}
+	else if (var->type == VariableType::Binding) {
+		const auto table = NameHelper::GetBindingTableName(var->dataType);
+		const auto index = NameHelper::GetBindingIndexText(var->extra.binding.slot);
+		type = var->dataType;
+		refStr = mkstr("(%s[%s])", table.c_str(), index.c_str());
+	}
+	else if (var->type == VariableType::Builtin) {
+		type = var->dataType;
+		refStr = NameHelper::GetBuiltinName(var->name);
+	}
+	else if (var->type == VariableType::Local) {
+		type = var->dataType;
+		const auto stage = ShaderStageToStr(currentStage_);
+		refStr = mkstr("_%s_%s", stage.c_str(), var->name.c_str());
 	}
 	else {
 		type = var->dataType;

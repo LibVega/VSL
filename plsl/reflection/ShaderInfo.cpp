@@ -6,6 +6,8 @@
 
 #include "./ShaderInfo.hpp"
 
+#include <algorithm>
+
 
 namespace plsl
 {
@@ -133,6 +135,16 @@ const BindingVariable* ShaderInfo::getBinding(uint8 slotIndex) const
 		return bind.slot == slotIndex;
 	});
 	return (it != bindings_.end()) ? &(*it) : nullptr;
+}
+
+// ====================================================================================================================
+uint32 ShaderInfo::getMaxBindingIndex() const
+{
+	const auto it = 
+		std::max_element(bindings_.begin(), bindings_.end(), [](const BindingVariable& left, const BindingVariable& right) {
+			return left.slot < right.slot;
+		});
+	return (it != bindings_.end()) ? it->slot : 0;
 }
 
 } // namespace plsl

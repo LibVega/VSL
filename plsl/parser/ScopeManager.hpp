@@ -68,6 +68,9 @@ public:
 			ShaderStages stage;
 			Access access;
 		} builtin;
+		struct {
+			uint8 slot;
+		} binding;
 	} extra;
 }; // class Variable
 
