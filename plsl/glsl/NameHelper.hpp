@@ -17,6 +17,8 @@ namespace plsl
 class NameHelper final
 {
 public:
+	static string GetGeneralTypeName(const ShaderType* type);
+
 	static string GetNumericTypeName(ShaderBaseType type, uint8 size, uint8 dim0, uint8 dim1);
 	static string GetBindingTypeName(const ShaderType* type, string* extra);
 	static string GetBindingTableName(const ShaderType* type);

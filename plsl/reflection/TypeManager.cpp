@@ -101,18 +101,6 @@ const ShaderType* TypeManager::getOrAddType(const string& typeName)
 }
 
 // ====================================================================================================================
-const ShaderType* TypeManager::getNumericType(ShaderBaseType type, uint32 dim0, uint32 dim1) const
-{
-	for (const auto& pair : BuiltinTypes_) {
-		if ((pair.second.baseType == type) && (pair.second.numeric.dims[0] == dim0) &&
-				(pair.second.numeric.dims[1] == dim1)) {
-			return &(pair.second);
-		}
-	}
-	return nullptr;
-}
-
-// ====================================================================================================================
 bool TypeManager::ParseTexelFormat(const string& format, ShaderType::ImageInfo::TexelInfo* info)
 {
 	static const std::unordered_map<string, ShaderType::ImageInfo::TexelInfo> TEXELS {
@@ -136,6 +124,25 @@ bool TypeManager::ParseTexelFormat(const string& format, ShaderType::ImageInfo::
 		return true;
 	}
 	return false;
+}
+
+// ====================================================================================================================
+const ShaderType* TypeManager::GetNumericType(ShaderBaseType type, uint32 dim0, uint32 dim1)
+{
+	for (const auto& pair : BuiltinTypes_) {
+		if ((pair.second.baseType == type) && (pair.second.numeric.dims[0] == dim0) &&
+			(pair.second.numeric.dims[1] == dim1)) {
+			return &(pair.second);
+		}
+	}
+	return nullptr;
+}
+
+// ====================================================================================================================
+const ShaderType* TypeManager::GetBuiltinType(const string& typeName)
+{
+	const auto it = BuiltinTypes_.find(typeName);
+	return (it != BuiltinTypes_.end()) ? &(it->second) : nullptr;
 }
 
 // ====================================================================================================================

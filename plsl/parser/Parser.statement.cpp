@@ -8,6 +8,8 @@
 #include "./Expr.hpp"
 
 #define VISIT_FUNC(type) antlrcpp::Any Parser::visit##type(grammar::PLSL::type##Context* ctx)
+#define MAKE_EXPR(name,type,arrSize) (std::make_shared<Expr>(name,type,arrSize))
+#define VISIT_EXPR(context) (visit(context).as<std::shared_ptr<Expr>>())
 
 
 namespace plsl
@@ -43,13 +45,19 @@ VISIT_FUNC(VariableDefinition)
 		ERROR(varDecl->baseType, "Function-local variable must be numeric or boolean types");
 	}
 
-	// TODO: Visit and check expression
+	// Visit and check expression
+	const auto expr = VISIT_EXPR(ctx->value);
+	if (!expr->type()->hasImplicitCast(var.dataType)) {
+		ERROR(ctx->value, "No implicit cast from rvalue type to lvalue type");
+	}
 
 	// Add the variable
 	var.type = VariableType::Private;
 	scopes_.addVariable(var);
 
-	// TODO: Emit declaration and assignment
+	// Emit declaration and assignment
+	const auto typeStr = NameHelper::GetGeneralTypeName(var.dataType);
+	generator_.emitAssignment(typeStr + " " + var.name, expr->refString());
 
 	return nullptr;
 }
@@ -70,7 +78,8 @@ VISIT_FUNC(VariableDeclaration)
 	var.type = VariableType::Private;
 	scopes_.addVariable(var);
 
-	// TODO: Emit declaration
+	// Emit declaration
+	generator_.emitDeclaration(var);
 
 	return nullptr;
 }
@@ -81,11 +90,16 @@ VISIT_FUNC(Assignment)
 	// Visit the left-hand side (abuse the Variable type to accomplish this)
 	const std::shared_ptr<Variable> var{ visit(ctx->lval).as<Variable*>() };
 
-	// TODO: Visit expression
+	// Visit expression
+	const auto expr = VISIT_EXPR(ctx->value);
 
-	// TODO: Validate type compatiblity and compound-assignment operators
+	// Validate types (TODO: Check compound assignments)
+	if (!expr->type()->hasImplicitCast(var->dataType)) {
+		ERROR(ctx->value, "No implicit cast from rvalue type to lvalue type");
+	}
 
-	// TODO: Emit assignment
+	// Emit assignment
+	generator_.emitAssignment(var->name, expr->refString());
 
 	return nullptr;
 }
@@ -162,7 +176,7 @@ VISIT_FUNC(Lvalue)
 				}
 				refStr = mkstr("imageStore(%s, %s, {})", var->name.c_str(), index->refString().c_str());
 				refType = 
-					types_.getNumericType(var->dataType->image.texel.type, var->dataType->image.texel.components, 1);
+					TypeManager::GetNumericType(var->dataType->image.texel.type, var->dataType->image.texel.components, 1);
 			}
 			else if (var->dataType->baseType == ShaderBaseType::RWBuffer) {
 				if (index->type()->numeric.dims[0] != 1) {
@@ -177,7 +191,7 @@ VISIT_FUNC(Lvalue)
 				}
 				refStr = mkstr("imageStore(%s, %s, {})", var->name.c_str(), index->refString().c_str());
 				refType =
-					types_.getNumericType(var->dataType->image.texel.type, var->dataType->image.texel.components, 1);
+					TypeManager::GetNumericType(var->dataType->image.texel.type, var->dataType->image.texel.components, 1);
 			}
 			else if (var->arraySize != 1) {
 				refStr = var->name;
@@ -186,11 +200,11 @@ VISIT_FUNC(Lvalue)
 			else if (var->dataType->isNumeric()) {
 				if (var->dataType->numeric.dims[1] != 1) { // Matrix
 					refStr = var->name;
-					refType = types_.getNumericType(var->dataType->baseType, var->dataType->numeric.dims[0], 1);
+					refType = TypeManager::GetNumericType(var->dataType->baseType, var->dataType->numeric.dims[0], 1);
 				}
 				else if (var->dataType->numeric.dims[0] != 1) { // Vector
 					refStr = var->name;
-					refType = types_.getNumericType(var->dataType->baseType, 1, 1);
+					refType = TypeManager::GetNumericType(var->dataType->baseType, 1, 1);
 				}
 				else {
 					ERROR(ctx->index, "Cannot apply indexer to scalar type");
@@ -215,7 +229,7 @@ VISIT_FUNC(Lvalue)
 
 			// Get the new type
 			const auto stxt = ctx->SWIZZLE()->getText();
-			const auto stype = types_.getNumericType(var->dataType->baseType, uint32(stxt.length()), 1);
+			const auto stype = TypeManager::GetNumericType(var->dataType->baseType, uint32(stxt.length()), 1);
 
 			return new Variable({}, mkstr("(%s.%s)", var->name.c_str(), stxt.c_str()), stype, 1);
 		}
@@ -235,7 +249,7 @@ VISIT_FUNC(Lvalue)
 			}
 
 			return new Variable({}, mkstr("(%s.%s)", var->name.c_str(), memName.c_str()), 
-				types_.getNumericType(memType->baseType, memType->dims[0], memType->dims[1]), memType->arraySize);
+				TypeManager::GetNumericType(memType->baseType, memType->dims[0], memType->dims[1]), memType->arraySize);
 		}
 	}
 }

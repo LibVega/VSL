@@ -56,6 +56,10 @@ public:
 	void emitLocal(const Variable& var);
 	void emitBindingIndices(uint32 maxIndex); // Called on first stage function to finalize the binding indices
 
+	/* Function Emit */
+	void emitDeclaration(const Variable& var);
+	void emitAssignment(const string& left, const string& right);
+
 	/* Utilities */
 	void getSetAndBinding(const BindingVariable& bind, uint32* set, uint32* binding, uint16* tableSize);
 

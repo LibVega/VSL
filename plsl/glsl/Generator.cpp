@@ -208,6 +208,18 @@ void Generator::emitBindingIndices(uint32 maxIndex)
 }
 
 // ====================================================================================================================
+void Generator::emitDeclaration(const Variable& var)
+{
+	*currentFunc_ << indentString_ << NameHelper::GetGeneralTypeName(var.dataType) << " " << var.name << ";\n";
+}
+
+// ====================================================================================================================
+void Generator::emitAssignment(const string& left, const string& right)
+{
+	*currentFunc_ << indentString_ << left << " = " << right << ";\n";
+}
+
+// ====================================================================================================================
 void Generator::getSetAndBinding(const BindingVariable& bind, uint32* set, uint32* binding, uint16* tableSize)
 {
 	// Easy

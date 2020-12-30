@@ -13,6 +13,17 @@ namespace plsl
 {
 
 // ====================================================================================================================
+string NameHelper::GetGeneralTypeName(const ShaderType* type)
+{
+	string extra{};
+	return
+		(type->isNumeric() || (type->baseType == ShaderBaseType::Boolean)) ?
+			GetNumericTypeName(type->baseType, type->numeric.size, type->numeric.dims[0], type->numeric.dims[1]) :
+		type->isStruct() ? (type->userStruct.structName) :
+		GetBindingTypeName(type, &extra);
+}
+
+// ====================================================================================================================
 string NameHelper::GetNumericTypeName(ShaderBaseType type, uint8 size, uint8 dim0, uint8 dim1)
 {
 	// TODO: Add more once non-4 sizes are supported

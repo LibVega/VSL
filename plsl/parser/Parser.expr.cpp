@@ -178,11 +178,11 @@ VISIT_FUNC(IndexAtom)
 			return MAKE_EXPR(
 				mkstr("texture(%s, %s, %s)", 
 					left->refString().c_str(), index->refString().c_str(), index2->refString().c_str()), 
-				types_.getNumericType(ltype->image.texel.type, 4, 1), 1);
+				TypeManager::GetNumericType(ltype->image.texel.type, 4, 1), 1);
 		}
 		else {
 			return MAKE_EXPR(mkstr("texture(%s, %s)", left->refString().c_str(), index->refString().c_str()),
-				types_.getNumericType(ltype->image.texel.type, 4, 1), 1);
+				TypeManager::GetNumericType(ltype->image.texel.type, 4, 1), 1);
 		}
 	}
 	else if (ltype->baseType == ShaderBaseType::Image) { // `*image*D` -> imageLoad(...)
@@ -199,7 +199,7 @@ VISIT_FUNC(IndexAtom)
 			(ltype->image.texel.components == 2) ? ".xy" : "";
 		return MAKE_EXPR(
 			mkstr("(imageLoad(%s, %s)%s)", left->refString().c_str(), index->refString().c_str(), swizzle),
-			types_.getNumericType(ltype->image.texel.type, ltype->image.texel.components, 1), 1);
+			TypeManager::GetNumericType(ltype->image.texel.type, ltype->image.texel.components, 1), 1);
 	}
 	else if (ltype->baseType == ShaderBaseType::ROTexels) { // `*textureBuffer` -> `texelFetch(...)`
 		if (itype->baseType != ShaderBaseType::Signed) {
@@ -210,7 +210,7 @@ VISIT_FUNC(IndexAtom)
 		}
 
 		return MAKE_EXPR(mkstr("texelFetch(%s, %s)", left->refString().c_str(), index->refString().c_str()),
-			types_.getNumericType(ltype->image.texel.type, 4, 1), 1);
+			TypeManager::GetNumericType(ltype->image.texel.type, 4, 1), 1);
 	}
 	else if (ltype->baseType == ShaderBaseType::RWTexels) { // `imageBuffer` -> imageLoad(...)
 		if (itype->baseType != ShaderBaseType::Signed) {
@@ -225,7 +225,7 @@ VISIT_FUNC(IndexAtom)
 			(ltype->image.texel.components == 2) ? ".xy" : "";
 		return MAKE_EXPR(
 			mkstr("(imageLoad(%s, %s)%s)", left->refString().c_str(), index->refString().c_str(), swizzle),
-			types_.getNumericType(ltype->image.texel.type, ltype->image.texel.components, 1), 1);
+			TypeManager::GetNumericType(ltype->image.texel.type, ltype->image.texel.components, 1), 1);
 	}
 	else if (left->arraySize() != 1) {
 		return MAKE_EXPR(mkstr("%s[%s]", left->refString().c_str(), index->refString().c_str()), ltype, 1);
@@ -233,11 +233,11 @@ VISIT_FUNC(IndexAtom)
 	else if (ltype->isNumeric()) {
 		if (ltype->numeric.dims[1] != 1) { // Matrix
 			return MAKE_EXPR(mkstr("%s[%s]", left->refString().c_str(), index->refString().c_str()), 
-				types_.getNumericType(ltype->baseType, ltype->numeric.dims[0], 1), 1);
+				TypeManager::GetNumericType(ltype->baseType, ltype->numeric.dims[0], 1), 1);
 		}
 		else if (ltype->numeric.dims[0] != 1) { // Vector
 			return MAKE_EXPR(mkstr("%s[%s]", left->refString().c_str(), index->refString().c_str()),
-				types_.getNumericType(ltype->baseType, 1, 1), 1);
+				TypeManager::GetNumericType(ltype->baseType, 1, 1), 1);
 		}
 		else {
 			ERROR(ctx->index, "Scalar numeric types cannot have an array indexer applied");
@@ -277,7 +277,7 @@ VISIT_FUNC(SwizzleAtom)
 	validateSwizzle(ltype->numeric.dims[0], ctx->SWIZZLE());
 
 	return MAKE_EXPR(mkstr("%s.%s", left->refString().c_str(), swtext.c_str()), 
-		types_.getNumericType(ltype->baseType, uint32(swtext.length()), 1), 1);
+		TypeManager::GetNumericType(ltype->baseType, uint32(swtext.length()), 1), 1);
 }
 
 // ====================================================================================================================
@@ -301,7 +301,7 @@ VISIT_FUNC(MemberAtom)
 	}
 
 	return MAKE_EXPR(mkstr("%s.%s", left->refString().c_str(), memName.c_str()), 
-		types_.getNumericType(member->baseType, member->dims[0], member->dims[1]), member->arraySize);
+		TypeManager::GetNumericType(member->baseType, member->dims[0], member->dims[1]), member->arraySize);
 }
 
 // ====================================================================================================================
@@ -390,7 +390,7 @@ VISIT_FUNC(NameAtom)
 		refStr = mkstr("(%s[%s]._data_)", var->name.c_str(), index.c_str());
 	}
 	else if (var->dataType->baseType == ShaderBaseType::Input) {
-		type = types_.getNumericType(var->dataType->image.texel.type, 4, 1);
+		type = TypeManager::GetNumericType(var->dataType->image.texel.type, 4, 1);
 		refStr = mkstr("subpassLoad(%s)", var->name.c_str());
 	}
 	else if (var->type == VariableType::Binding) {
