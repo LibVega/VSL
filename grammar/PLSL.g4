@@ -101,10 +101,8 @@ lvalue
 expression
     : atom  # AtomExpr
     // Unary Operators
-    | val=lvalue op=('++'|'--')  # PostfixExpr
-    | op=('++'|'--') val=lvalue  # PrefixExpr
-    | op=('+'|'-') val=lvalue    # FactorExpr
-    | op=('!'|'~') val=lvalue    # NegateExpr
+    | op=('+'|'-') val=expression  # FactorExpr
+    | op=('!'|'~') val=expression  # NegateExpr
     // Binary Operators
     | left=expression op=('*'|'/'|'%') right=expression        # MulDivModExpr
     | left=expression op=('+'|'-') right=expression            # AddSubExpr

@@ -121,6 +121,9 @@ public:
 	const StructMember* getMember(const string& memberName) const;
 	uint32 getBindingCount() const; // For numeric types, gets the number of binding slots the type takes up for inputs
 
+	/* Casting */
+	bool hasImplicitCast(const ShaderType* target) const;
+
 public:
 	ShaderBaseType baseType;      // The base type
 	struct ImageInfo

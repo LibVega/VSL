@@ -51,7 +51,7 @@ void Generator::setCurrentStage(ShaderStages stage)
 	else {
 		const auto name = ShaderStageToStr(stage);
 		if (stageHeaders_.find(name) == stageHeaders_.end()) {
-			stageHeaders_[name] = {};
+			stageHeaders_[name] = std::stringstream();
 		}
 		currentFunc_ = &(stageFunctions_[name] = {});
 		*currentFunc_ << "void " << name << "_main()\n{\n";
@@ -80,7 +80,7 @@ void Generator::emitVertexInput(const InterfaceVariable& var)
 {
 	// Check vertex header
 	if (stageHeaders_.find("vert") == stageHeaders_.end()) {
-		stageHeaders_["vert"] = {};
+		stageHeaders_["vert"] = std::stringstream();
 	}
 	auto& header = stageHeaders_["vert"];
 
@@ -96,7 +96,7 @@ void Generator::emitFragmentOutput(const InterfaceVariable& var)
 {
 	// Check fragment header
 	if (stageHeaders_.find("frag") == stageHeaders_.end()) {
-		stageHeaders_["frag"] = {};
+		stageHeaders_["frag"] = std::stringstream();
 	}
 	auto& header = stageHeaders_["frag"];
 
@@ -153,7 +153,7 @@ void Generator::emitSubpassInput(const SubpassInput& input)
 {
 	// Check fragment header
 	if (stageHeaders_.find("frag") == stageHeaders_.end()) {
-		stageHeaders_["frag"] = {};
+		stageHeaders_["frag"] = std::stringstream();
 	}
 	auto& header = stageHeaders_["frag"];
 
@@ -171,11 +171,11 @@ void Generator::emitLocal(const Variable& var)
 {
 	// Check headers
 	if (stageHeaders_.find("vert") == stageHeaders_.end()) {
-		stageHeaders_["vert"] = {};
+		stageHeaders_["vert"] = std::stringstream();
 	}
 	auto& vert = stageHeaders_["vert"];
 	if (stageHeaders_.find("frag") == stageHeaders_.end()) {
-		stageHeaders_["frag"] = {};
+		stageHeaders_["frag"] = std::stringstream();
 	}
 	auto& frag = stageHeaders_["frag"];
 
@@ -201,7 +201,7 @@ void Generator::emitBindingIndices(uint32 maxIndex)
 
 	// Emit
 	globals_ << "layout (push_constant) uniform _BINDING_INDICES_ {\n";
-	for (int i = 0; i < icount; ++i) {
+	for (uint32 i = 0; i < icount; ++i) {
 		globals_ << "\tuint index" << i << ";\n";
 	}
 	globals_ << "} _bidx_;\n\n";

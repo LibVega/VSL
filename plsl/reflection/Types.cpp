@@ -109,4 +109,31 @@ uint32 ShaderType::getBindingCount() const
 	return ((totalSize > SLOT_SIZE) ? 2 : 1) * numeric.dims[1];
 }
 
+// ====================================================================================================================
+bool ShaderType::hasImplicitCast(const ShaderType* target) const
+{
+	// Only numerics can cast
+	if (!isNumeric() || !target->isNumeric()) {
+		return false;
+	}
+
+	// Numeric dimensions must match for casting
+	if ((numeric.dims[0] != target->numeric.dims[0]) || (numeric.dims[1] != target->numeric.dims[1])) {
+		return false;
+	}
+
+	// All numeric types can cast to float
+	if (target->baseType == ShaderBaseType::Float) {
+		return true;
+	}
+
+	// Self-cast works (not really a cast)
+	if (target->baseType == baseType) {
+		return true;
+	}
+
+	// This can only match signed -> unsigned, which is implicit
+	return (target->baseType == ShaderBaseType::Unsigned);
+}
+
 } // namespace plsl

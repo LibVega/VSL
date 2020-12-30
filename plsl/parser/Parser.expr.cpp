@@ -6,6 +6,7 @@
 
 #include "./Parser.hpp"
 #include "./Expr.hpp"
+#include "./Op.hpp"
 
 #define VISIT_FUNC(type) antlrcpp::Any Parser::visit##type(grammar::PLSL::type##Context* ctx)
 #define MAKE_EXPR(name,type,arrSize) (std::make_shared<Expr>(name,type,arrSize))
@@ -16,75 +17,112 @@ namespace plsl
 {
 
 // ====================================================================================================================
-VISIT_FUNC(PostfixExpr)
-{
-	return nullptr;
-}
-
-// ====================================================================================================================
-VISIT_FUNC(PrefixExpr)
-{
-	return nullptr;
-}
-
-// ====================================================================================================================
 VISIT_FUNC(FactorExpr)
 {
-	return nullptr;
+	return visitUnaryOp(ctx->op->getText(), ctx->val);
 }
 
 // ====================================================================================================================
 VISIT_FUNC(NegateExpr)
 {
-	return nullptr;
+	return visitUnaryOp(ctx->op->getText(), ctx->val);
+}
+
+// ====================================================================================================================
+antlrcpp::Any Parser::visitUnaryOp(const string& optext, grammar::PLSL::ExpressionContext* exprCtx)
+{
+	// Visit expression
+	const auto expr = VISIT_EXPR(exprCtx);
+
+	// Process expression
+	const ShaderType* restype{};
+	const auto refstr = Op::ProcessUnaryOp(optext, expr.get(), &restype);
+	if (refstr.empty()) {
+		ERROR(exprCtx, Op::LastError());
+	}
+
+	// Return new expression
+	return MAKE_EXPR(refstr, restype, 1);
 }
 
 // ====================================================================================================================
 VISIT_FUNC(MulDivModExpr)
 {
-	return nullptr;
+	return visitBinaryOp(ctx->op->getText(), ctx->left, ctx->right);
 }
 
 // ====================================================================================================================
 VISIT_FUNC(AddSubExpr)
 {
-	return nullptr;
+	return visitBinaryOp(ctx->op->getText(), ctx->left, ctx->right);
 }
 
 // ====================================================================================================================
 VISIT_FUNC(ShiftExpr)
 {
-	return nullptr;
+	return visitBinaryOp(ctx->op->getText(), ctx->left, ctx->right);
 }
 
 // ====================================================================================================================
 VISIT_FUNC(RelationalExpr)
 {
-	return nullptr;
+	return visitBinaryOp(ctx->op->getText(), ctx->left, ctx->right);
 }
 
 // ====================================================================================================================
 VISIT_FUNC(EqualityExpr)
 {
-	return nullptr;
+	return visitBinaryOp(ctx->op->getText(), ctx->left, ctx->right);
 }
 
 // ====================================================================================================================
 VISIT_FUNC(BitwiseExpr)
 {
-	return nullptr;
+	return visitBinaryOp(ctx->op->getText(), ctx->left, ctx->right);
 }
 
 // ====================================================================================================================
 VISIT_FUNC(LogicalExpr)
 {
-	return nullptr;
+	return visitBinaryOp(ctx->op->getText(), ctx->left, ctx->right);
+}
+
+// ====================================================================================================================
+antlrcpp::Any Parser::visitBinaryOp(const string& optext, grammar::PLSL::ExpressionContext* leftCtx,
+	grammar::PLSL::ExpressionContext* rightCtx)
+{
+	// Visit expressions
+	const auto left = VISIT_EXPR(leftCtx);
+	const auto right = VISIT_EXPR(rightCtx);
+
+	// Process expressions
+	const ShaderType* restype{};
+	const auto refstr = Op::ProcessBinaryOp(optext, left.get(), right.get(), &restype);
+	if (refstr.empty()) {
+		ERROR(leftCtx, Op::LastError());
+	}
+
+	// Return new expression
+	return MAKE_EXPR(refstr, restype, 1);
 }
 
 // ====================================================================================================================
 VISIT_FUNC(TernaryExpr)
 {
-	return nullptr;
+	// Visit expressions
+	const auto cond = VISIT_EXPR(ctx->cond);
+	const auto texpr = VISIT_EXPR(ctx->texpr);
+	const auto fexpr = VISIT_EXPR(ctx->fexpr);
+
+	// Process expressions
+	const ShaderType* restype{};
+	const auto refstr = Op::ProcessTernaryOp(cond.get(), texpr.get(), fexpr.get(), &restype);
+	if (refstr.empty()) {
+		ERROR(ctx, Op::LastError());
+	}
+
+	// Return new expression
+	return MAKE_EXPR(refstr, restype, 1);
 }
 
 // ====================================================================================================================

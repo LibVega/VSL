@@ -133,10 +133,9 @@ public:
 	VISIT_DECL(Lvalue)
 
 	/* Expressions */
-	VISIT_DECL(PostfixExpr)
-	VISIT_DECL(PrefixExpr)
 	VISIT_DECL(FactorExpr)
 	VISIT_DECL(NegateExpr)
+	antlrcpp::Any visitUnaryOp(const string& optext, grammar::PLSL::ExpressionContext* exprCtx);
 	VISIT_DECL(MulDivModExpr)
 	VISIT_DECL(AddSubExpr)
 	VISIT_DECL(ShiftExpr)
@@ -144,6 +143,8 @@ public:
 	VISIT_DECL(EqualityExpr)
 	VISIT_DECL(BitwiseExpr)
 	VISIT_DECL(LogicalExpr)
+	antlrcpp::Any visitBinaryOp(const string& optext, grammar::PLSL::ExpressionContext* leftCtx, 
+		grammar::PLSL::ExpressionContext* rightCtx);
 	VISIT_DECL(TernaryExpr)
 	VISIT_DECL(GroupAtom)
 	VISIT_DECL(IndexAtom)

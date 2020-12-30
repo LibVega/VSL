@@ -125,7 +125,7 @@ string NameHelper::GetBindingTableName(const ShaderType* type)
 	}
 
 	// Create final name
-	std::transform(basename.begin(), basename.end(), basename.begin(), std::toupper);
+	std::transform(basename.begin(), basename.end(), basename.begin(), ::toupper);
 	return "_" + basename + "_TABLE_";
 }
 
