@@ -214,9 +214,18 @@ void Generator::emitDeclaration(const Variable& var)
 }
 
 // ====================================================================================================================
-void Generator::emitAssignment(const string& left, const string& right)
+void Generator::emitAssignment(const string& left, const string& op, const string& right)
 {
-	*currentFunc_ << indentString_ << left << " = " << right << ";\n";
+	*currentFunc_ << indentString_ << left << ' ' << op << ' ' << right << ";\n";
+}
+
+// ====================================================================================================================
+void Generator::emitImageStore(const string& imStore, const string& value)
+{
+	auto repl = imStore;
+	const auto repidx = repl.find("{}");
+	repl.replace(repidx, 2, value);
+	*currentFunc_ << indentString_ << repl << ";\n";
 }
 
 // ====================================================================================================================

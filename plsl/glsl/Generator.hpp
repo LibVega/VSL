@@ -58,7 +58,8 @@ public:
 
 	/* Function Emit */
 	void emitDeclaration(const Variable& var);
-	void emitAssignment(const string& left, const string& right);
+	void emitAssignment(const string& left, const string& op, const string& right);
+	void emitImageStore(const string& imStore, const string& value);
 
 	/* Utilities */
 	void getSetAndBinding(const BindingVariable& bind, uint32* set, uint32* binding, uint16* tableSize);
