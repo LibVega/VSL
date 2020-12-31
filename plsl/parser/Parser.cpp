@@ -177,6 +177,31 @@ Literal Parser::ParseLiteral(Parser* parser, const antlr4::Token* token)
 }
 
 // ====================================================================================================================
+bool Parser::IsValidSwizzle(const string& swizzle)
+{
+	if (swizzle.empty() || (swizzle.length() > 4)) {
+		return false;
+	}
+
+	uint32 last = 0;
+	for (const auto ch : swizzle) {
+		uint32 idx = 0;
+		switch (ch)
+		{
+		case 'x': case 'r': case 's': idx = 1; break;
+		case 'y': case 'g': case 't': idx = 2; break;
+		case 'z': case 'b': case 'p': idx = 3; break;
+		case 'w': case 'a': case 'q': idx = 4; break;
+		}
+		if ((idx == 0) || (last != 0 && idx != last)) {
+			return false;
+		}
+		last = idx;
+	}
+	return true;
+}
+
+// ====================================================================================================================
 Variable Parser::parseVariableDeclaration(const grammar::PLSL::VariableDeclarationContext* ctx, bool global)
 {
 	// Validate name against either the globals, or the current scope tree

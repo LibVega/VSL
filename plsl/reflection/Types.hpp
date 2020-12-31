@@ -99,9 +99,14 @@ public:
 
 	/* Base Type Checks */
 	inline bool isVoid() const { return (baseType == ShaderBaseType::Void); }
+	inline bool isBoolean() const { return (baseType == ShaderBaseType::Boolean); }
 	inline bool isNumeric() const {
 		return (baseType == ShaderBaseType::Float) || (baseType == ShaderBaseType::Signed) ||
 			(baseType == ShaderBaseType::Unsigned);
+	}
+	inline bool isFloat() const { return (baseType == ShaderBaseType::Float); }
+	inline bool isInteger() const {
+		return (baseType == ShaderBaseType::Signed) || (baseType == ShaderBaseType::Unsigned);
 	}
 	inline bool isSampler() const { return (baseType == ShaderBaseType::Sampler); }
 	inline bool isImage() const { return (baseType == ShaderBaseType::Image); }
@@ -113,6 +118,17 @@ public:
 		return (baseType == ShaderBaseType::ROTexels) || (baseType == ShaderBaseType::RWTexels);
 	}
 	inline bool isStruct() const { return (baseType == ShaderBaseType::Struct); }
+
+	/* Compound Type Checks */
+	inline bool isScalar() const {
+		return (isNumeric() || isBoolean()) && (numeric.dims[0] == 1) && (numeric.dims[1] == 1);
+	}
+	inline bool isVector() const {
+		return (isNumeric() || isBoolean()) && (numeric.dims[0] != 1) && (numeric.dims[1] == 1);
+	}
+	inline bool isMatrix() const {
+		return isNumeric() && (numeric.dims[0] != 1) && (numeric.dims[1] != 1);
+	}
 
 	/* Type-Specific Checks */
 	bool hasSubtype() const; // Checks if the base type supports (requires) subtypes

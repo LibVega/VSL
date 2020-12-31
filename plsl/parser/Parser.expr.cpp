@@ -258,50 +258,36 @@ VISIT_FUNC(IndexAtom)
 }
 
 // ====================================================================================================================
-VISIT_FUNC(SwizzleAtom)
-{
-	// Visit left atom
-	const auto left = VISIT_EXPR(ctx->atom());
-
-	// Validate the type
-	const auto ltype = left->type();
-	if (!ltype->isNumeric() || (left->arraySize() != 1)) {
-		ERROR(ctx->atom(), "Swizzles can only be applied to non-array numeric types");
-	}
-	if ((ltype->numeric.dims[0] == 1) || (ltype->numeric.dims[1] != 1)) {
-		ERROR(ctx->atom(), "Swizzles can only be applied to vector types");
-	}
-
-	// Validate the swizzle
-	const auto swtext = ctx->SWIZZLE()->getText();
-	validateSwizzle(ltype->numeric.dims[0], ctx->SWIZZLE());
-
-	return MAKE_EXPR(mkstr("%s.%s", left->refString().c_str(), swtext.c_str()), 
-		TypeManager::GetNumericType(ltype->baseType, uint32(swtext.length()), 1), 1);
-}
-
-// ====================================================================================================================
 VISIT_FUNC(MemberAtom)
 {
 	// Visit left atom
 	const auto left = VISIT_EXPR(ctx->atom());
+	const auto ident = ctx->IDENTIFIER()->getText();
 
-	// Validate type (only structs have members)
+	// Switch on type
 	const auto ltype = left->type();
-	if (!ltype->isStruct()) {
-		ERROR(ctx->atom(), "Member access operator '.' can only be applied to struct types");
-	}
+	if (ltype->isStruct()) {
+		// Get the member and type
+		const auto memName = ctx->IDENTIFIER()->getText();
+		const auto member = ltype->getMember(memName);
+		if (!member) {
+			ERROR(ctx->IDENTIFIER(), mkstr("Struct type '%s' has no member with name '%s'",
+				ltype->userStruct.structName.c_str(), memName.c_str()));
+		}
 
-	// Get the member and type
-	const auto memName = ctx->IDENTIFIER()->getText();
-	const auto member = ltype->getMember(memName);
-	if (!member) {
-		ERROR(ctx->IDENTIFIER(), mkstr("Struct type '%s' has no member with name '%s'", 
-			ltype->userStruct.structName.c_str(), memName.c_str()));
+		return MAKE_EXPR(mkstr("%s.%s", left->refString().c_str(), memName.c_str()),
+			TypeManager::GetNumericType(member->baseType, member->dims[0], member->dims[1]), member->arraySize);
 	}
+	else if (ltype->isVector()) {
+		// Validate the swizzle
+		validateSwizzle(ltype->numeric.dims[0], ctx->IDENTIFIER());
 
-	return MAKE_EXPR(mkstr("%s.%s", left->refString().c_str(), memName.c_str()), 
-		TypeManager::GetNumericType(member->baseType, member->dims[0], member->dims[1]), member->arraySize);
+		return MAKE_EXPR(mkstr("%s.%s", left->refString().c_str(), ident.c_str()),
+			TypeManager::GetNumericType(ltype->baseType, uint32(ident.length()), 1), 1);
+	}
+	else {
+		ERROR(ctx->atom(), "Operator '.' can only be applied to structs (members) or vectors (swizzles)");
+	}
 }
 
 // ====================================================================================================================

@@ -31,7 +31,7 @@ string Op::ProcessUnaryOp(const string& op, const Expr* e1, const ShaderType** r
 	// Switch on operator
 	if (op == "!") {
 		// Type check
-		if (etype->baseType != ShaderBaseType::Boolean) {
+		if (etype->isBoolean()) {
 			ERR_RETURN("Operator '!' requires an operand with a boolean type");
 		}
 		*restype = e1->type();
@@ -42,7 +42,7 @@ string Op::ProcessUnaryOp(const string& op, const Expr* e1, const ShaderType** r
 	}
 	else if (op == "~") {
 		// Type check
-		if ((etype->baseType != ShaderBaseType::Signed) && (etype->baseType != ShaderBaseType::Unsigned)) {
+		if (!etype->isInteger()) {
 			ERR_RETURN("Operator '~' requires an operand with an integer type");
 		}
 		*restype = e1->type();
@@ -76,10 +76,10 @@ string Op::ProcessBinaryOp(const string& op, const Expr* e1, const Expr* e2, con
 	if ((e1->arraySize() != 1) || (e2->arraySize() != 1)) {
 		ERR_RETURN("Binary operators cannot take arrays as operands");
 	}
-	if (!ltype->isNumeric() && (ltype->baseType != ShaderBaseType::Boolean)) {
+	if (!ltype->isNumeric() && !ltype->isBoolean()) {
 		ERR_RETURN("Binary operators cannot take non-numeric types");
 	}
-	if (!rtype->isNumeric() && (rtype->baseType != ShaderBaseType::Boolean)) {
+	if (!rtype->isNumeric() && !rtype->isBoolean()) {
 		ERR_RETURN("Binary operators cannot take non-numeric types");
 	}
 	if (ltype->isNumeric() != rtype->isNumeric()) {
@@ -92,14 +92,14 @@ string Op::ProcessBinaryOp(const string& op, const Expr* e1, const Expr* e2, con
 			ERR_RETURN("Cannot apply mathematic operators to boolean types");
 		}
 
-		if (ltype->numeric.dims[1] != 1) { // Left hand matrix
-			if (rtype->numeric.dims[1] != 1) { // Matrix * Matrix
+		if (ltype->isMatrix()) { // Left hand matrix
+			if (rtype->isMatrix()) { // Matrix * Matrix
 				if (ltype->numeric.dims[1] != rtype->numeric.dims[0]) {
 					ERR_RETURN("Incompatible sizes for matrix multiplication");
 				}
 				*restype = TypeManager::GetNumericType(ltype->baseType, ltype->numeric.dims[0], rtype->numeric.dims[1]);
 			}
-			else if (rtype->numeric.dims[0] != 1) { // Matrix * Vector
+			else if (rtype->isVector()) { // Matrix * Vector
 				if (ltype->numeric.dims[1] != rtype->numeric.dims[0]) {
 					ERR_RETURN("Incompatible sizes for matrix/vector multiplication");
 				}
@@ -109,15 +109,14 @@ string Op::ProcessBinaryOp(const string& op, const Expr* e1, const Expr* e2, con
 				*restype = ltype;
 			}
 		}
-		else if (ltype->numeric.dims[0] != 1) { // Left hand vector
-			if (rtype->numeric.dims[1] != 1) { // Vector * Matrix
+		else if (ltype->isVector()) { // Left hand vector
+			if (rtype->isMatrix()) { // Vector * Matrix
 				ERR_RETURN("Cannot multiple vector by matrix (must be matrix * vector)");
 			}
-			else if (rtype->numeric.dims[0] != 1) { // Vector * Vector
+			else if (rtype->isVector()) { // Vector * Vector
 				const auto isUnsigned =
 					(ltype->baseType == ShaderBaseType::Unsigned) || (rtype->baseType == ShaderBaseType::Unsigned);
-				const auto isFloat = 
-					(ltype->baseType == ShaderBaseType::Float) || (rtype->baseType == ShaderBaseType::Float);
+				const auto isFloat = ltype->isFloat() || rtype->isFloat();
 				*restype = TypeManager::GetNumericType(
 					isFloat ? ShaderBaseType::Float : isUnsigned ? ShaderBaseType::Unsigned : ShaderBaseType::Signed,
 					ltype->numeric.dims[0], 1);
@@ -127,14 +126,13 @@ string Op::ProcessBinaryOp(const string& op, const Expr* e1, const Expr* e2, con
 			}
 		}
 		else { // Left hand scalar
-			if (rtype->numeric.dims[1] != 1) { // Scalar * matrix
+			if (rtype->isMatrix()) { // Scalar * matrix
 				*restype = rtype;
 			}
-			else if (rtype->numeric.dims[0] != 1) { // Scalar * Vector
+			else if (rtype->isVector()) { // Scalar * Vector
 				const auto isUnsigned =
 					(ltype->baseType == ShaderBaseType::Unsigned) || (rtype->baseType == ShaderBaseType::Unsigned);
-				const auto isFloat =
-					(ltype->baseType == ShaderBaseType::Float) || (rtype->baseType == ShaderBaseType::Float);
+				const auto isFloat = ltype->isFloat() || rtype->isFloat();
 				*restype = TypeManager::GetNumericType(
 					isFloat ? ShaderBaseType::Float : isUnsigned ? ShaderBaseType::Unsigned : ShaderBaseType::Signed,
 					ltype->numeric.dims[0], 1);
@@ -142,14 +140,14 @@ string Op::ProcessBinaryOp(const string& op, const Expr* e1, const Expr* e2, con
 			else { // Scalar * Scalar
 				const auto isUnsigned =
 					(ltype->baseType == ShaderBaseType::Unsigned) || (rtype->baseType == ShaderBaseType::Unsigned);
-				const auto isFloat =
-					(ltype->baseType == ShaderBaseType::Float) || (rtype->baseType == ShaderBaseType::Float);
+				const auto isFloat = ltype->isFloat() || rtype->isFloat();
 				*restype = TypeManager::GetNumericType(
 					isFloat ? ShaderBaseType::Float : isUnsigned ? ShaderBaseType::Unsigned : ShaderBaseType::Signed,
 					1, 1);
 			}
 		}
 
+		CLR_ERROR;
 		return mkstr("(%s * %s)", lstr.c_str(), rstr.c_str());
 	}
 
@@ -158,89 +156,94 @@ string Op::ProcessBinaryOp(const string& op, const Expr* e1, const Expr* e2, con
 		ERR_RETURN("No implicit cast from right operand type to left operand type");
 	}
 	if ((op == "/") || (op == "+") || (op == "-")) {
-		if (!ltype->isNumeric()) {
+		if (ltype->isBoolean()) {
 			ERR_RETURN("Cannot apply mathematic operators to boolean types");
 		}
 		*restype = ltype;
+		CLR_ERROR;
 		return mkstr("(%s %s %s)", lstr.c_str(), op.c_str(), rstr.c_str());
 	}
 	else if (op == "%") {
-		if (!ltype->isNumeric()) {
+		if (ltype->isBoolean()) {
 			ERR_RETURN("Cannot apply mod operator to boolean types");
 		}
 		*restype = ltype;
+		CLR_ERROR;
 		return (ltype->numeric.dims[0] != 1)
 			? mkstr("mod(%s, %s)", lstr.c_str(), rstr.c_str())
 			: mkstr("(%s %% %s)", lstr.c_str(), rstr.c_str());
 	}
 	else if ((op == "<<") || (op == ">>")) {
-		if (!ltype->isNumeric() || (ltype->baseType == ShaderBaseType::Float)) {
+		if (!ltype->isInteger()) {
 			ERR_RETURN("Bitshift operator can only accept integer types");
 		}
 		if (ltype->baseType != rtype->baseType) {
 			ERR_RETURN("Bitshift operands must match signed-ness");
 		}
-		if (ltype->numeric.dims[1] != 1) {
+		if (ltype->isMatrix()) {
 			ERR_RETURN("Bitshift operator cannot accept matrix types");
 		}
 		*restype = ltype;
+		CLR_ERROR;
 		return mkstr("(%s %s %s)", lstr.c_str(), op.c_str(), rstr.c_str());
 	}
 	else if ((op == "<") || (op == ">") || (op == "<=") || (op == ">=")) {
 		if (!ltype->isNumeric()) {
 			ERR_RETURN("Relational operators can only accept numeric types");
 		}
-		if (ltype->numeric.dims[1] != 1) {
+		if (ltype->isMatrix()) {
 			ERR_RETURN("Relational operators cannot accept matrix operands");
 		}
-		*restype = (ltype->numeric.dims[0] != 1)
+		*restype = ltype->isVector()
 			? TypeManager::GetBuiltinType(mkstr("bool%u", uint32(ltype->numeric.dims[0])))
 			: TypeManager::GetBuiltinType("bool");
 		const string funcName =
 			(op == "<")  ? "lessThan" :
 			(op == ">")  ? "greaterThan" :
 			(op == "<=") ? "lessThanEqual" : "greaterThanEqual";
-		return (ltype->numeric.dims[0] != 1)
+		CLR_ERROR;
+		return ltype->isVector()
 			? mkstr("%s(%s, %s)", funcName.c_str(), lstr.c_str(), rstr.c_str())
 			: mkstr("(%s %s %s)", lstr.c_str(), op.c_str(), rstr.c_str());
 	}
 	else if ((op == "==") || (op == "!=")) {
-		if (ltype->numeric.dims[1] != 1) {
+		if (ltype->isMatrix()) {
 			ERR_RETURN("Equality operators cannot accept matrix operands");
 		}
-		*restype = (ltype->numeric.dims[0] != 1)
+		*restype = ltype->isVector()
 			? TypeManager::GetBuiltinType(mkstr("bool%u", uint32(ltype->numeric.dims[0])))
 			: TypeManager::GetBuiltinType("bool");
 		const string funcName = (op == "==") ? "equal" : "notEqual";
-		return (ltype->numeric.dims[0] != 1)
+		CLR_ERROR;
+		return ltype->isVector()
 			? mkstr("%s(%s, %s)", funcName.c_str(), lstr.c_str(), rstr.c_str())
 			: mkstr("(%s %s %s)", lstr.c_str(), op.c_str(), rstr.c_str());
 	}
 	else if ((op == "&") || (op == "|") || (op == "^")) {
-		if (!ltype->isNumeric() || (ltype->baseType == ShaderBaseType::Float)) {
+		if (!ltype->isInteger()) {
 			ERR_RETURN("Bitwise operators require integer type operands");
-		}
-		if (ltype->numeric.dims[1] != 1) {
-			ERR_RETURN("Bitwise operators cannot accept matrix operands");
 		}
 		const auto isUnsigned =
 			(ltype->baseType == ShaderBaseType::Unsigned) || (rtype->baseType == ShaderBaseType::Unsigned);
 		*restype = TypeManager::GetNumericType(isUnsigned ? ShaderBaseType::Unsigned : ShaderBaseType::Signed,
 			ltype->numeric.dims[0], 1);
+		CLR_ERROR;
 		return mkstr("(%s %s %s)", lstr.c_str(), op.c_str(), rstr.c_str());
 	}
 	else if ((op == "&&") || (op == "||")) {
-		if (ltype->baseType != ShaderBaseType::Boolean) {
+		if (!ltype->isBoolean()) {
 			ERR_RETURN("Logical operators require boolean operands");
 		}
-		if ((ltype->numeric.dims[0] != 1) || (ltype->numeric.dims[1] != 1)) {
+		if (!ltype->isScalar()) {
 			ERR_RETURN("Logical operators require scalar boolean operands");
 		}
 		*restype = TypeManager::GetBuiltinType("bool");
+		CLR_ERROR;
 		return mkstr("(%s %s %s)", lstr.c_str(), op.c_str(), rstr.c_str());
 	}
 	else {
-		ERR_RETURN("Invalid binary operator");
+		ERR_RETURN(mkstr("Invalid binary operator for types '%s' and '%s'", ltype->getPLSLName().c_str(),
+			rtype->getPLSLName().c_str()));
 	}
 }
 
@@ -255,8 +258,7 @@ string Op::ProcessTernaryOp(const Expr* e1, const Expr* e2, const Expr* e3, cons
 	const auto& fstr = e3->refString();
 
 	// Check condition
-	if ((ctype->baseType != ShaderBaseType::Boolean) || (ctype->numeric.dims[0] != 1) || (ctype->numeric.dims[1] != 1)
-			|| (e1->arraySize() != 1)) {
+	if (!ctype->isBoolean() || !ctype->isScalar() || (e1->arraySize() != 1)) {
 		ERR_RETURN("Ternary operator must have a scalar boolean condition");
 	}
 
@@ -267,8 +269,8 @@ string Op::ProcessTernaryOp(const Expr* e1, const Expr* e2, const Expr* e3, cons
 	if (ttype->isNumeric() != ftype->isNumeric()) {
 		ERR_RETURN("Incompatible types for ternary expressions");
 	}
-	if (ttype->baseType == ShaderBaseType::Boolean) {
-		if (ftype->baseType != ShaderBaseType::Boolean) {
+	if (ttype->isBoolean()) {
+		if (ftype->isBoolean()) {
 			ERR_RETURN("False expression for ternary operator is not a boolean type");
 		}
 		if (ttype->numeric.dims[0] != ftype->numeric.dims[0]) {
@@ -288,7 +290,8 @@ string Op::ProcessTernaryOp(const Expr* e1, const Expr* e2, const Expr* e3, cons
 	}
 	else { // isNumeric()
 		if (!ftype->hasImplicitCast(ttype)) {
-			ERR_RETURN("No implicit cast for false expression type to true expression type");
+			ERR_RETURN(mkstr("No implicit cast for false expression '%s' to true expression '%s'",
+				ftype->getPLSLName().c_str(), ttype->getPLSLName().c_str()));
 		}
 	}
 

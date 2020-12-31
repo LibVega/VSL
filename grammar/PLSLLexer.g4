@@ -22,11 +22,6 @@ KW_OUT    : 'out' ;
 KW_SHADER : 'shader' ;
 KW_TYPE   : '@type' ;
 
-// Vector swizzle
-SWIZZLE
-    : [xyzw]+ | [rgba]+ | [stpq]+
-    ;
-
 // Number literals
 INTEGER_LITERAL
     : '-'? DecimalLiteral [uU]?

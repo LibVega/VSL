@@ -91,7 +91,6 @@ assignment
 lvalue
     : name=IDENTIFIER
     | val=lvalue '[' index=expression ']'
-    | val=lvalue '.' SWIZZLE
     | val=lvalue '.' IDENTIFIER
     ;
 
@@ -119,7 +118,6 @@ expression
 atom
     : '(' expression ')'                                      # GroupAtom
     | atom '[' index=expression (',' index2=expression)? ']'  # IndexAtom
-    | atom '.' SWIZZLE                                        # SwizzleAtom
     | atom '.' IDENTIFIER                                     # MemberAtom
     | functionCall                                            # CallAtom
     | scalarLiteral                                           # LiteralAtom

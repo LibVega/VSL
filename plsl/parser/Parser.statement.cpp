@@ -220,40 +220,43 @@ VISIT_FUNC(Lvalue)
 
 			return new Variable({}, refStr, refType, 1);
 		}
-		else if (ctx->SWIZZLE()) {
-			// Validate data type
-			const uint32 compCount = var->dataType->numeric.dims[0];
-			if (!var->dataType->isNumeric() && (var->dataType->baseType != ShaderBaseType::Boolean)) {
-				ERROR(ctx->SWIZZLE(), "Swizzles can only be applied to numeric types");
-			}
-			if ((compCount == 1) || (var->dataType->numeric.dims[1] != 1)) {
-				ERROR(ctx->SWIZZLE(), "Swizzles can only be applied to a vector type");
-			}
-			validateSwizzle(compCount, ctx->SWIZZLE());
-
-			// Get the new type
-			const auto stxt = ctx->SWIZZLE()->getText();
-			const auto stype = TypeManager::GetNumericType(var->dataType->baseType, uint32(stxt.length()), 1);
-
-			return new Variable({}, mkstr("(%s.%s)", var->name.c_str(), stxt.c_str()), stype, 1);
-		}
 		else { // ctx->IDENTIFIER()
-			// Validate data type
-			if (!var->dataType->isStruct()) {
-				ERROR(ctx->IDENTIFIER(), "Member access operator '.' can only be applied to struct types");
-			}
+			const auto ident = ctx->IDENTIFIER()->getText();
 
-			// Validate member
-			const auto memName = ctx->IDENTIFIER()->getText();
-			const auto memType = var->dataType->getMember(memName);
-			if (!memType) {
-				ERROR(ctx->IDENTIFIER(), 
-					mkstr("Struct type '%s' does not have member with name '%s'", 
-						var->dataType->userStruct.structName.c_str(), memName.c_str()));
-			}
+			// Switch on type (struct=member, vector=swizzle)
+			if (var->dataType->isStruct()) {
+				// Validate member
+				const auto memType = var->dataType->getMember(ident);
+				if (!memType) {
+					ERROR(ctx->IDENTIFIER(),
+						mkstr("Struct type '%s' does not have member with name '%s'",
+							var->dataType->userStruct.structName.c_str(), ident.c_str()));
+				}
 
-			return new Variable({}, mkstr("(%s.%s)", var->name.c_str(), memName.c_str()), 
-				TypeManager::GetNumericType(memType->baseType, memType->dims[0], memType->dims[1]), memType->arraySize);
+				// Return member
+				return new Variable({}, mkstr("(%s.%s)", var->name.c_str(), ident.c_str()),
+					TypeManager::GetNumericType(memType->baseType, memType->dims[0], memType->dims[1]), 
+						memType->arraySize);
+			}
+			else if (var->dataType->isVector()) {
+				// Validate data type
+				const uint32 compCount = var->dataType->numeric.dims[0];
+				if (!var->dataType->isNumeric() && (var->dataType->baseType != ShaderBaseType::Boolean)) {
+					ERROR(ctx->IDENTIFIER(), "Swizzles can only be applied to numeric types");
+				}
+				if ((compCount == 1) || (var->dataType->numeric.dims[1] != 1)) {
+					ERROR(ctx->IDENTIFIER(), "Swizzles can only be applied to a vector type");
+				}
+				validateSwizzle(compCount, ctx->IDENTIFIER());
+
+				// Get the new type
+				const auto stype = TypeManager::GetNumericType(var->dataType->baseType, uint32(ident.length()), 1);
+
+				return new Variable({}, mkstr("(%s.%s)", var->name.c_str(), ident.c_str()), stype, 1);
+			}
+			else {
+				ERROR(ctx->val, "Operator '.' can only be applied to structs (members) or vectors (swizzles)");
+			}
 		}
 	}
 }

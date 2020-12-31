@@ -112,6 +112,7 @@ public:
 	/* Utilities */
 	static Literal ParseLiteral(const string& txt);
 	static Literal ParseLiteral(Parser* parser, const antlr4::Token* token);
+	static bool IsValidSwizzle(const string& swizzle);
 	Variable parseVariableDeclaration(const grammar::PLSL::VariableDeclarationContext* ctx, bool global);
 	void validateSwizzle(uint32 compCount, antlr4::tree::TerminalNode* swizzle) const;
 
@@ -148,7 +149,6 @@ public:
 	VISIT_DECL(TernaryExpr)
 	VISIT_DECL(GroupAtom)
 	VISIT_DECL(IndexAtom)
-	VISIT_DECL(SwizzleAtom)
 	VISIT_DECL(MemberAtom)
 	VISIT_DECL(CallAtom)
 	VISIT_DECL(LiteralAtom)
