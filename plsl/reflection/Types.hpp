@@ -124,6 +124,10 @@ public:
 	/* Casting */
 	bool hasImplicitCast(const ShaderType* target) const;
 
+	/* Names */
+	string getPLSLName() const;
+	string getGLSLName() const;
+
 public:
 	ShaderBaseType baseType;      // The base type
 	struct ImageInfo

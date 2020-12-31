@@ -100,6 +100,13 @@ string NameHelper::GetBindingTypeName(const ShaderType* type, string* extra)
 		*extra = GetImageTexelFormat(type->image.texel.type, type->image.texel.size, type->image.texel.components);
 		return "imageBuffer";
 	} break;
+	case ShaderBaseType::Input: {
+		*extra = "";
+		const string prefix =
+			(type->image.texel.type == ShaderBaseType::Unsigned) ? "u" :
+			(type->image.texel.type == ShaderBaseType::Signed) ? "i" : "";
+		return prefix + "subpassInput";
+	} break;
 	}
 	
 	*extra = "";

@@ -132,9 +132,10 @@ Literal Parser::ParseLiteral(const string& txt)
 	// Check neg state
 	const bool isNeg = txt[0] == '-';
 	const bool isHex = txt.find("0x") == 0;
+	const bool isU = std::tolower(*txt.rbegin()) == 'u';
 
 	// Parse the value as 64-bit integers
-	if (isHex || !isNeg) {
+	if (isHex || isU) {
 		const auto val = std::strtoull(beg, &end, isHex ? 16 : 10);
 		if (errno == ERANGE) {
 			return { Literal::EOutOfRange };

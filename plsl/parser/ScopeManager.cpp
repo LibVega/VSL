@@ -25,7 +25,7 @@ bool Variable::canRead(ShaderStages stage) const
 	case VariableType::Binding: return true;
 	case VariableType::Builtin: return (extra.builtin.access == READONLY) || (extra.builtin.access == READWRITE);
 	case VariableType::Constant: return true;
-	case VariableType::Local: return ((uint32(extra.local.pStage) << 1) == uint32(stage));
+	case VariableType::Local: return stage == ShaderStages::Fragment; // TODO: Support more stages
 	case VariableType::Parameter: return true;
 	case VariableType::Private: return true;
 	default: return false;
@@ -48,7 +48,7 @@ bool Variable::canWrite(ShaderStages stage) const
 	} break;
 	case VariableType::Builtin: return (extra.builtin.access == WRITEONLY) || (extra.builtin.access == READWRITE);
 	case VariableType::Constant: return false;
-	case VariableType::Local: return (extra.local.pStage == stage);
+	case VariableType::Local: return stage == ShaderStages::Vertex; // TODO: Support more stages
 	case VariableType::Parameter: return false;
 	case VariableType::Private: return true;
 	default: return false;
@@ -127,9 +127,8 @@ void ScopeManager::pushGlobalScope(ShaderStages stage)
 			scope->variables().push_back(glob);
 		} break;
 		case VariableType::Local: {
-			if ((stage == glob.extra.local.pStage) || ((uint32(glob.extra.local.pStage) << 1) == uint32(stage))) {
-				scope->variables().push_back(glob);
-			}
+			// Always add for now, until mroe stages are supported
+			scope->variables().push_back(glob);
 		} break;
 		}
 	}

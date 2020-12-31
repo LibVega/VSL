@@ -47,8 +47,10 @@ VISIT_FUNC(VariableDefinition)
 
 	// Visit and check expression
 	const auto expr = VISIT_EXPR(ctx->value);
-	if (!expr->type()->hasImplicitCast(var.dataType)) {
-		ERROR(ctx->value, "No implicit cast from rvalue type to lvalue type");
+	const auto etype = expr->type();
+	if (!etype->hasImplicitCast(var.dataType)) {
+		ERROR(ctx->value, mkstr("No implicit cast from rvalue '%s' to lvalue '%s'", etype->getPLSLName().c_str(),
+				var.dataType->getPLSLName().c_str()));
 	}
 
 	// Add the variable
@@ -92,10 +94,12 @@ VISIT_FUNC(Assignment)
 
 	// Visit expression
 	const auto expr = VISIT_EXPR(ctx->value);
+	const auto etype = expr->type();
 
 	// Validate types (TODO: Check compound assignments)
-	if (!expr->type()->hasImplicitCast(var->dataType)) {
-		ERROR(ctx->value, "No implicit cast from rvalue type to lvalue type");
+	if (!etype->hasImplicitCast(var->dataType)) {
+		ERROR(ctx->value, mkstr("No implicit cast from rvalue '%s' to lvalue '%s'", etype->getPLSLName().c_str(),
+			var->dataType->getPLSLName().c_str()));
 	}
 
 	// Emit assignment

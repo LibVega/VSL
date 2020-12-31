@@ -385,7 +385,7 @@ VISIT_FUNC(NameAtom)
 		refStr = var->name;
 	}
 	else if (var->dataType->isBuffer()) {
-		type = types_.getType(var->dataType->buffer.structName);
+		type = var->dataType;
 		const auto index = NameHelper::GetBindingIndexText(var->extra.binding.slot);
 		refStr = mkstr("(%s[%s]._data_)", var->name.c_str(), index.c_str());
 	}
