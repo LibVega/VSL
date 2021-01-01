@@ -303,19 +303,9 @@ VISIT_FUNC(CallAtom)
 
 	// Validate the constructor/function
 	const auto fnName = ctx->functionCall()->name->getText();
-	string callName{};
-	const ShaderType* callType{};
-	const auto ctorType = TypeManager::GetBuiltinType(fnName);
-	if (ctorType) {
-		callType = Functions::CheckConstructor(fnName, arguments);
-		if (!callType) {
-			ERROR(ctx->functionCall()->name, Functions::LastError());
-		}
-		callName = NameHelper::GetNumericTypeName(callType->baseType, callType->numeric.size, 
-			callType->numeric.dims[0], callType->numeric.dims[1]);
-	}
-	else {
-		ERROR(ctx->functionCall()->name, mkstr("Unknown function '%s'", fnName.c_str()));
+	const auto [callType, callName] = Functions::CheckFunction(fnName, arguments);
+	if (!callType) {
+		ERROR(ctx->functionCall()->name, Functions::LastError());
 	}
 
 	// Create the call string
@@ -386,8 +376,8 @@ VISIT_FUNC(NameAtom)
 	}
 	else if (var->dataType->isBuffer()) {
 		type = var->dataType;
-		const auto index = NameHelper::GetBindingIndexText(var->extra.binding.slot);
-		refStr = mkstr("(%s[%s]._data_)", var->name.c_str(), index.c_str());
+		generator_.emitBindingIndex(var->extra.binding.slot);
+		refStr = mkstr("(%s[_bidx%u_]._data_)", var->name.c_str(), uint32(var->extra.binding.slot));
 	}
 	else if (var->dataType->baseType == ShaderBaseType::Input) {
 		type = TypeManager::GetNumericType(var->dataType->image.texel.type, 4, 1);
@@ -395,9 +385,9 @@ VISIT_FUNC(NameAtom)
 	}
 	else if (var->type == VariableType::Binding) {
 		const auto table = NameHelper::GetBindingTableName(var->dataType);
-		const auto index = NameHelper::GetBindingIndexText(var->extra.binding.slot);
+		generator_.emitBindingIndex(var->extra.binding.slot);
 		type = var->dataType;
-		refStr = mkstr("(%s[%s])", table.c_str(), index.c_str());
+		refStr = mkstr("(%s[_bidx%u_])", table.c_str(), uint32(var->extra.binding.slot));
 	}
 	else if (var->type == VariableType::Builtin) {
 		type = var->dataType;

@@ -60,6 +60,7 @@ public:
 	void emitDeclaration(const Variable& var);
 	void emitAssignment(const string& left, const string& op, const string& right);
 	void emitImageStore(const string& imStore, const string& value);
+	void emitBindingIndex(uint32 index);
 
 	/* Utilities */
 	void getSetAndBinding(const BindingVariable& bind, uint32* set, uint32* binding, uint16* tableSize);
@@ -78,6 +79,7 @@ private:
 	uint32 uniqueId_; // A unqiue id that can be incremented during generation to give a unique number
 	uint32 localId_; // The monotonically increasing index used to assign local variable locations
 	string indentString_; // The current indent level string for function generation
+	uint32 bindingEmitMask_; // Mask of binding indices that have been emitted in the current function
 
 	PLSL_NO_COPY(Generator)
 	PLSL_NO_MOVE(Generator)

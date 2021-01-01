@@ -179,8 +179,8 @@ VISIT_FUNC(Lvalue)
 			}
 			else {
 				const auto table = NameHelper::GetBindingTableName(var->dataType);
-				const auto index = NameHelper::GetBindingIndexText(var->extra.binding.slot);
-				outname = mkstr("(%s[%s])", table.c_str(), index.c_str());
+				generator_.emitBindingIndex(var->extra.binding.slot);
+				outname = mkstr("(%s[_bidx%u_])", table.c_str(), uint32(var->extra.binding.slot));
 			}
 		} break;
 		case VariableType::Builtin: {

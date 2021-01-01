@@ -26,6 +26,7 @@ Generator::Generator(const BindingTableSizes& tableSizes)
 	, uniqueId_{ 0 }
 	, localId_{ 0 }
 	, indentString_{ "" }
+	, bindingEmitMask_{ 0 }
 {
 	// Setup initial globals content
 	globals_
@@ -56,6 +57,7 @@ void Generator::setCurrentStage(ShaderStages stage)
 		currentFunc_ = &(stageFunctions_[name] = {});
 		*currentFunc_ << "void " << name << "_main()\n{\n";
 		indentString_ = "\t";
+		bindingEmitMask_ = 0;
 	}
 }
 
@@ -226,6 +228,21 @@ void Generator::emitImageStore(const string& imStore, const string& value)
 	const auto repidx = repl.find("{}");
 	repl.replace(repidx, 2, value);
 	*currentFunc_ << indentString_ << repl << ";\n";
+}
+
+// ====================================================================================================================
+void Generator::emitBindingIndex(uint32 index)
+{
+	// Check if already emitted
+	if (bindingEmitMask_ & (1u << index)) {
+		return;
+	}
+
+	// Emit new binding index
+	const auto bindstr = NameHelper::GetBindingIndexText(index);
+	const auto bindname = mkstr("_bidx%u_", index);
+	*currentFunc_ << indentString_ << "uint " << bindname << " = " << bindstr << ";\n";
+	bindingEmitMask_ = (bindingEmitMask_ | (1u << index)); // Set flag
 }
 
 // ====================================================================================================================
