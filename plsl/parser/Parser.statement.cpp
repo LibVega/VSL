@@ -175,7 +175,7 @@ VISIT_FUNC(Lvalue)
 			}
 			else if (var->dataType->isBuffer()) {
 				const auto index = NameHelper::GetBindingIndexText(var->extra.binding.slot);
-				outname = mkstr("(%s[%s]._data_)", var->name.c_str(), index.c_str());
+				outname = mkstr("%s[%s]", var->name.c_str(), index.c_str());
 			}
 			else {
 				const auto table = NameHelper::GetBindingTableName(var->dataType);

@@ -7,6 +7,7 @@
 #include "./Parser.hpp"
 #include "./Expr.hpp"
 #include "./Op.hpp"
+#include "./Func.hpp"
 
 #define VISIT_FUNC(type) antlrcpp::Any Parser::visit##type(grammar::PLSL::type##Context* ctx)
 #define MAKE_EXPR(name,type,arrSize) (std::make_shared<Expr>(name,type,arrSize))
@@ -293,8 +294,6 @@ VISIT_FUNC(MemberAtom)
 // ====================================================================================================================
 VISIT_FUNC(CallAtom)
 {
-	// TODO: Actually check function calls, right now just do a passthrough
-
 	// Visit the argument expressions
 	std::vector<ExprPtr> arguments{};
 	for (const auto arg : ctx->functionCall()->args) {
@@ -302,18 +301,33 @@ VISIT_FUNC(CallAtom)
 		arguments.push_back(argexpr);
 	}
 
+	// Validate the constructor/function
+	const auto fnName = ctx->functionCall()->name->getText();
+	string callName{};
+	const ShaderType* callType{};
+	const auto ctorType = TypeManager::GetBuiltinType(fnName);
+	if (ctorType) {
+		callType = Functions::CheckConstructor(fnName, arguments);
+		if (!callType) {
+			ERROR(ctx->functionCall()->name, Functions::LastError());
+		}
+		callName = NameHelper::GetNumericTypeName(callType->baseType, callType->numeric.size, 
+			callType->numeric.dims[0], callType->numeric.dims[1]);
+	}
+	else {
+		ERROR(ctx->functionCall()->name, mkstr("Unknown function '%s'", fnName.c_str()));
+	}
+
 	// Create the call string
 	std::stringstream ss{ std::stringstream::out };
-	ss << ctx->functionCall()->name->getText() << "( ";
+	ss << callName << "( ";
 	for (const auto& arg : arguments) {
 		ss << arg->refString() << ", ";
 	}
 	ss.seekp(-2, std::stringstream::cur);
 	ss << " )"; // Overwrite last ", " with function close " )"
 
-	// TODO: Emit call as temporary assignment
-
-	return MAKE_EXPR(ss.str(), types_.getType("float"), 1);
+	return MAKE_EXPR(ss.str(), callType, 1);
 }
 
 // ====================================================================================================================
