@@ -7,6 +7,7 @@
 #include "./Parser.hpp"
 #include "../../generated/PLSLLexer.h"
 #include "../../generated/PLSL.h"
+#include "./Func.hpp"
 
 #include <cmath>
 
@@ -205,6 +206,7 @@ bool Parser::IsValidSwizzle(const string& swizzle)
 Variable Parser::parseVariableDeclaration(const grammar::PLSL::VariableDeclarationContext* ctx, bool global)
 {
 	// Validate name against either the globals, or the current scope tree
+	const auto varName = ctx->name->getText();
 	if (ctx->name->getText()[0] == '$') {
 		ERROR(ctx->name, "Identifiers starting with '$' are reserved for builtins");
 	}
@@ -213,6 +215,12 @@ Variable Parser::parseVariableDeclaration(const grammar::PLSL::VariableDeclarati
 	}
 	if (ctx->name->getText()[0] == '_' && *(ctx->name->getText().rbegin()) == '_') {
 		ERROR(ctx->name, "Names that start and end with '_' are reserved");
+	}
+	if (Functions::HasFunction(varName)) {
+		ERROR(ctx->name, mkstr("Variable name '%s' overlaps with function name", varName.c_str()));
+	}
+	if (types_.getType(varName)) {
+		ERROR(ctx->name, mkstr("Variable name '%s' overlaps with type name", varName.c_str()));
 	}
 
 	// Get type

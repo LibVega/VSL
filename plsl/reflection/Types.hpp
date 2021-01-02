@@ -37,7 +37,7 @@ enum class ShaderBaseType : uint8
 }; // enum class ShaderBaseType
 
 
-// The different dimensionalities that Sampler/ROTexture/Image can take on
+// The different dimensionalities that Sampler/Image can take on
 enum class ImageDims : uint8
 {
 	None,       // Un-dimensioned texture (error type)

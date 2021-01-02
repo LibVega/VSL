@@ -249,6 +249,115 @@ void Functions::Initialize()
 		{ "findMSB", GENI, { GENU } },
 	};
 	// uaddCarry, umulExtent, usubBorrow
+
+	// ===== Matrix Functions =====
+	Builtins_["determinant"] = {
+		{ "determinant", "float", { "float2x2" } },
+		{ "determinant", "float", { "float3x3" } },
+		{ "determinant", "float", { "float4x4" } }
+	};
+	Builtins_["inverse"] = {
+		{ "inverse", "float2x2", { "float2x2" } },
+		{ "inverse", "float3x3", { "float3x3" } },
+		{ "inverse", "float4x4", { "float4x4" } }
+	};
+	Builtins_["matCompMul"] = {
+		{ "matrixCompMult", "float2x2", { "float2x2", "float2x2" } },
+		{ "matrixCompMult", "float2x3", { "float2x3", "float2x3" } },
+		{ "matrixCompMult", "float2x4", { "float2x4", "float2x4" } },
+		{ "matrixCompMult", "float3x2", { "float3x2", "float3x2" } },
+		{ "matrixCompMult", "float3x3", { "float3x3", "float3x3" } },
+		{ "matrixCompMult", "float3x4", { "float3x4", "float3x4" } },
+		{ "matrixCompMult", "float4x2", { "float4x2", "float4x2" } },
+		{ "matrixCompMult", "float4x3", { "float4x3", "float4x3" } },
+		{ "matrixCompMult", "float4x4", { "float4x4", "float4x4" } }
+	};
+	Builtins_["outerProd"] = {
+		{ "outerProduct", "float2x2", { "float2", "float2" } },
+		{ "outerProduct", "float2x3", { "float3", "float2" } },
+		{ "outerProduct", "float2x4", { "float4", "float2" } },
+		{ "outerProduct", "float3x2", { "float2", "float3" } },
+		{ "outerProduct", "float3x3", { "float3", "float3" } },
+		{ "outerProduct", "float3x4", { "float4", "float3" } },
+		{ "outerProduct", "float4x2", { "float2", "float4" } },
+		{ "outerProduct", "float4x3", { "float3", "float4" } },
+		{ "outerProduct", "float4x4", { "float4", "float4" } }
+	};
+	Builtins_["transpose"] = {
+		{ "transpose", "float2x2", { "float2x2" } },
+		{ "transpose", "float2x3", { "float3x2" } },
+		{ "transpose", "float2x4", { "float4x2" } },
+		{ "transpose", "float3x2", { "float2x3" } },
+		{ "transpose", "float3x3", { "float3x3" } },
+		{ "transpose", "float3x4", { "float4x3" } },
+		{ "transpose", "float4x2", { "float2x4" } },
+		{ "transpose", "float4x3", { "float3x4" } },
+		{ "transpose", "float4x4", { "float4x4" } }
+	};
+
+	// ===== Texture/Image Functions =====
+	Builtins_["texelFetch"] = {
+		{ "texelFetch", "float4", { "Sampler1D", "int", "int" } },
+		{ "texelFetch", "float4", { "Sampler2D", "int2", "int" } },
+		{ "texelFetch", "float4", { "Sampler3D", "int3", "int" } },
+		{ "texelFetch", "float4", { "Sampler1DArray", "int2", "int" } },
+		{ "texelFetch", "float4", { "Sampler2DArray", "int3", "int" } },
+		{ "texelFetch", "int4",   { "ISampler1D", "int", "int" } },
+		{ "texelFetch", "int4",   { "ISampler2D", "int2", "int" } },
+		{ "texelFetch", "int4",   { "ISampler3D", "int3", "int" } },
+		{ "texelFetch", "int4",   { "ISampler1DArray", "int2", "int" } },
+		{ "texelFetch", "int4",   { "ISampler2DArray", "int3", "int" } },
+		{ "texelFetch", "uint4",  { "USampler1D", "int", "int" } },
+		{ "texelFetch", "uint4",  { "USampler2D", "int2", "int" } },
+		{ "texelFetch", "uint4",  { "USampler3D", "int3", "int" } },
+		{ "texelFetch", "uint4",  { "USampler1DArray", "int2", "int" } },
+		{ "texelFetch", "uint4",  { "USampler2DArray", "int3", "int" } }
+	};
+	Builtins_["levelsOf"] = {
+		{ "textureQueryLevels", "int", { "Sampler1D" } },
+		{ "textureQueryLevels", "int", { "Sampler2D" } },
+		{ "textureQueryLevels", "int", { "Sampler3D" } },
+		{ "textureQueryLevels", "int", { "Sampler1DArray" } },
+		{ "textureQueryLevels", "int", { "Sampler2DArray" } },
+		{ "textureQueryLevels", "int", { "SamplerCube" } },
+		{ "textureQueryLevels", "int", { "ISampler1D" } },
+		{ "textureQueryLevels", "int", { "ISampler2D" } },
+		{ "textureQueryLevels", "int", { "ISampler3D" } },
+		{ "textureQueryLevels", "int", { "ISampler1DArray" } },
+		{ "textureQueryLevels", "int", { "ISampler2DArray" } },
+		{ "textureQueryLevels", "int", { "ISamplerCube" } },
+		{ "textureQueryLevels", "int", { "USampler1D" } },
+		{ "textureQueryLevels", "int", { "USampler2D" } },
+		{ "textureQueryLevels", "int", { "USampler3D" } },
+		{ "textureQueryLevels", "int", { "USampler1DArray" } },
+		{ "textureQueryLevels", "int", { "USampler2DArray" } },
+		{ "textureQueryLevels", "int", { "USamplerCube" } },
+	};
+	Builtins_["sizeOf"] = {
+		{ "textureSize", "int",  { "Sampler1D", "int" } },
+		{ "textureSize", "int2", { "Sampler2D", "int" } },
+		{ "textureSize", "int3", { "Sampler3D", "int" } },
+		{ "textureSize", "int2", { "Sampler1DArray", "int" } },
+		{ "textureSize", "int3", { "Sampler2DArray", "int" } },
+		{ "textureSize", "int2", { "SamplerCube", "int" } },
+		{ "textureSize", "int",  { "ISampler1D", "int" } },
+		{ "textureSize", "int2", { "ISampler2D", "int" } },
+		{ "textureSize", "int3", { "ISampler3D", "int" } },
+		{ "textureSize", "int2", { "ISampler1DArray", "int" } },
+		{ "textureSize", "int3", { "ISampler2DArray", "int" } },
+		{ "textureSize", "int2", { "ISamplerCube", "int" } },
+		{ "textureSize", "int",  { "USampler1D", "int" } },
+		{ "textureSize", "int2", { "USampler2D", "int" } },
+		{ "textureSize", "int3", { "USampler3D", "int" } },
+		{ "textureSize", "int2", { "USampler1DArray", "int" } },
+		{ "textureSize", "int3", { "USampler2DArray", "int" } },
+		{ "textureSize", "int2", { "USamplerCube", "int" } },
+		{ "imageSize", "int",  { "Image1D" } },
+		{ "imageSize", "int2", { "Image2D" } },
+		{ "imageSize", "int3", { "Image3D" } },
+		{ "imageSize", "int2", { "Image1DArray" } },
+		{ "imageSize", "int3", { "Image2DArray" } }
+	};
 }
 
 } // namespace plsl

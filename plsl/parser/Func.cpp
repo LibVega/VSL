@@ -77,7 +77,15 @@ bool FunctionType::match(const ExprPtr expr) const
 		return etype->hasImplicitCast(casttype);
 	}
 	else {
-		return etype->hasImplicitCast(type);
+		if (type->isNumeric() || type->isBoolean()) {
+			return etype->hasImplicitCast(type);
+		}
+		else if ((type->baseType == ShaderBaseType::Sampler) || (type->baseType == ShaderBaseType::Image)) {
+			return (type->baseType == etype->baseType) && (type->image.dims == etype->image.dims);
+		}
+		else {
+			return false;
+		}
 	}
 }
 
@@ -122,6 +130,16 @@ const ShaderType* FunctionEntry::match(const std::vector<ExprPtr>& params) const
 
 
 // ====================================================================================================================
+// ====================================================================================================================
+bool Functions::HasFunction(const string& funcName)
+{
+	if (Builtins_.empty()) {
+		Initialize();
+	}
+	const auto it = Builtins_.find(funcName);
+	return (it != Builtins_.end());
+}
+
 // ====================================================================================================================
 std::tuple<const ShaderType*, string> Functions::CheckFunction(const string& funcName, 
 	const std::vector<ExprPtr>& args)

@@ -59,6 +59,7 @@ class Functions final
 {
 public:
 	/* Function Checks */
+	static bool HasFunction(const string& funcName);
 	static std::tuple<const ShaderType*, string> CheckFunction(const string& funcName, 
 		const std::vector<ExprPtr>& args);
 	static std::tuple<const ShaderType*, string> CheckConstructor(const string& typeName,
