@@ -78,7 +78,7 @@ void Generator::setCurrentStage(ShaderStages stage)
 			stageHeaders_[name] = std::stringstream();
 		}
 		currentFunc_ = &(stageFunctions_[name] = {});
-		*currentFunc_ << "void " << name << "_main()\n{\n";
+		*currentFunc_ << "void main()\n{\n";
 		indentString_ = "\t";
 		bindingEmitMask_ = 0;
 	}

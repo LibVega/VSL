@@ -78,19 +78,34 @@ bool Compiler::compileSource(const string& source, const CompilerOptions& option
 	// Perform the compilation with shaderc
 	Shaderc compiler{ &options, &(parser.generator()) };
 	if (bool(info.stages() & ShaderStages::Vertex)) {
-		compiler.compileStage(ShaderStages::Vertex);
+		if (!compiler.compileStage(ShaderStages::Vertex)) {
+			lastError_ = compiler.lastError();
+			return false;
+		}
 	}
 	if (bool(info.stages() & ShaderStages::TessControl)) {
-		compiler.compileStage(ShaderStages::TessControl);
+		if (!compiler.compileStage(ShaderStages::TessControl)) {
+			lastError_ = compiler.lastError();
+			return false;
+		}
 	}
 	if (bool(info.stages() & ShaderStages::TessEval)) {
-		compiler.compileStage(ShaderStages::TessEval);
+		if (!compiler.compileStage(ShaderStages::TessEval)) {
+			lastError_ = compiler.lastError();
+			return false;
+		}
 	}
 	if (bool(info.stages() & ShaderStages::Geometry)) {
-		compiler.compileStage(ShaderStages::Geometry);
+		if (!compiler.compileStage(ShaderStages::Geometry)) {
+			lastError_ = compiler.lastError();
+			return false;
+		}
 	}
 	if (bool(info.stages() & ShaderStages::Fragment)) {
-		compiler.compileStage(ShaderStages::Fragment);
+		if (!compiler.compileStage(ShaderStages::Fragment)) {
+			lastError_ = compiler.lastError();
+			return false;
+		}
 	}
 
 	return true;
