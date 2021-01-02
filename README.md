@@ -24,4 +24,10 @@ Many thanks to the authors of the following libraries and tools used in Polaris:
 * License: BSD 3-clause ([original](https://github.com/antlr/antlr4/blob/master/LICENSE.txt)) ([copy](./license/antlr))
 * Description: Lexer/Parser generator used to perform the parsing of Polaris shader files
 
+### shaderc
+
+* Website: [link](https://github.com/google/shaderc)
+* License: Apache v2 ([original](https://github.com/google/shaderc/blob/main/LICENSE)) ([copy](./license/shaderc))
+* Description: Compiles the generated GLSL code into SPIR-V modules
+
 These third-party tools and libraries are rehosted under their original licenses. The authors of Polaris and the Vega library make no authorship claims.
