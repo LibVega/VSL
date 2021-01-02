@@ -10,6 +10,7 @@
 #include <fstream>
 
 #include "./parser/Parser.hpp"
+#include "./glsl/Shaderc.hpp"
 
 #define SET_ERROR(stage,...) lastError_ = CompilerError(CompilerStage::stage, ##__VA_ARGS__);
 
@@ -71,6 +72,25 @@ bool Compiler::compileSource(const string& source, const CompilerOptions& option
 	if (!parser.parse(source)) {
 		lastError_ = parser.lastError();
 		return false;
+	}
+	const auto& info = parser.shaderInfo();
+
+	// Perform the compilation with shaderc
+	Shaderc compiler{ &options, &(parser.generator()) };
+	if (bool(info.stages() & ShaderStages::Vertex)) {
+		compiler.compileStage(ShaderStages::Vertex);
+	}
+	if (bool(info.stages() & ShaderStages::TessControl)) {
+		compiler.compileStage(ShaderStages::TessControl);
+	}
+	if (bool(info.stages() & ShaderStages::TessEval)) {
+		compiler.compileStage(ShaderStages::TessEval);
+	}
+	if (bool(info.stages() & ShaderStages::Geometry)) {
+		compiler.compileStage(ShaderStages::Geometry);
+	}
+	if (bool(info.stages() & ShaderStages::Fragment)) {
+		compiler.compileStage(ShaderStages::Fragment);
 	}
 
 	return true;

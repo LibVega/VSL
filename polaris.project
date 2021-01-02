@@ -114,14 +114,16 @@ project "plslc"
     includedirs { "include" }
     defines { }
     targetname "plslc"
-    kind "ConsoleApp"
+    filter { "configurations:Shared" }
+        kind "None"
+    filter { "configurations:Static" }
+        kind "ConsoleApp"
+    filter {}
     dependson { "plsl" }
     links { "plsl" }
 
     -- Static Linking
-    filter { "configurations:Static" }
-        defines { "PLSL_STATIC" }
-    filter {}
+    defines { "PLSL_STATIC" }
 
     -- Linked Libraries
     filter { "toolset:gcc" }

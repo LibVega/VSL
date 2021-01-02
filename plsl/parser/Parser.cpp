@@ -86,12 +86,6 @@ bool Parser::parse(const string& source) noexcept
 		SET_ERROR(Parse, "Shader is missing required fragment stage");
 	}
 
-	// Save the generated output
-	generator_.saveOutput();
-	if (hasError()) {
-		goto end_parse;
-	}
-
 	result = true;
 end_parse:
 	// Cleanup and return

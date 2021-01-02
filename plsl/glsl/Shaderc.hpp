@@ -7,6 +7,8 @@
 #pragma once
 
 #include <plsl/Config.hpp>
+#include <plsl/Compiler.hpp>
+#include "./Generator.hpp"
 
 namespace shaderc { class Compiler; }
 
@@ -18,11 +20,21 @@ namespace plsl
 class Shaderc final
 {
 public:
-	Shaderc();
+	Shaderc(const CompilerOptions* options, const Generator* generator);
 	~Shaderc();
+
+	/* Error */
+	inline bool hasError() const { return lastError_.stage() == CompilerStage::Compile; }
+	inline const CompilerError& lastError() const { return lastError_; }
+
+	/* Compilation */
+	bool compileStage(ShaderStages stage) const;
 
 private:
 	std::shared_ptr<shaderc::Compiler> compiler_;
+	const CompilerOptions* const options_;
+	const Generator* const generator_;
+	mutable CompilerError lastError_;
 
 	PLSL_NO_COPY(Shaderc)
 	PLSL_NO_MOVE(Shaderc)

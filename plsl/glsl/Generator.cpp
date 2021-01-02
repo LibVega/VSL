@@ -42,6 +42,29 @@ Generator::~Generator()
 }
 
 // ====================================================================================================================
+bool Generator::getStageString(ShaderStages stage, string* outstring) const
+{
+	// Get the stage-specific header and body
+	const auto stageName = ShaderStageToStr(stage);
+	const auto hit = stageHeaders_.find(stageName);
+	const auto fit = stageFunctions_.find(stageName);
+	if ((hit == stageHeaders_.end()) || (fit == stageFunctions_.end())) {
+		*outstring = "";
+		return false;
+	}
+
+	// Build the string
+	const auto gstr = globals_.str();
+	const auto hstr = hit->second.str();
+	const auto fstr = fit->second.str();
+	outstring->resize(gstr.length() + hstr.length() + fstr.length(), '\0');
+	std::memcpy(outstring->data(), gstr.data(), gstr.length());
+	std::memcpy(outstring->data() + gstr.length(), hstr.data(), hstr.length());
+	std::memcpy(outstring->data() + gstr.length() + hstr.length(), fstr.data(), fstr.length());
+	return true;
+}
+
+// ====================================================================================================================
 void Generator::setCurrentStage(ShaderStages stage)
 {
 	if (stage == ShaderStages::None) {
@@ -264,36 +287,6 @@ void Generator::getSetAndBinding(const BindingVariable& bind, uint32* set, uint3
 	case ShaderBaseType::Uniform: *binding = 0; *tableSize = 1; break;
 
 	default: ERROR("Invalid type for set and binding indices");
-	}
-}
-
-// ====================================================================================================================
-void Generator::saveOutput() const
-{
-	// Open the file
-	std::ofstream file{ "./plsl.output", std::ofstream::out | std::ofstream::trunc };
-	if (!file.is_open()) {
-		ERROR("failed to open output file");
-		return;
-	}
-
-	// Write the globals
-	file 
-		<< "GLOBALS\n"
-		<< "=======\n"
-		<< globals_.str() << "\n"
-		<< "\n" 
-		<< std::endl;
-
-	// Write the functions
-	for (const auto& fnpair : stageFunctions_) {
-		file
-			<< "Shader Stage: " << fnpair.first << "\n"
-			<< "==================\n"
-			<< stageHeaders_.at(fnpair.first).str() << "\n"
-			<< fnpair.second.str() << "\n"
-			<< "\n"
-			<< std::endl;
 	}
 }
 

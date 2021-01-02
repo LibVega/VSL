@@ -108,6 +108,7 @@ public:
 	inline bool hasError() const { return !lastError_.message().empty(); }
 	inline const ShaderInfo& shaderInfo() const { return shaderInfo_; }
 	inline const TypeManager& types() const { return types_; }
+	inline const Generator& generator() const { return generator_; }
 
 	/* Utilities */
 	static Literal ParseLiteral(const string& txt);

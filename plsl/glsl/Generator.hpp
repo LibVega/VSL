@@ -41,11 +41,12 @@ public:
 	Generator(const BindingTableSizes& tableSizes);
 	~Generator();
 
+	/* Accessors */
+	inline const std::stringstream* globalString() const { return &globals_; }
+	bool getStageString(ShaderStages stage, string* outstring) const;
+
 	/* Stages/Functions */
 	void setCurrentStage(ShaderStages stage);
-
-	/* Output */
-	void saveOutput() const;
 
 	/* Global Emit */
 	void emitStruct(const string& name, const std::vector<StructMember>& members);

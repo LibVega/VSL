@@ -8,13 +8,17 @@
 
 #include <shaderc/shaderc.hpp>
 
+#include <fstream>
+
 
 namespace plsl
 {
 
 // ====================================================================================================================
-Shaderc::Shaderc()
+Shaderc::Shaderc(const CompilerOptions* options, const Generator* generator)
 	: compiler_{ std::make_shared<shaderc::Compiler>() }
+	, options_{ options }
+	, generator_{ generator }
 {
 
 }
@@ -23,6 +27,25 @@ Shaderc::Shaderc()
 Shaderc::~Shaderc()
 {
 
+}
+
+// ====================================================================================================================
+bool Shaderc::compileStage(ShaderStages stage) const
+{
+	const auto stageName = ShaderStageToStr(stage);
+
+	// Get the stage string
+	string source{};
+	if (!generator_->getStageString(stage, &source)) {
+		lastError_ = { CompilerStage::Compile, "Invalid stage for compilation - stage not found" };
+		return false;
+	}
+
+	// For now, just save the output
+	std::ofstream file{ "./plsl." + stageName };
+	file << source << std::endl;
+
+	return true;
 }
 
 } // namespace plsl
