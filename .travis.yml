@@ -15,6 +15,14 @@ git:
 before_install:
   - export CC=gcc-8
   - export CXX=g++-8
+  - wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -
+  - >
+    wget -qO /etc/apt/sources.list.d/lunarg-vulkan-1.2.162-bionic.list
+    https://packages.lunarg.com/vulkan/1.2.162/lunarg-vulkan-1.2.162-bionic.list
+  - apt update
+  - apt install vulkan-sdd
+  - (echo Vulkan SDK -  ${VULKAN_SDK} )
+
 
 script:
   - ${CXX} --version
@@ -23,5 +31,5 @@ script:
   - chmod +x ./tools/premake5_l
   - (cd ./grammar && ./generate.sh)
   - ./generate.sh
-  - (cd ./build && make -j2 config=shared_x64 all)
-  - (cd ./build && make -j2 config=static_x64 all)
+  - (cd ./build && make config=shared_x64 all)
+  - (cd ./build && make config=static_x64 all)

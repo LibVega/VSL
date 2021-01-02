@@ -6,6 +6,25 @@
 
 -- Premake solution generation script. Written in Lua.
 
+-- Ensure the Vulkan SDK is available
+local VULKAN_SDK = os.getenv('VULKAN_SDK')
+if VULKAN_SDK == nil then
+    print('ERROR: Vulkan SDK path not found on system - install or add to path')
+    os.exit(-1)
+end
+print('Found Vulkan SDK at: ' .. VULKAN_SDK)
+local VK_MAJ, VK_MIN, VK_REV, VK_PAT = string.match(VULKAN_SDK, '(%d+).(%d+).(%d+).(%d+)')
+if (VK_MAJ == nil) or (VK_MIN == nil) or (VK_REV == nil) or (VK_PAT == nil) then
+    print('ERROR: Cannot detect Vulkan SDK version from path')
+    os.exit(-2)
+end
+if (tonumber(VK_MIN) < 2) or (tonumber(VK_REV) < 154) then
+    print('ERROR: Invalid Vulkan SDK version, 1.2.154 or later required')
+    os.exit(-3)
+end
+local VULKAN_LIB = VULKAN_SDK .. '/Lib'
+local VULKAN_INC = VULKAN_SDK .. '/Include'
+
 
 -- Project Workspace
 workspace "Polaris"
@@ -48,18 +67,18 @@ workspace "Polaris"
 
     -- Library Paths
     filter { "system:windows" }
-        libdirs { "./lib/vs2019" }
+        libdirs { "./lib/vs2019", VULKAN_LIB }
     filter { "system:linux" }
-        libdirs { "./lib/linux" }
+        libdirs { "./lib/linux", VULKAN_LIB }
     filter { "system:macos" }
-        libdirs { "./lib/macos" }
+        libdirs { "./lib/macos", VULKAN_LIB }
     filter {}
 
 
 -- Compiler Library
 project "plsl"
     -- Settings
-    includedirs { "include", "include/antlr4" }
+    includedirs { "include", "include/antlr4", VULKAN_INC }
     defines { "_PLSL_BUILD" }
     targetname "plsl"
 
@@ -75,7 +94,7 @@ project "plsl"
     filter { "toolset:gcc" }
         links { "stdc++fs" }
     filter {}
-    links { "antlr4-runtime" }
+    links { "antlr4-runtime", "shaderc_combined" }
 
     -- Project Files
     files {
@@ -108,7 +127,7 @@ project "plslc"
     filter { "toolset:gcc" }
         links { "stdc++fs" }
     filter {}
-    links { "antlr4-runtime" }
+    links { "antlr4-runtime", "shaderc_combined" }
 
     -- Project files
     files {
