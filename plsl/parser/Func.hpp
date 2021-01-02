@@ -17,48 +17,40 @@
 namespace plsl
 {
 
-// Describes a specific argument for a function entry, with some metadata
-struct FunctionArg final
+// Special type object that can represent a function parameter or return type
+// Supports the concept of genType/genIType/genUType/genBType, and out variables
+struct FunctionType final
 {
 public:
-	FunctionArg() : type{ nullptr }, genType{ false } { }
-	FunctionArg(const ShaderType* type, bool gen = true) 
-		: type{ type }, genType{ gen && (type->isNumeric() || type->isBoolean()) }
-	{ }
-	FunctionArg(const string& typeName, bool gen = true);
-	FunctionArg(const char* const typeName, bool gen = true) : FunctionArg(string{ typeName }, gen) { }
+	FunctionType() : type{ nullptr }, genType{ false }, refType{ false } { }
+	FunctionType(const string& typeName);
+	FunctionType(const char* const typeName) : FunctionType(string{ typeName }) { }
 
 	bool match(const ExprPtr expr) const;
 
 public:
-	const ShaderType* type;
-	bool genType; // If the type is numeric, this matches any scalar/vector of that type
-}; // struct FunctionArg
+	const ShaderType* type; // The argument type (full type or just base type)
+	bool genType;
+	bool refType; // If the type is an out or inout argument
+}; // struct FunctionType
 
 
 // Describes a specific version (arg list) of a specific function, and how it is emitted to glsl
 class FunctionEntry final
 {
 public:
-	FunctionEntry() : genName{ "INVALID" }, retType{}, retIndex{ UINT32_MAX }, args{} {}
-	FunctionEntry(const string& genName, const ShaderType* retType, const std::vector<FunctionArg>& args)
-		: genName{ genName }, retType{ retType }, retIndex{ UINT32_MAX }, args{ args }
-	{ }
-	FunctionEntry(const string& genName, const string& retTypeName, const std::vector<FunctionArg>& args);
-	FunctionEntry(const string& genName, uint32 retIndex, const std::vector<FunctionArg>& args)
-		: genName{ genName }, retType{ nullptr }, retIndex{ retIndex }, args{ args }
-	{ }
-	FunctionEntry(const char* const genName, uint32 retIndex, const std::vector<FunctionArg>& args)
-		: genName{ genName }, retType{ nullptr }, retIndex{ retIndex }, args{ args }
+	FunctionEntry() : genName{ "INVALID" }, retType{}, argTypes{} {}
+	FunctionEntry(const string& genName, const string& retTypeName, const std::vector<FunctionType>& args);
+	FunctionEntry(const string& genName, const char* const retTypeName, const std::vector<FunctionType>& args)
+		: FunctionEntry(genName, string(retTypeName), args)
 	{ }
 
 	const ShaderType* match(const std::vector<ExprPtr>& params) const;
 
 public:
 	string genName; // Output generated name
-	const ShaderType* retType; // The return type for the function
-	uint32 retIndex; // The genType index to get the return type for
-	std::vector<FunctionArg> args;
+	FunctionType retType;
+	std::vector<FunctionType> argTypes;
 }; // class FunctionEntry
 
 

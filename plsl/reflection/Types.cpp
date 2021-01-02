@@ -113,6 +113,11 @@ uint32 ShaderType::getBindingCount() const
 // ====================================================================================================================
 bool ShaderType::hasImplicitCast(const ShaderType* target) const
 {
+	// Check for boolean -> boolean types
+	if (isBoolean() && target->isBoolean()) {
+		return (numeric.dims[0] == target->numeric.dims[0]) && (numeric.dims[1] == target->numeric.dims[1]);
+	}
+
 	// Only numerics can cast
 	if (!isNumeric() || !target->isNumeric()) {
 		return false;

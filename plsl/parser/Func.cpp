@@ -22,17 +22,59 @@ std::unordered_map<string, std::vector<FunctionEntry>> Functions::Builtins_{ };
 
 // ====================================================================================================================
 // ====================================================================================================================
-FunctionArg::FunctionArg(const string& typeName, bool gen)
-	: type{ TypeManager::GetBuiltinType(typeName) }, genType{ gen && (type->isNumeric() || type->isBoolean()) }
-{ }
+FunctionType::FunctionType(const string& typeName)
+	: type{ nullptr }
+	, genType{ false }
+	, refType{ false }
+{
+	// Get out/inout status
+	stringview name{};
+	if (typeName.find("out ") == 0) {
+		name = stringview(typeName).substr(4);
+		refType = true;
+	}
+	else if (typeName.find("inout ") == 0) {
+		name = stringview(typeName).substr(6);
+		refType = true;
+	}
+	else {
+		name = typeName;
+		refType = false;
+	}
+
+	// Get the type or gentype
+	if (name == "genType") {
+		type = TypeManager::GetBuiltinType("float");
+		genType = true;
+	}
+	else if (name == "genIType") {
+		type = TypeManager::GetBuiltinType("int");
+		genType = true;
+	}
+	else if (name == "genUType") {
+		type = TypeManager::GetBuiltinType("uint");
+		genType = true;
+	}
+	else if (name == "genBType") {
+		type = TypeManager::GetBuiltinType("bool");
+		genType = true;
+	}
+	else {
+		type = TypeManager::GetBuiltinType(string(name));
+		if (!type) {
+			throw std::runtime_error(mkstr("COMPILER BUG - Invalid type name '%s' for function type", name.data()));
+		}
+		genType = false;
+	}
+}
 
 // ====================================================================================================================
-bool FunctionArg::match(const ExprPtr expr) const
+bool FunctionType::match(const ExprPtr expr) const
 {
 	const auto etype = expr->type();
 	if (genType) {
 		const auto casttype = TypeManager::GetNumericType(type->baseType, etype->numeric.dims[0], 1);
-		return (etype->isNumeric() || etype->isBoolean()) && !etype->isMatrix() && etype->hasImplicitCast(casttype);
+		return etype->hasImplicitCast(casttype);
 	}
 	else {
 		return etype->hasImplicitCast(type);
@@ -42,27 +84,27 @@ bool FunctionArg::match(const ExprPtr expr) const
 
 // ====================================================================================================================
 // ====================================================================================================================
-FunctionEntry::FunctionEntry(const string& genName, const string& retTypeName, const std::vector<FunctionArg>& args)
-	: genName{ genName }, retType{ TypeManager::GetBuiltinType(retTypeName) }, retIndex{ UINT32_MAX }, args{ args }
+FunctionEntry::FunctionEntry(const string& genName, const string& retTypeName, const std::vector<FunctionType>& args)
+	: genName{ genName }, retType{ retTypeName }, argTypes{ args }
 { }
 
 // ====================================================================================================================
 const ShaderType* FunctionEntry::match(const std::vector<ExprPtr>& params) const
 {
 	// Count check
-	if (params.size() != args.size()) {
+	if (params.size() != argTypes.size()) {
 		return nullptr;
 	}
 
 	// Per-arg check
 	uint32 genSize = 0;
-	for (uint32 i = 0; i < args.size(); ++i) {
-		const auto& ai = args[i];
+	for (uint32 i = 0; i < argTypes.size(); ++i) {
+		const auto& ai = argTypes[i];
 		const auto& pi = params[i];
 		if (!ai.match(pi)) {
 			return nullptr;
 		}
-		if ((pi->type()->isNumeric() || pi->type()->isBoolean()) && ai.genType) {
+		if (ai.genType) {
 			if (genSize == 0) {
 				genSize = pi->type()->numeric.dims[0];
 			}
@@ -72,9 +114,10 @@ const ShaderType* FunctionEntry::match(const std::vector<ExprPtr>& params) const
 		}
 	}
 
-	return (retIndex == UINT32_MAX)
-		? retType
-		: TypeManager::GetNumericType(args[retIndex].type->baseType, params[retIndex]->type()->numeric.dims[0], 1);
+	// Return the correct type
+	return retType.genType
+		? TypeManager::GetNumericType(retType.type->baseType, genSize, 1)
+		: retType.type;
 }
 
 

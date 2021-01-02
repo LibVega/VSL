@@ -125,7 +125,7 @@ using int64  = std::int64_t;
 
 /* String */
 using string = std::string;
-using string_view = std::string_view;
+using stringview = std::string_view;
 
 /* Pointer Types */
 template<typename T, typename Deleter = std::default_delete<T>>
