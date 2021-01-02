@@ -22,8 +22,8 @@ if (tonumber(VK_MIN) < 2) or (tonumber(VK_REV) < 154) then
     print('ERROR: Invalid Vulkan SDK version, 1.2.154 or later required')
     os.exit(-3)
 end
-local VULKAN_LIB = VULKAN_SDK .. '/Lib'
-local VULKAN_INC = VULKAN_SDK .. '/Include'
+local VULKAN_LIB = VULKAN_SDK .. '/lib'
+local VULKAN_INC = VULKAN_SDK .. '/include'
 
 
 -- Project Workspace
