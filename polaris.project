@@ -92,7 +92,7 @@ project "plsl"
 
     -- Linked Libraries
     filter { "toolset:gcc" }
-        links { "stdc++fs" }
+        links { "stdc++fs", "pthread" }
     filter {}
     links { "antlr4-runtime", "shaderc_combined" }
 
@@ -125,7 +125,7 @@ project "plslc"
 
     -- Linked Libraries
     filter { "toolset:gcc" }
-        links { "stdc++fs" }
+        links { "stdc++fs", "pthread" }
     filter {}
     links { "antlr4-runtime", "shaderc_combined" }
 
