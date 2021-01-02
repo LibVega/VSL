@@ -10,7 +10,7 @@
 #include <algorithm>
 
 
-namespace plsl
+namespace vsl
 {
 
 // ====================================================================================================================
@@ -143,7 +143,7 @@ bool ShaderType::hasImplicitCast(const ShaderType* target) const
 }
 
 // ====================================================================================================================
-string ShaderType::getPLSLName() const
+string ShaderType::getVSLName() const
 {
 	switch (baseType)
 	{
@@ -223,4 +223,4 @@ string ShaderType::getGLSLName() const
 	}
 }
 
-} // namespace plsl
+} // namespace vsl

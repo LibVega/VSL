@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <plsl/Config.hpp>
-#include <plsl/Compiler.hpp>
+#include <vsl/Config.hpp>
+#include <vsl/Compiler.hpp>
 #include "./Generator.hpp"
 
 #include <unordered_map>
@@ -15,7 +15,7 @@
 namespace shaderc { class Compiler; }
 
 
-namespace plsl
+namespace vsl
 {
 
 // Wraps an interface to a shaderc compilation task
@@ -40,8 +40,8 @@ private:
 	ShaderStages stages_;
 	std::unordered_map<ShaderStages, std::vector<uint32>> bytecodes_;
 
-	PLSL_NO_COPY(Shaderc)
-	PLSL_NO_MOVE(Shaderc)
+	VSL_NO_COPY(Shaderc)
+	VSL_NO_MOVE(Shaderc)
 }; // class Shaderc
 
-} // namespace plsl
+} // namespace vsl

@@ -12,7 +12,7 @@
 #define GOOD_RETURN(type,callstr) { LastError_ = ""; return std::make_tuple(type, callstr); }
 
 
-namespace plsl
+namespace vsl
 {
 
 // ====================================================================================================================
@@ -211,7 +211,7 @@ std::tuple<const ShaderType*, string> Functions::CheckConstructor(const string& 
 			if (a1->type()->isScalar()) {  // Fill vector with scalar
 				if (!a1->type()->hasImplicitCast(ctype)) {
 					ERR_RETURN(mkstr("Cannot construct type '%s' with scalar type '%s'", 
-						retType->getPLSLName().c_str(), a1->type()->getPLSLName().c_str()));
+						retType->getVSLName().c_str(), a1->type()->getVSLName().c_str()));
 				}
 				GOOD_RETURN(retType, callName);
 			}
@@ -235,15 +235,15 @@ std::tuple<const ShaderType*, string> Functions::CheckConstructor(const string& 
 				}
 				if (!argCType->hasImplicitCast(ctype)) {
 					ERR_RETURN(mkstr("No implicit cast from argument %u type '%s' to component type '%s'", i + 1,
-						argCType->getPLSLName().c_str(), ctype->getPLSLName().c_str()));
+						argCType->getVSLName().c_str(), ctype->getVSLName().c_str()));
 				}
 				found += arg->type()->numeric.dims[0];
 			}
 			if (found < ccount) {
-				ERR_RETURN(mkstr("Not enough components for %s constructor", retType->getPLSLName().c_str()));
+				ERR_RETURN(mkstr("Not enough components for %s constructor", retType->getVSLName().c_str()));
 			}
 			if (found > ccount) {
-				ERR_RETURN(mkstr("Too many components for %s constructor", retType->getPLSLName().c_str()));
+				ERR_RETURN(mkstr("Too many components for %s constructor", retType->getVSLName().c_str()));
 			}
 			GOOD_RETURN(retType, callName);
 		}
@@ -270,19 +270,19 @@ std::tuple<const ShaderType*, string> Functions::CheckConstructor(const string& 
 				const auto argCType = TypeManager::GetNumericType(arg->type()->baseType, 1, 1);
 				if (!argCType->hasImplicitCast(ctype)) {
 					ERR_RETURN(mkstr("No implicit cast from argument %u type '%s' to component type '%s'", i + 1,
-						argCType->getPLSLName().c_str(), ctype->getPLSLName().c_str()));
+						argCType->getVSLName().c_str(), ctype->getVSLName().c_str()));
 				}
 				found += (uint32(arg->type()->numeric.dims[0]) * arg->type()->numeric.dims[1]);
 			}
 			if (found < ccount) {
-				ERR_RETURN(mkstr("Not enough components for %s constructor", retType->getPLSLName().c_str()));
+				ERR_RETURN(mkstr("Not enough components for %s constructor", retType->getVSLName().c_str()));
 			}
 			if (found > ccount) {
-				ERR_RETURN(mkstr("Too many components for %s constructor", retType->getPLSLName().c_str()));
+				ERR_RETURN(mkstr("Too many components for %s constructor", retType->getVSLName().c_str()));
 			}
 			GOOD_RETURN(retType, callName);
 		}
 	}
 }
 
-} // namespace plsl
+} // namespace vsl

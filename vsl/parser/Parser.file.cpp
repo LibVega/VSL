@@ -8,10 +8,10 @@
 
 #include <cfloat>
 
-#define VISIT_FUNC(type) antlrcpp::Any Parser::visit##type(grammar::PLSL::type##Context* ctx)
+#define VISIT_FUNC(type) antlrcpp::Any Parser::visit##type(grammar::VSL::type##Context* ctx)
 
 
-namespace plsl
+namespace vsl
 {
 
 // ====================================================================================================================
@@ -120,8 +120,8 @@ VISIT_FUNC(ShaderInputOutputStatement)
 
 	// Validate index
 	if (isIn) {
-		if (index > PLSL_MAX_INPUT_INDEX) {
-			ERROR(ctx->index, mkstr("Vertex input is larger than max allowed binding %u", PLSL_MAX_INPUT_INDEX));
+		if (index > VSL_MAX_INPUT_INDEX) {
+			ERROR(ctx->index, mkstr("Vertex input is larger than max allowed binding %u", VSL_MAX_INPUT_INDEX));
 		}
 		const auto other = shaderInfo_.getInput(index);
 		if (other) {
@@ -131,8 +131,8 @@ VISIT_FUNC(ShaderInputOutputStatement)
 		}
 	}
 	else {
-		if (index > PLSL_MAX_OUTPUT_INDEX) {
-			ERROR(ctx->index, mkstr("Fragment output is larger than max allowed binding %u", PLSL_MAX_OUTPUT_INDEX));
+		if (index > VSL_MAX_OUTPUT_INDEX) {
+			ERROR(ctx->index, mkstr("Fragment output is larger than max allowed binding %u", VSL_MAX_OUTPUT_INDEX));
 		}
 		const auto other = shaderInfo_.getOutput(index);
 		if (other) {
@@ -152,8 +152,8 @@ VISIT_FUNC(ShaderInputOutputStatement)
 
 	// Input/Output specific type validation
 	if (isIn) {
-		if (ioVar.arraySize > PLSL_MAX_INPUT_ARRAY_SIZE) {
-			ERROR(varDecl->arraySize, mkstr("Vertex input arrays cannot be larger than %u", PLSL_MAX_INPUT_ARRAY_SIZE));
+		if (ioVar.arraySize > VSL_MAX_INPUT_ARRAY_SIZE) {
+			ERROR(varDecl->arraySize, mkstr("Vertex input arrays cannot be larger than %u", VSL_MAX_INPUT_ARRAY_SIZE));
 		}
 		if ((ioVar.arraySize != 1) && (ioVar.dataType->numeric.dims[1] != 1)) {
 			ERROR(varDecl->arraySize, "Vertex inputs that are matrix types cannot be arrays");
@@ -270,12 +270,12 @@ VISIT_FUNC(ShaderBindingStatement)
 
 	// Check for binding limit
 	if (bVar.dataType->baseType == ShaderBaseType::Input) {
-		if (shaderInfo_.subpassInputs().size() == PLSL_MAX_SUBPASS_INPUTS) {
-			ERROR(ctx, mkstr("Cannot have more than %u subpass inputs", PLSL_MAX_SUBPASS_INPUTS));
+		if (shaderInfo_.subpassInputs().size() == VSL_MAX_SUBPASS_INPUTS) {
+			ERROR(ctx, mkstr("Cannot have more than %u subpass inputs", VSL_MAX_SUBPASS_INPUTS));
 		}
 	}
-	else if (shaderInfo_.bindings().size() == (PLSL_MAX_BINDING_INDEX + 1)) {
-		ERROR(ctx, mkstr("Cannot have more than %u bindings in a shader", PLSL_MAX_BINDING_INDEX + 1));
+	else if (shaderInfo_.bindings().size() == (VSL_MAX_BINDING_INDEX + 1)) {
+		ERROR(ctx, mkstr("Cannot have more than %u bindings in a shader", VSL_MAX_BINDING_INDEX + 1));
 	}
 
 	// Get the binding slot
@@ -284,12 +284,12 @@ VISIT_FUNC(ShaderBindingStatement)
 		ERROR(ctx->slot, "Binding slot index must be non-negative integer");
 	}
 	if (bVar.dataType->baseType == ShaderBaseType::Input) {
-		if (slotLiteral.u >= PLSL_MAX_SUBPASS_INPUTS) {
-			ERROR(ctx->slot, mkstr("Subpass input index out of range (max %u)", PLSL_MAX_SUBPASS_INPUTS - 1));
+		if (slotLiteral.u >= VSL_MAX_SUBPASS_INPUTS) {
+			ERROR(ctx->slot, mkstr("Subpass input index out of range (max %u)", VSL_MAX_SUBPASS_INPUTS - 1));
 		}
 	}
-	else if (slotLiteral.u > PLSL_MAX_BINDING_INDEX) {
-		ERROR(ctx->slot, mkstr("Slot index out of range (max %u)", PLSL_MAX_BINDING_INDEX));
+	else if (slotLiteral.u > VSL_MAX_BINDING_INDEX) {
+		ERROR(ctx->slot, mkstr("Slot index out of range (max %u)", VSL_MAX_BINDING_INDEX));
 	}
 	const auto slotIndex = uint8(slotLiteral.u);
 
@@ -416,4 +416,4 @@ VISIT_FUNC(ShaderStageFunction)
 	return nullptr;
 }
 
-} // namespace plsl
+} // namespace vsl

@@ -9,7 +9,7 @@
 #include <algorithm>
 
 
-namespace plsl
+namespace vsl
 {
 
 // ====================================================================================================================
@@ -147,4 +147,4 @@ uint32 ShaderInfo::getMaxBindingIndex() const
 	return (it != bindings_.end()) ? it->slot : 0;
 }
 
-} // namespace plsl
+} // namespace vsl

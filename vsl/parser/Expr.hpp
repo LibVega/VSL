@@ -6,11 +6,11 @@
 
 #pragma once
 
-#include <plsl/Config.hpp>
+#include <vsl/Config.hpp>
 #include "../reflection/Types.hpp"
 
 
-namespace plsl
+namespace vsl
 {
 
 // Contains information about the result of a program expression, such as the type and value text
@@ -30,10 +30,10 @@ private:
 	const ShaderType* type_;
 	uint8 arraySize_;
 
-	PLSL_NO_COPY(Expr)
-	PLSL_NO_MOVE(Expr)
+	VSL_NO_COPY(Expr)
+	VSL_NO_MOVE(Expr)
 }; // class Expr
 
 using ExprPtr = std::shared_ptr<Expr>;
 
-} // namespace plsl
+} // namespace vsl

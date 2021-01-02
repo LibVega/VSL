@@ -10,12 +10,12 @@
 
 /* Ensure 64-bit */
 #if !defined(_M_X64) && !defined(__x86_64__)
-#	error Polaris must be built as 64-bit.
+#	error VSL must be built as 64-bit.
 #endif
 
 /* OS Detection */
 #if defined(_WIN32)
-#	define PLSL_WIN32
+#	define VSL_WIN32
 #	ifndef NOMINMAX
 #		define NOMINMAX
 #	endif
@@ -25,66 +25,66 @@
 #elif defined(__APPLE__)
 #	include "TargetConditionals.h"
 #	if TARGET_OS_OSX==1
-#		define PLSL_OSX
+#		define VSL_OSX
 #	else
 #		error Unsupported Apple OS platform, please use desktop MacOS.
 #	endif // TARGET_OS_OSX==1
-#	define PLSL_APPLE
-#	define PLSL_POSIX
+#	define VSL_APPLE
+#	define VSL_POSIX
 #elif defined(__ANDROID__)
-#	error Cannot compile Polaris for Android platforms.
+#	error Cannot compile VSL for Android platforms.
 #elif defined(__linux__)
 	// Technically android is linux too, but that case is caught above
-#	define PLSL_LINUX
-#	define PLSL_POSIX
+#	define VSL_LINUX
+#	define VSL_POSIX
 #else
 #	error Supported OS not detected - please use Windows, MacOS, or desktop Linux.
 #endif // defined(_WIN32)
 
 /* Compiler Detection */
 #if defined(_MSC_VER)
-#	define PLSL_MSVC
+#	define VSL_MSVC
 #elif defined(__MINGW32__)
-#	error Cannot use MinGW to compile Polaris.
+#	error Cannot use MinGW to compile VSL.
 #elif defined(__clang__)
-#	define PLSL_CLANG
+#	define VSL_CLANG
 #elif defined(__GNUC__)
-#	define PLSL_GCC
+#	define VSL_GCC
 #else
 #	error Unsupported compiler detected - please use MSVC, GNU GCC, or Clang.
 #endif // defined(_MSC_VER)
 
 /* Import/Export Macros */
-#if !defined(PLSL_STATIC)
-#	if defined(PLSL_MSVC)
-#		if defined(_PLSL_BUILD)
-#			define PLSL_API __declspec(dllexport)
-#			define PLSL_C_API extern "C" __declspec(dllexport)
+#if !defined(VSL_STATIC)
+#	if defined(VSL_MSVC)
+#		if defined(_VSL_BUILD)
+#			define VSL_API __declspec(dllexport)
+#			define VSL_C_API extern "C" __declspec(dllexport)
 #		else
-#			define PLSL_API __declspec(dllimport)
-#			define PLSL_C_API extern "C" __declspec(dllimport)
-#		endif // defined(_PLSL_BUILD)
+#			define VSL_API __declspec(dllimport)
+#			define VSL_C_API extern "C" __declspec(dllimport)
+#		endif // defined(_VSL_BUILD)
 #	else
-#		define PLSL_API __attribute__((__visibility__("default")))
-#		define PLSL_C_API extern "C" __attribute__((__visibility__("default")))
-#	endif // defined(PLSL_MSVC)
+#		define VSL_API __attribute__((__visibility__("default")))
+#		define VSL_C_API extern "C" __attribute__((__visibility__("default")))
+#	endif // defined(VSL_MSVC)
 #else
-#	define PLSL_API
-#endif // !defined(PLSL_STATIC)
+#	define VSL_API
+#endif // !defined(VSL_STATIC)
 
 /* Platform Macros */
-#if defined(PLSL_MSVC)
+#if defined(VSL_MSVC)
 #	define NORETURN __declspec(noreturn)
 #else
 #	define NORETURN __attribute__((noreturn))
-#endif // defined(PLSL_MSVC)
+#endif // defined(VSL_MSVC)
 
 /* Library Version */
-#define PLSL_VERSION_MAJOR 0
-#define PLSL_VERSION_MINOR 1
-#define PLSL_VERSION_PATCH 0
-#define PLSL_MAKE_VERSION(maj,min,pat) (((maj)<<22)|((min)<<12)|(pat))
-#define PLSL_VERSION PLSL_MAKE_VERSION(PLSL_VERSION_MAJOR,PLSL_VERSION_MINOR,PLSL_VERSION_PATCH)
+#define VSL_VERSION_MAJOR 0
+#define VSL_VERSION_MINOR 1
+#define VSL_VERSION_PATCH 0
+#define VSL_MAKE_VERSION(maj,min,pat) (((maj)<<22)|((min)<<12)|(pat))
+#define VSL_VERSION VSL_MAKE_VERSION(VSL_VERSION_MAJOR,VSL_VERSION_MINOR,VSL_VERSION_PATCH)
 
 #include <cstdarg>
 #include <cstddef>
@@ -110,7 +110,7 @@
 #endif
 
 
-namespace plsl
+namespace vsl
 {
 
 /* Integer Types */
@@ -145,13 +145,13 @@ inline string mkstr(const char* const fmt, Args&&... args)
 	return string(buf, (len < BUFSIZE) ? len : BUFSIZE);
 }
 
-} // namespace plsl
+} // namespace vsl
 
 
 /* Class Operation Macros */
-#define PLSL_NO_COPY(cName) public: cName(const cName&) = delete; cName& operator = (const cName&) = delete;
-#define PLSL_NO_MOVE(cName) public: cName(cName&&) = delete; cName& operator = (cName&&) = delete;
-#define PLSL_NO_INIT(cName) \
+#define VSL_NO_COPY(cName) public: cName(const cName&) = delete; cName& operator = (const cName&) = delete;
+#define VSL_NO_MOVE(cName) public: cName(cName&&) = delete; cName& operator = (cName&&) = delete;
+#define VSL_NO_INIT(cName) \
 	public: \
 	cName() = delete; \
 	void* operator new (size_t) = delete; \

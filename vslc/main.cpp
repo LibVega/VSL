@@ -4,19 +4,19 @@
  * the 'LICENSE' file at the root of this repository, or online at <https://opensource.org/licenses/MS-PL>.
  */
 
-/// The main function entry point for the command-line Polaris compiler 'plslc'
+/// The main function entry point for the command-line VSL compiler 'vslc'
 
-#include <plsl/Compiler.hpp>
+#include <vsl/Compiler.hpp>
 
 #include <iostream>
 
 
 int main(int argc, char* argv[])
 {
-	using namespace plsl;
+	using namespace vsl;
 
 	if (argc < 2) {
-		std::cerr << "Usage: plslc <file>" << std::endl;
+		std::cerr << "Usage: vsl <file>" << std::endl;
 		return 1;
 	}
 

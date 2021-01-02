@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <plsl/Config.hpp>
+#include <vsl/Config.hpp>
 #include "../reflection/Types.hpp"
 #include "../parser/Expr.hpp"
 
@@ -14,7 +14,7 @@
 #include <vector>
 
 
-namespace plsl
+namespace vsl
 {
 
 // Special type object that can represent a function parameter or return type
@@ -77,4 +77,4 @@ private:
 	static std::unordered_map<string, std::vector<FunctionEntry>> Builtins_;
 }; // class Functions
 
-} // namespace plsl
+} // namespace vsl

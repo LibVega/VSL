@@ -10,7 +10,7 @@
 #define GETTYPE(tname) (TypeManager::GetBuiltinType(tname))
 
 
-namespace plsl
+namespace vsl
 {
 
 // ====================================================================================================================
@@ -360,4 +360,4 @@ void Functions::Initialize()
 	};
 }
 
-} // namespace plsl
+} // namespace vsl

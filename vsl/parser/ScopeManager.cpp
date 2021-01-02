@@ -10,7 +10,7 @@
 #include <algorithm>
 
 
-namespace plsl
+namespace vsl
 {
 
 // ====================================================================================================================
@@ -272,4 +272,4 @@ void ScopeManager::PopulateBuiltins(ShaderStages stage, std::vector<Variable>& v
 	}
 }
 
-} // namespace plsl
+} // namespace vsl

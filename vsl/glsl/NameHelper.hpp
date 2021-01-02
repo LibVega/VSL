@@ -6,11 +6,11 @@
 
 #pragma once
 
-#include <plsl/Config.hpp>
+#include <vsl/Config.hpp>
 #include "../reflection/Types.hpp"
 
 
-namespace plsl
+namespace vsl
 {
 
 // Used to convert names for types and builtins
@@ -29,10 +29,10 @@ public:
 
 	static string GetBindingIndexText(uint32 index);
 
-	static string GetBuiltinName(const string& plslName);
+	static string GetBuiltinName(const string& vslName);
 
-	PLSL_NO_COPY(NameHelper)
-	PLSL_NO_MOVE(NameHelper)
+	VSL_NO_COPY(NameHelper)
+	VSL_NO_MOVE(NameHelper)
 }; // class NameHelper
 
-} // namespace plsl
+} // namespace vsl

@@ -6,13 +6,13 @@
 
 #pragma once
 
-#include <plsl/Config.hpp>
+#include <vsl/Config.hpp>
 #include "./Types.hpp"
 
 #include <unordered_map>
 
 
-namespace plsl
+namespace vsl
 {
 
 // Manages a collection of known types, including builtin types and user types added by shaders
@@ -44,8 +44,8 @@ private:
 
 	static const std::unordered_map<string, ShaderType> BuiltinTypes_;
 
-	PLSL_NO_COPY(TypeManager)
-	PLSL_NO_MOVE(TypeManager)
+	VSL_NO_COPY(TypeManager)
+	VSL_NO_MOVE(TypeManager)
 }; // class TypeManager
 
-} // namespace plsl
+} // namespace vsl

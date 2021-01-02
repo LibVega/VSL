@@ -7,9 +7,9 @@
 #include "./Expr.hpp"
 
 
-namespace plsl
+namespace vsl
 {
 
 
 
-} // namespace plsl
+} // namespace vsl

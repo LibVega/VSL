@@ -4,7 +4,7 @@
  * the 'LICENSE' file at the root of this repository, or online at <https://opensource.org/licenses/MS-PL>.
  */
 
-#include <plsl/Compiler.hpp>
+#include <vsl/Compiler.hpp>
 
 #include <filesystem>
 #include <fstream>
@@ -15,7 +15,7 @@
 #define SET_ERROR(stage,...) lastError_ = CompilerError(CompilerStage::stage, ##__VA_ARGS__);
 
 
-namespace plsl
+namespace vsl
 {
 
 // ====================================================================================================================
@@ -111,4 +111,4 @@ bool Compiler::compileSource(const string& source, const CompilerOptions& option
 	return true;
 }
 
-} // namespace plsl
+} // namespace vsl

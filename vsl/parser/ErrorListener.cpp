@@ -8,10 +8,10 @@
 #include "./Parser.hpp"
 
 #define STRMATCH(mstr) (msg.find(mstr)!=string::npos) 
-#define ISRULE(rule) (ruleIdx==grammar::PLSL::Rule##rule)
+#define ISRULE(rule) (ruleIdx==grammar::VSL::Rule##rule)
 
 
-namespace plsl
+namespace vsl
 {
 
 // ====================================================================================================================
@@ -74,4 +74,4 @@ void ErrorListener::syntaxError(antlr4::Recognizer* recognizer, antlr4::Token* b
 	}
 }
 
-} // namespace plsl
+} // namespace vsl

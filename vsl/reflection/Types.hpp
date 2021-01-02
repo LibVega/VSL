@@ -6,15 +6,15 @@
 
 #pragma once
 
-#include <plsl/Config.hpp>
+#include <vsl/Config.hpp>
 
 #include <vector>
 
-#define PLSL_MAX_ARRAY_SIZE (255u)   // The maximum size of an array for struct members
-#define PLSL_MAX_MEMBER_COUNT (32u)  // The maximum number of struct members
+#define VSL_MAX_ARRAY_SIZE (255u)   // The maximum size of an array for struct members
+#define VSL_MAX_MEMBER_COUNT (32u)  // The maximum number of struct members
 
 
-namespace plsl
+namespace vsl
 {
 
 // Enum of the base shader types
@@ -141,7 +141,7 @@ public:
 	bool hasImplicitCast(const ShaderType* target) const;
 
 	/* Names */
-	string getPLSLName() const;
+	string getVSLName() const;
 	string getGLSLName() const;
 
 public:
@@ -172,4 +172,4 @@ public:
 	} userStruct;
 }; // struct ShaderType
 
-} // namespace plsl
+} // namespace vsl

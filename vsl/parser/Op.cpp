@@ -11,7 +11,7 @@
 #define CLR_ERROR { LastError_ = ""; }
 
 
-namespace plsl
+namespace vsl
 {
 
 // ====================================================================================================================
@@ -242,8 +242,8 @@ string Op::ProcessBinaryOp(const string& op, const Expr* e1, const Expr* e2, con
 		return mkstr("(%s %s %s)", lstr.c_str(), op.c_str(), rstr.c_str());
 	}
 	else {
-		ERR_RETURN(mkstr("Invalid binary operator for types '%s' and '%s'", ltype->getPLSLName().c_str(),
-			rtype->getPLSLName().c_str()));
+		ERR_RETURN(mkstr("Invalid binary operator for types '%s' and '%s'", ltype->getVSLName().c_str(),
+			rtype->getVSLName().c_str()));
 	}
 }
 
@@ -291,7 +291,7 @@ string Op::ProcessTernaryOp(const Expr* e1, const Expr* e2, const Expr* e3, cons
 	else { // isNumeric()
 		if (!ftype->hasImplicitCast(ttype)) {
 			ERR_RETURN(mkstr("No implicit cast for false expression '%s' to true expression '%s'",
-				ftype->getPLSLName().c_str(), ttype->getPLSLName().c_str()));
+				ftype->getVSLName().c_str(), ttype->getVSLName().c_str()));
 		}
 	}
 
@@ -300,4 +300,4 @@ string Op::ProcessTernaryOp(const Expr* e1, const Expr* e2, const Expr* e3, cons
 	return mkstr("(%s ? %s : %s)", cstr.c_str(), tstr.c_str(), fstr.c_str());
 }
 
-} // namespace plsl
+} // namespace vsl

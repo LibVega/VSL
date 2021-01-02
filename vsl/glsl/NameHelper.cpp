@@ -9,7 +9,7 @@
 #include <algorithm>
 
 
-namespace plsl
+namespace vsl
 {
 
 // ====================================================================================================================
@@ -204,7 +204,7 @@ string NameHelper::GetBindingIndexText(uint32 index)
 }
 
 // ====================================================================================================================
-string NameHelper::GetBuiltinName(const string& plslName)
+string NameHelper::GetBuiltinName(const string& vslName)
 {
 	static const std::unordered_map<string, string> BUILTIN_MAP {
 		{ "$VertexIndex", "gl_VertexIndex" }, { "$InstanceIndex", "gl_InstanceIndex" },
@@ -216,11 +216,11 @@ string NameHelper::GetBuiltinName(const string& plslName)
 		{ "$PrimitiveID", "gl_PrimitiveID" }
 	};
 
-	const auto it = BUILTIN_MAP.find(plslName);
+	const auto it = BUILTIN_MAP.find(vslName);
 	if (it != BUILTIN_MAP.end()) {
 		return it->second;
 	}
 	return "";
 }
 
-} // namespace plsl
+} // namespace vsl

@@ -6,14 +6,14 @@
 
 #pragma once
 
-#include <plsl/Config.hpp>
+#include <vsl/Config.hpp>
 #include "../reflection/Types.hpp"
 #include "../reflection/ShaderInfo.hpp"
 
 #include <vector>
 
 
-namespace plsl
+namespace vsl
 {
 
 // The different variable types
@@ -149,8 +149,8 @@ private:
 	std::vector<Constant> constants_;
 	std::vector<uptr<Scope>> scopes_;
 
-	PLSL_NO_COPY(ScopeManager)
-	PLSL_NO_MOVE(ScopeManager)
+	VSL_NO_COPY(ScopeManager)
+	VSL_NO_MOVE(ScopeManager)
 }; // class ScopeManager
 
-} // namespace plsl
+} // namespace vsl

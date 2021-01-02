@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <plsl/Config.hpp>
-#include <plsl/Compiler.hpp>
+#include <vsl/Config.hpp>
+#include <vsl/Compiler.hpp>
 #include "../reflection/Types.hpp"
 #include "../reflection/ShaderInfo.hpp"
 #include "../parser/ScopeManager.hpp"
@@ -16,7 +16,7 @@
 #include <sstream>
 
 
-namespace plsl
+namespace vsl
 {
 
 // Reports a fatal error by the generator
@@ -82,8 +82,8 @@ private:
 	string indentString_; // The current indent level string for function generation
 	uint32 bindingEmitMask_; // Mask of binding indices that have been emitted in the current function
 
-	PLSL_NO_COPY(Generator)
-	PLSL_NO_MOVE(Generator)
+	VSL_NO_COPY(Generator)
+	VSL_NO_MOVE(Generator)
 }; // class Generator
 
-} // namespace plsl
+} // namespace vsl

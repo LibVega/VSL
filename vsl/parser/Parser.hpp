@@ -6,10 +6,10 @@
 
 #pragma once
 
-#include <plsl/Config.hpp>
-#include <plsl/Compiler.hpp>
+#include <vsl/Config.hpp>
+#include <vsl/Compiler.hpp>
 #include "./ErrorListener.hpp"
-#include "../../generated/PLSLBaseVisitor.h"
+#include "../../generated/VSLBaseVisitor.h"
 #include "../reflection/ShaderInfo.hpp"
 #include "../reflection/TypeManager.hpp"
 #include "./ScopeManager.hpp"
@@ -21,10 +21,10 @@
 #include <antlr4/Token.h>
 #include <antlr4/tree/TerminalNode.h>
 
-#define VISIT_DECL(type) antlrcpp::Any visit##type(grammar::PLSL::type##Context* ctx) override;
+#define VISIT_DECL(type) antlrcpp::Any visit##type(grammar::VSL::type##Context* ctx) override;
 
 
-namespace plsl
+namespace vsl
 {
 
 // The exception type used to stop the tree walk and report an error
@@ -94,7 +94,7 @@ public:
 
 // The central visitor type that performs the parsing and AST walk
 class Parser final :
-	public grammar::PLSLBaseVisitor
+	public grammar::VSLBaseVisitor
 {
 	friend class ErrorListener;
 
@@ -114,7 +114,7 @@ public:
 	static Literal ParseLiteral(const string& txt);
 	static Literal ParseLiteral(Parser* parser, const antlr4::Token* token);
 	static bool IsValidSwizzle(const string& swizzle);
-	Variable parseVariableDeclaration(const grammar::PLSL::VariableDeclarationContext* ctx, bool global);
+	Variable parseVariableDeclaration(const grammar::VSL::VariableDeclarationContext* ctx, bool global);
 	void validateSwizzle(uint32 compCount, antlr4::tree::TerminalNode* swizzle) const;
 
 	/* File-Level Rules */
@@ -137,7 +137,7 @@ public:
 	/* Expressions */
 	VISIT_DECL(FactorExpr)
 	VISIT_DECL(NegateExpr)
-	antlrcpp::Any visitUnaryOp(const string& optext, grammar::PLSL::ExpressionContext* exprCtx);
+	antlrcpp::Any visitUnaryOp(const string& optext, grammar::VSL::ExpressionContext* exprCtx);
 	VISIT_DECL(MulDivModExpr)
 	VISIT_DECL(AddSubExpr)
 	VISIT_DECL(ShiftExpr)
@@ -145,8 +145,8 @@ public:
 	VISIT_DECL(EqualityExpr)
 	VISIT_DECL(BitwiseExpr)
 	VISIT_DECL(LogicalExpr)
-	antlrcpp::Any visitBinaryOp(const string& optext, grammar::PLSL::ExpressionContext* leftCtx, 
-		grammar::PLSL::ExpressionContext* rightCtx);
+	antlrcpp::Any visitBinaryOp(const string& optext, grammar::VSL::ExpressionContext* leftCtx, 
+		grammar::VSL::ExpressionContext* rightCtx);
 	VISIT_DECL(TernaryExpr)
 	VISIT_DECL(GroupAtom)
 	VISIT_DECL(IndexAtom)
@@ -180,11 +180,11 @@ private:
 	ShaderStages currentStage_;
 	Generator generator_;
 
-	PLSL_NO_COPY(Parser)
-	PLSL_NO_MOVE(Parser)
+	VSL_NO_COPY(Parser)
+	VSL_NO_MOVE(Parser)
 }; // class Parser
 
-} // namespace plsl
+} // namespace vsl
 
 
 #undef VISIT_DECL

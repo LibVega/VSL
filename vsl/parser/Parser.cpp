@@ -5,8 +5,8 @@
  */
 
 #include "./Parser.hpp"
-#include "../../generated/PLSLLexer.h"
-#include "../../generated/PLSL.h"
+#include "../../generated/VSLLexer.h"
+#include "../../generated/VSL.h"
 #include "./Func.hpp"
 
 #include <cmath>
@@ -14,7 +14,7 @@
 #define SET_ERROR(stage,...) lastError_ = CompilerError(CompilerStage::stage, ##__VA_ARGS__);
 
 
-namespace plsl
+namespace vsl
 {
 
 // ====================================================================================================================
@@ -43,14 +43,14 @@ bool Parser::parse(const string& source) noexcept
 {
 	// Create the lexer object
 	antlr4::ANTLRInputStream inStream{ source };
-	grammar::PLSLLexer lexer{ &inStream };
+	grammar::VSLLexer lexer{ &inStream };
 	lexer.removeErrorListeners();
 	lexer.addErrorListener(&errorListener_);
 
 	// Create the parser object
 	antlr4::CommonTokenStream tokenStream{ &lexer };
 	tokens_ = &tokenStream;
-	grammar::PLSL parser{ &tokenStream };
+	grammar::VSL parser{ &tokenStream };
 	parser.removeErrorListeners();
 	parser.addErrorListener(&errorListener_);
 
@@ -197,7 +197,7 @@ bool Parser::IsValidSwizzle(const string& swizzle)
 }
 
 // ====================================================================================================================
-Variable Parser::parseVariableDeclaration(const grammar::PLSL::VariableDeclarationContext* ctx, bool global)
+Variable Parser::parseVariableDeclaration(const grammar::VSL::VariableDeclarationContext* ctx, bool global)
 {
 	// Validate name against either the globals, or the current scope tree
 	const auto varName = ctx->name->getText();
@@ -230,17 +230,17 @@ Variable Parser::parseVariableDeclaration(const grammar::PLSL::VariableDeclarati
 	// Get array size
 	uint32 arrSize = 1;
 	if (ctx->arraySize) {
-		if (ctx->arraySize->getType() == grammar::PLSL::INTEGER_LITERAL) {
+		if (ctx->arraySize->getType() == grammar::VSL::INTEGER_LITERAL) {
 			const auto arrSizeLiteral = ParseLiteral(this, ctx->arraySize);
 			if (arrSizeLiteral.isNegative() || arrSizeLiteral.isZero()) {
 				ERROR(ctx->arraySize, "Array size cannot be zero or negative");
 			}
-			if (arrSizeLiteral.u > PLSL_MAX_ARRAY_SIZE) {
+			if (arrSizeLiteral.u > VSL_MAX_ARRAY_SIZE) {
 				ERROR(ctx->arraySize, "Array size literal is out of range");
 			}
 			arrSize = uint32(arrSizeLiteral.u);
 		}
-		else if (ctx->arraySize->getType() == grammar::PLSL::IDENTIFIER) {
+		else if (ctx->arraySize->getType() == grammar::VSL::IDENTIFIER) {
 			const auto cnst = scopes_.getConstant(ctx->arraySize->getText());
 			if (!cnst) {
 				ERROR(ctx->arraySize, mkstr("No constant '%s' found for array size", ctx->arraySize->getText().c_str()));
@@ -251,7 +251,7 @@ Variable Parser::parseVariableDeclaration(const grammar::PLSL::VariableDeclarati
 			if (cnst->i <= 0) {
 				ERROR(ctx->arraySize, "Array size constant cannot be negative or zero");
 			}
-			if (cnst->u > PLSL_MAX_ARRAY_SIZE) {
+			if (cnst->u > VSL_MAX_ARRAY_SIZE) {
 				ERROR(ctx->arraySize, "Array size constant is out of range");
 			}
 			arrSize = cnst->u;
@@ -294,4 +294,4 @@ void Parser::validateSwizzle(uint32 compCount, antlr4::tree::TerminalNode* swizz
 	}
 }
 
-} // namespace plsl
+} // namespace vsl

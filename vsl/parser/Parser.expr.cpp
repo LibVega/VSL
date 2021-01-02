@@ -9,12 +9,12 @@
 #include "./Op.hpp"
 #include "./Func.hpp"
 
-#define VISIT_FUNC(type) antlrcpp::Any Parser::visit##type(grammar::PLSL::type##Context* ctx)
+#define VISIT_FUNC(type) antlrcpp::Any Parser::visit##type(grammar::VSL::type##Context* ctx)
 #define MAKE_EXPR(name,type,arrSize) (std::make_shared<Expr>(name,type,arrSize))
 #define VISIT_EXPR(context) (visit(context).as<std::shared_ptr<Expr>>())
 
 
-namespace plsl
+namespace vsl
 {
 
 // ====================================================================================================================
@@ -30,7 +30,7 @@ VISIT_FUNC(NegateExpr)
 }
 
 // ====================================================================================================================
-antlrcpp::Any Parser::visitUnaryOp(const string& optext, grammar::PLSL::ExpressionContext* exprCtx)
+antlrcpp::Any Parser::visitUnaryOp(const string& optext, grammar::VSL::ExpressionContext* exprCtx)
 {
 	// Visit expression
 	const auto expr = VISIT_EXPR(exprCtx);
@@ -89,8 +89,8 @@ VISIT_FUNC(LogicalExpr)
 }
 
 // ====================================================================================================================
-antlrcpp::Any Parser::visitBinaryOp(const string& optext, grammar::PLSL::ExpressionContext* leftCtx,
-	grammar::PLSL::ExpressionContext* rightCtx)
+antlrcpp::Any Parser::visitBinaryOp(const string& optext, grammar::VSL::ExpressionContext* leftCtx,
+	grammar::VSL::ExpressionContext* rightCtx)
 {
 	// Visit expressions
 	const auto left = VISIT_EXPR(leftCtx);
@@ -406,4 +406,4 @@ VISIT_FUNC(NameAtom)
 	return MAKE_EXPR(refStr, type, var->arraySize);
 }
 
-} // namespace plsl
+} // namespace vsl

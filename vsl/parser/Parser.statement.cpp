@@ -8,12 +8,12 @@
 #include "./Expr.hpp"
 #include "./Op.hpp"
 
-#define VISIT_FUNC(type) antlrcpp::Any Parser::visit##type(grammar::PLSL::type##Context* ctx)
+#define VISIT_FUNC(type) antlrcpp::Any Parser::visit##type(grammar::VSL::type##Context* ctx)
 #define MAKE_EXPR(name,type,arrSize) (std::make_shared<Expr>(name,type,arrSize))
 #define VISIT_EXPR(context) (visit(context).as<std::shared_ptr<Expr>>())
 
 
-namespace plsl
+namespace vsl
 {
 
 // ====================================================================================================================
@@ -50,8 +50,8 @@ VISIT_FUNC(VariableDefinition)
 	const auto expr = VISIT_EXPR(ctx->value);
 	const auto etype = expr->type();
 	if (!etype->hasImplicitCast(var.dataType)) {
-		ERROR(ctx->value, mkstr("No implicit cast from rvalue '%s' to lvalue '%s'", etype->getPLSLName().c_str(),
-				var.dataType->getPLSLName().c_str()));
+		ERROR(ctx->value, mkstr("No implicit cast from rvalue '%s' to lvalue '%s'", etype->getVSLName().c_str(),
+				var.dataType->getVSLName().c_str()));
 	}
 
 	// Add the variable
@@ -108,8 +108,8 @@ VISIT_FUNC(Assignment)
 		}
 		if ((etype->baseType != ltype->baseType) || (etype->numeric.dims[0] != ltype->numeric.dims[0]) || 
 				etype->isMatrix()) {
-			ERROR(ctx->op, mkstr("Cannot store type '%s' in object with texel type '%s'", etype->getPLSLName().c_str(),
-				ltype->getPLSLName().c_str()));
+			ERROR(ctx->op, mkstr("Cannot store type '%s' in object with texel type '%s'", etype->getVSLName().c_str(),
+				ltype->getVSLName().c_str()));
 		}
 
 		// Get the value (need to promote the stored type to *gvec4* for imageStore(...))
@@ -126,8 +126,8 @@ VISIT_FUNC(Assignment)
 	}
 	else if (!isCompound) {
 		if (!etype->hasImplicitCast(left->type())) {
-			ERROR(ctx->value, mkstr("No implicit cast from rvalue '%s' to lvalue '%s'", etype->getPLSLName().c_str(),
-				left->type()->getPLSLName().c_str()));
+			ERROR(ctx->value, mkstr("No implicit cast from rvalue '%s' to lvalue '%s'", etype->getVSLName().c_str(),
+				left->type()->getVSLName().c_str()));
 		}
 		// Emit assignment
 		generator_.emitAssignment(left->refString(), optxt, expr->refString());
@@ -140,7 +140,7 @@ VISIT_FUNC(Assignment)
 		const auto refstr = Op::ProcessBinaryOp(subop, left.get(), expr.get(), &restype);
 		if (refstr.empty()) {
 			ERROR(ctx->value, mkstr("Compound assignment '%s' not possible with types '%s' and '%s'",
-				optxt.c_str(), ltype->getPLSLName().c_str(), etype->getPLSLName().c_str()));
+				optxt.c_str(), ltype->getVSLName().c_str(), etype->getVSLName().c_str()));
 		}
 
 		// Emit assignment
@@ -304,4 +304,4 @@ VISIT_FUNC(Lvalue)
 	}
 }
 
-} // namespace plsl
+} // namespace vsl

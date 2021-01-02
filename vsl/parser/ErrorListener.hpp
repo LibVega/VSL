@@ -6,17 +6,17 @@
 
 #pragma once
 
-#include <plsl/Config.hpp>
+#include <vsl/Config.hpp>
 
 #include <antlr4/BaseErrorListener.h>
 
 
-namespace plsl
+namespace vsl
 {
 
 class Parser;
 
-// The antlr4 error listener implementation for the PLSL lexer and parser
+// The antlr4 error listener implementation for the VSL lexer and parser
 class ErrorListener final :
 	public antlr4::BaseErrorListener
 {
@@ -30,8 +30,8 @@ public:
 private:
 	Parser* const parser_;
 
-	PLSL_NO_COPY(ErrorListener)
-	PLSL_NO_MOVE(ErrorListener)
+	VSL_NO_COPY(ErrorListener)
+	VSL_NO_MOVE(ErrorListener)
 }; // class ErrorListener
 
-} // namespace plsl
+} // namespace vsl

@@ -6,19 +6,19 @@
 
 #pragma once
 
-#include <plsl/Config.hpp>
+#include <vsl/Config.hpp>
 #include "./Types.hpp"
 
 #include <vector>
 
-#define PLSL_MAX_INPUT_INDEX      (31u)  // Max binding index for vertex inputs
-#define PLSL_MAX_OUTPUT_INDEX     (7u)   // Max binding index for fragment outputs
-#define PLSL_MAX_INPUT_ARRAY_SIZE (8u)   // Max array size for vertex inputs
-#define PLSL_MAX_BINDING_INDEX    (31u)  // Max binding index for bindings
-#define PLSL_MAX_SUBPASS_INPUTS   (4u)   // Max number of subpass inputs
+#define VSL_MAX_INPUT_INDEX      (31u)  // Max binding index for vertex inputs
+#define VSL_MAX_OUTPUT_INDEX     (7u)   // Max binding index for fragment outputs
+#define VSL_MAX_INPUT_ARRAY_SIZE (8u)   // Max array size for vertex inputs
+#define VSL_MAX_BINDING_INDEX    (31u)  // Max binding index for bindings
+#define VSL_MAX_SUBPASS_INPUTS   (4u)   // Max number of subpass inputs
 
 
-namespace plsl
+namespace vsl
 {
 
 // Describes an interface variable for a shader (vertex input & fragment output)
@@ -138,8 +138,8 @@ private:
 	std::vector<SubpassInput> subpassInputs_;
 	std::vector<BindingVariable> bindings_;
 
-	PLSL_NO_COPY(ShaderInfo)
-	PLSL_NO_MOVE(ShaderInfo)
+	VSL_NO_COPY(ShaderInfo)
+	VSL_NO_MOVE(ShaderInfo)
 }; // class ShaderInfo
 
-} // namespace plsl
+} // namespace vsl

@@ -13,7 +13,7 @@
 	inline void fname(ftype val) { fname##_ = val; }
 
 
-namespace plsl
+namespace vsl
 {
 
 // The stages of the compilation process
@@ -95,7 +95,7 @@ private:
 
 
 // The core compiler type, which performs the full configurable compilation process
-class PLSL_API Compiler final
+class VSL_API Compiler final
 {
 public:
 	Compiler();
@@ -110,11 +110,11 @@ public:
 private:
 	CompilerError lastError_;
 
-	PLSL_NO_COPY(Compiler)
-	PLSL_NO_MOVE(Compiler)
+	VSL_NO_COPY(Compiler)
+	VSL_NO_MOVE(Compiler)
 }; // class Compiler
 
-} // namespace plsl
+} // namespace vsl
 
 
 #undef DECL_GETTER_SETTER

@@ -7,7 +7,7 @@
 #include "./TypeManager.hpp"
 
 
-namespace plsl
+namespace vsl
 {
 
 // ====================================================================================================================
@@ -205,4 +205,4 @@ const std::unordered_map<string, ShaderType> TypeManager::BuiltinTypes_ {
 	{ "UInput", { ShaderBaseType::Input, ImageDims::E2D, ShaderBaseType::Unsigned, 4 } },
 };
 
-} // namespace plsl
+} // namespace vsl

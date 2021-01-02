@@ -6,12 +6,12 @@
 
 #pragma once
 
-#include <plsl/Config.hpp>
+#include <vsl/Config.hpp>
 #include "../reflection/Types.hpp"
 #include "../parser/Expr.hpp"
 
 
-namespace plsl
+namespace vsl
 {
 
 // Performs checks and output generation for operation expressions
@@ -28,8 +28,8 @@ public:
 private:
 	static string LastError_;
 
-	PLSL_NO_COPY(Op)
-	PLSL_NO_MOVE(Op)
+	VSL_NO_COPY(Op)
+	VSL_NO_MOVE(Op)
 }; // class Op
 
-} // namespace plsl
+} // namespace vsl
