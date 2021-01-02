@@ -4,11 +4,11 @@
 /// the 'LICENSE' file at the root of this repository, or online at <https://opensource.org/licenses/MS-PL>.
 ///
 
-// This is the ANTLR4 lexer grammar for the Polaris shading language
+// This is the ANTLR4 lexer grammar for the Vega Shader Langauge
 
-parser grammar PLSL;
+parser grammar VSL;
 options {
-    tokenVocab=PLSLLexer;
+    tokenVocab=VSLLexer;
 }
 
 

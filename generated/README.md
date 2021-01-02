@@ -1,6 +1,6 @@
 ## Generated
 
-This is the output directory for the generated ANTLR Lexer/Parser for Polaris.
+This is the output directory for the generated ANTLR Lexer/Parser for VSL.
 
 All files here are deterministically generated, and are therefore ignored by Git.
 

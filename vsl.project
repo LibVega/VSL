@@ -1,0 +1,138 @@
+--
+-- Microsoft Public License (Ms-PL) - Copyright (c) 2020 Sean Moss
+-- This file is subject to the terms and conditions of the Microsoft Public License, the text of which can be found in
+-- the 'LICENSE' file at the root of this repository, or online at <https://opensource.org/licenses/MS-PL>.
+--
+
+-- Premake solution generation script. Written in Lua.
+
+-- Ensure the Vulkan SDK is available
+local VULKAN_SDK = os.getenv('VULKAN_SDK')
+if VULKAN_SDK == nil then
+    print('ERROR: Vulkan SDK path not found on system - install or add to path')
+    os.exit(-1)
+end
+print('Found Vulkan SDK at: ' .. VULKAN_SDK)
+local VK_MAJ, VK_MIN, VK_REV, VK_PAT = string.match(VULKAN_SDK, '(%d+).(%d+).(%d+).(%d+)')
+if (VK_MAJ == nil) or (VK_MIN == nil) or (VK_REV == nil) or (VK_PAT == nil) then
+    print('ERROR: Cannot detect Vulkan SDK version from path')
+    os.exit(-2)
+end
+if (tonumber(VK_MIN) < 2) or (tonumber(VK_REV) < 154) then
+    print('ERROR: Invalid Vulkan SDK version, 1.2.154 or later required')
+    os.exit(-3)
+end
+local VULKAN_LIB = VULKAN_SDK .. '/lib'
+local VULKAN_INC = VULKAN_SDK .. '/include'
+
+
+-- Project Workspace
+workspace "VSL"
+    -- Shared Settings
+    language "C++"
+    cppdialect "C++17"
+    location "build"
+    configurations { "Static", "Shared" }
+    platforms { "x64" }
+    architecture "x86_64"
+    flags { "MultiProcessorCompile", "NoImportLib", "LinkTimeOptimization" }
+
+    -- Output Directories
+    filter { "configurations:Static" }
+        targetdir "build/bin/Static"
+    filter { "configurations:Shared" }
+        targetdir "build/bin/Shared"
+    filter {}
+
+    -- Release Settings
+    runtime "Release"
+    symbols "Off"
+    optimize "Speed"
+
+    -- Compiler/Platform Settings
+    filter { "system:windows" }
+        systemversion "latest"
+        disablewarnings { "4099", "4251", "4275" }
+        staticruntime "off"
+        defines { "_CRT_SECURE_NO_WARNINGS" }
+    filter { "toolset:gcc or clang" }
+        buildoptions { "-fpermissive", "-fvisibility=hidden", "-fPIC" }
+    filter {}
+
+    -- Shared Defines
+    defines { "ANTLR4CPP_STATIC", "USE_UTF8_INSTEAD_OF_CODECVT" }
+    filter { "system:windows" }
+        defines { "UTF_CPP_CPLUSPLUS=_MSVC_LANG" }
+    filter {}
+
+    -- Library Paths
+    filter { "system:windows" }
+        libdirs { "./lib/vs2019", VULKAN_LIB }
+    filter { "system:linux" }
+        libdirs { "./lib/linux", VULKAN_LIB }
+    filter { "system:macos" }
+        libdirs { "./lib/macos", VULKAN_LIB }
+    filter {}
+
+
+-- Compiler Library
+project "vsl"
+    -- Settings
+    includedirs { "include", "include/antlr4", VULKAN_INC }
+    defines { "_VSL_BUILD" }
+    targetname "vsl"
+
+    -- Output Types
+    filter { "configurations:Static" }
+        kind "StaticLib"
+        defines { "VSL_STATIC" }
+    filter { "configurations:Shared" }
+        kind "SharedLib"
+    filter {}
+
+    -- Linked Libraries
+    filter { "toolset:gcc" }
+        links { "stdc++fs", "pthread" }
+    filter {}
+    links { "antlr4-runtime", "shaderc_combined" }
+
+    -- Project Files
+    files {
+        "generated/**.h",
+        "generated/**.cpp",
+        "include/vsl/**.hpp",
+        "include/vsl/**.h",
+        "vsl/**.hpp",
+        "vsl/**.h",
+        "vsl/**.cpp"
+    }
+
+
+-- Command Line Tool
+project "vslc"
+    -- Settings
+    includedirs { "include" }
+    defines { }
+    targetname "vslc"
+    filter { "configurations:Shared" }
+        kind "None"
+    filter { "configurations:Static" }
+        kind "ConsoleApp"
+    filter {}
+    dependson { "vsl" }
+    links { "vsl" }
+
+    -- Static Linking
+    defines { "VSL_STATIC" }
+
+    -- Linked Libraries
+    filter { "toolset:gcc" }
+        links { "stdc++fs", "pthread" }
+    filter {}
+    links { "antlr4-runtime", "shaderc_combined" }
+
+    -- Project files
+    files {
+        "vslc/**.hpp",
+        "vslc/**.cpp"
+    }

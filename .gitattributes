@@ -1,5 +1,5 @@
 # Language Overrides
-polaris.project linguist-language=Lua
+vsl.project linguist-language=Lua
 
 # Linguist Ignore Paths
 include/antlr4/* linguist-vendored

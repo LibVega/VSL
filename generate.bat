@@ -8,4 +8,4 @@
 
 @echo off
 
-start /D "./tools" /W /B premake5.exe --file=..\polaris.project vs2019
+start /D "./tools" /W /B premake5.exe --file=..\vsl.project vs2019

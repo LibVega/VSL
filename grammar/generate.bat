@@ -15,7 +15,7 @@ java -jar ../tools/antlr-4.9-complete.jar ^
     -package grammar                      ^
     -Xexact-output-dir                    ^
     -Dlanguage=Cpp                        ^
-    PLSLLexer.g4
+    VSLLexer.g4
 
 java -jar ../tools/antlr-4.9-complete.jar ^
     -no-listener                          ^
@@ -24,4 +24,4 @@ java -jar ../tools/antlr-4.9-complete.jar ^
     -package grammar                      ^
     -Xexact-output-dir                    ^
     -Dlanguage=Cpp                        ^
-    PLSL.g4
+    VSL.g4
