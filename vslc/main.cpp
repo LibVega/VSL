@@ -9,20 +9,32 @@
 #include <vsl/Compiler.hpp>
 
 #include <iostream>
+#include <filesystem>
+namespace fs = std::filesystem;
 
+
+static bool ParseCommandLine(int argc, char* argv[], vsl::CompilerOptions* options);
 
 int main(int argc, char* argv[])
 {
 	using namespace vsl;
 
+	// No-args check
 	if (argc < 2) {
-		std::cerr << "Usage: vsl <file>" << std::endl;
+		std::cerr << "Usage: vsl [options] <file>" << std::endl;
 		return 1;
 	}
 
+	// Try to parse command line
+	CompilerOptions options{};
+	if (!ParseCommandLine(argc, argv, &options)) {
+		return 2;
+	}
+
+	// Run the compilation
 	try {
 		Compiler c{};
-		if (!c.compileFile(argv[1], {})) {
+		if (!c.compileFile(argv[1], options)) {
 			const auto err = c.lastError();
 			if (err.stage() == CompilerStage::Parse) {
 				std::cerr << "Failed to compile (at " << err.line() << ':' << err.character() << ")";
@@ -45,4 +57,18 @@ int main(int argc, char* argv[])
 	}
 
 	return 0;
+}
+
+
+#define ERROR(msg) { std::cerr << msg << std::endl; return false; }
+
+bool ParseCommandLine(int argc, char* argv[], vsl::CompilerOptions* options)
+{
+	*options = {};
+	
+	// Default output file
+	const auto inputPath{ fs::absolute(fs::path{ argv[argc - 1] }) };
+	options->outputFile((inputPath.parent_path() / inputPath.stem()).string() + ".vsp");
+
+	return true;
 }

@@ -31,6 +31,12 @@ public:
 
 	/* Compilation */
 	bool compileStage(ShaderStages stage);
+	bool writeProgram(const ShaderInfo& info);
+
+private:
+	/* File Output */
+	bool writeIntermediate(ShaderStages stage, const string& source);
+	bool writeBytecode(ShaderStages stage);
 
 private:
 	std::shared_ptr<shaderc::Compiler> compiler_;

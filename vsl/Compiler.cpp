@@ -108,6 +108,12 @@ bool Compiler::compileSource(const string& source, const CompilerOptions& option
 		}
 	}
 
+	// Write the program
+	if (!compiler.writeProgram(info)) {
+		lastError_ = compiler.lastError();
+		return false;
+	}
+
 	return true;
 }
 

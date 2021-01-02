@@ -78,12 +78,18 @@ public:
 	CompilerOptions() 
 		: outputFile_{ "" }
 		, tableSizes_{ DefaultTableSizes }
+		, saveIntermediate_{ false }
+		, saveBytecode_{ false }
+		, disableOptimization_{ false }
 	{ }
 	~CompilerOptions() { }
 
 	/* Field Access */
 	DECL_GETTER_SETTER(const string&, outputFile)
 	DECL_GETTER_SETTER(const BindingTableSizes&, tableSizes)
+	DECL_GETTER_SETTER(bool, saveIntermediate)
+	DECL_GETTER_SETTER(bool, saveBytecode)
+	DECL_GETTER_SETTER(bool, disableOptimization)
 
 public:
 	static constexpr BindingTableSizes DefaultTableSizes{ 4096, 512, 512, 512, 512 };
@@ -91,6 +97,9 @@ public:
 private:
 	string outputFile_;
 	BindingTableSizes tableSizes_;
+	bool saveIntermediate_;
+	bool saveBytecode_;
+	bool disableOptimization_;
 }; // class CompilerOptions
 
 
