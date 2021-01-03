@@ -75,14 +75,15 @@ public:
 struct SubpassInput final
 {
 public:
-	SubpassInput() : name{}, type{}, index{} { }
-	SubpassInput(const string& name, ShaderBaseType type, uint8 index)
-		: name{ name }, type{ type }, index{ index }
+	SubpassInput() : name{}, type{}, componentCount{}, index{} { }
+	SubpassInput(const string& name, ShaderBaseType type, uint8 compCount, uint8 index)
+		: name{ name }, type{ type }, componentCount{ compCount }, index{ index }
 	{ }
 
 public:
 	string name;
 	ShaderBaseType type;
+	uint8 componentCount;
 	uint8 index;
 }; // struct SubpassInput
 

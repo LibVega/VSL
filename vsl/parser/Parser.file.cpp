@@ -336,7 +336,9 @@ VISIT_FUNC(ShaderBindingStatement)
 		if (shaderInfo_.subpassInputs().size() != slotIndex) {
 			ERROR(ctx->slot, "Subpass input indices must be contiguous");
 		}
-		const SubpassInput si{ bVar.name, bVar.dataType->image.texel.type, slotIndex };
+		const SubpassInput si{ 
+			bVar.name, bVar.dataType->image.texel.type, bVar.dataType->image.texel.components, slotIndex
+		};
 		generator_.emitSubpassInput(si);
 		shaderInfo_.subpassInputs().push_back(si);
 	}

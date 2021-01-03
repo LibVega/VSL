@@ -137,6 +137,7 @@ public:
 	const StructMember* getMember(const string& memberName) const;
 	uint32 getBindingCount() const; // For numeric types, gets the number of binding slots the type takes up for inputs
 	uint32 getStructSize() const;
+	void getMemberOffsets(std::vector<uint32>& offsets) const;
 
 	/* Casting */
 	bool hasImplicitCast(const ShaderType* target) const;

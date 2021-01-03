@@ -14,6 +14,50 @@
 namespace vsl
 {
 
+#pragma pack(push, 1)
+// Used as a known layout object to write binding info to a shader file
+struct binding_record final
+{
+	uint8 slot;
+	ShaderBaseType baseType;
+	union {
+		struct {
+			ImageDims dims;
+			ShaderBaseType texelType;
+			uint8 texelSize;
+			uint8 texelComponents;
+		} image;
+		struct {
+			uint8 _pad0_;
+			uint16 size;
+		} buffer;
+	};
+	uint8 _pad0_[2];
+}; // struct binding_record
+static_assert(sizeof(binding_record) == 8);
+
+// Used as a known layout object to write interface variable info to shader file
+struct interface_record final
+{
+	uint8 location;
+	ShaderBaseType baseType;
+	uint8 dims[2];
+	uint8 arraySize;
+	uint8 _pad0_[3];
+}; // struct interface_record
+static_assert(sizeof(interface_record) == 8);
+
+// Used as a known layout object to write subpass input info to a shader file
+struct subpass_input_record final
+{
+	ShaderBaseType baseType;
+	uint8 componentCount;
+	uint8 _pad0_[2];
+}; // struct subpass_input_record
+static_assert(sizeof(subpass_input_record) == 4);
+#pragma pack(pop, 1)
+
+// ====================================================================================================================
 // ====================================================================================================================
 Shaderc::Shaderc(const CompilerOptions* options, const Generator* generator)
 	: compiler_{ std::make_shared<shaderc::Compiler>() }
@@ -91,7 +135,135 @@ bool Shaderc::compileStage(ShaderStages stage)
 // ====================================================================================================================
 bool Shaderc::writeProgram(const ShaderInfo& info)
 {
+	// Open file and write magic number ("VBC" + uint8(1) version)
 	std::ofstream file{ options_->outputFile(), std::ofstream::binary | std::ofstream::trunc };
+	file << "VBC" << uint8(1);
+
+	// Write bytecode lengths
+	const uint16 sizes[5]{
+		uint16(bool(stages_ & ShaderStages::Vertex) ? bytecodes_[ShaderStages::Vertex].size() : 0),
+		uint16(bool(stages_ & ShaderStages::TessControl) ? bytecodes_[ShaderStages::TessControl].size() : 0),
+		uint16(bool(stages_ & ShaderStages::TessEval) ? bytecodes_[ShaderStages::TessEval].size() : 0),
+		uint16(bool(stages_ & ShaderStages::Geometry) ? bytecodes_[ShaderStages::Geometry].size() : 0),
+		uint16(bool(stages_ & ShaderStages::Fragment) ? bytecodes_[ShaderStages::Fragment].size() : 0)
+	};
+	file.write(reinterpret_cast<const char*>(sizes), sizeof(sizes));
+
+	// Write table sizes
+	file.write(reinterpret_cast<const char*>(&(options_->tableSizes())), sizeof(BindingTableSizes));
+
+	// Write the vertex inputs
+	std::vector<interface_record> inputs{};
+	for (const auto& invar : info.inputs()) {
+		interface_record irec{};
+		irec.location = uint8(invar.location);
+		irec.baseType = invar.type.baseType;
+		irec.dims[0] = invar.type.numeric.dims[0];
+		irec.dims[1] = invar.type.numeric.dims[1];
+		irec.arraySize = invar.arraySize;
+		inputs.push_back(irec);
+	}
+	const auto inputCount = uint8(inputs.size());
+	file.write(reinterpret_cast<const char*>(&inputCount), sizeof(inputCount));
+	file.write(reinterpret_cast<const char*>(inputs.data()), inputs.size() * sizeof(interface_record));
+
+	// Write the fragment outputs
+	std::vector<interface_record> outputs{};
+	for (const auto& outvar : info.outputs()) {
+		interface_record irec{};
+		irec.location = uint8(outvar.location);
+		irec.baseType = outvar.type.baseType;
+		irec.dims[0] = outvar.type.numeric.dims[0];
+		irec.dims[1] = 1;
+		irec.arraySize = 1;
+		outputs.push_back(irec);
+	}
+	const auto outputCount = uint8(outputs.size());
+	file.write(reinterpret_cast<const char*>(&outputCount), sizeof(outputCount));
+	file.write(reinterpret_cast<const char*>(outputs.data()), outputs.size() * sizeof(interface_record));
+
+	// Write the bindings
+	std::vector<binding_record> bindings{};
+	for (const auto& binding : info.bindings()) {
+		binding_record brec{};
+		brec.slot = binding.slot;
+		brec.baseType = binding.type->baseType;
+		if (binding.type->isBuffer()) {
+			brec.buffer.size = binding.type->buffer.structType->getStructSize();
+		}
+		else if (binding.type->baseType == ShaderBaseType::Sampler) {
+			brec.image.dims = binding.type->image.dims;
+		}
+		else if (binding.type->baseType == ShaderBaseType::Image) {
+			brec.image.dims = binding.type->image.dims;
+			brec.image.texelType = binding.type->image.texel.type;
+			brec.image.texelSize = binding.type->image.texel.size;
+			brec.image.texelComponents = binding.type->image.texel.components;
+		}
+		else if (binding.type->baseType == ShaderBaseType::RWTexels) {
+			brec.image.dims = ImageDims::Buffer;
+			brec.image.texelType = binding.type->image.texel.type;
+			brec.image.texelSize = binding.type->image.texel.size;
+			brec.image.texelComponents = binding.type->image.texel.components;
+		}
+		bindings.push_back(brec);
+	}
+	const auto bindingCount = uint8(bindings.size());
+	file.write(reinterpret_cast<const char*>(&bindingCount), sizeof(bindingCount));
+	file.write(reinterpret_cast<const char*>(bindings.data()), bindings.size() * sizeof(binding_record));
+
+	// Write the uniform data
+	const auto uniformSize = info.uniform().type->getStructSize();
+	file.write(reinterpret_cast<const char*>(&uniformSize), sizeof(uniformSize));
+	const auto uniformMemCount = uint32(info.uniform().type->userStruct.members.size());
+	file.write(reinterpret_cast<const char*>(&uniformMemCount), sizeof(uniformMemCount));
+	if (uniformMemCount > 0) {
+		std::vector<uint32> offsets{};
+		info.uniform().type->getMemberOffsets(offsets);
+		for (uint32 i = 0; i < offsets.size(); ++i) {
+			file.write(reinterpret_cast<const char*>(&offsets[i]), sizeof(offsets[i]));
+			const auto& name = info.uniform().type->userStruct.members[i].name;
+			const auto nameLen = uint32(name.length());
+			file.write(reinterpret_cast<const char*>(&nameLen), sizeof(nameLen));
+			file.write(name.c_str(), nameLen);
+		}
+	}
+
+	// Write the subpass inputs
+	const auto spiCount = uint32(info.subpassInputs().size());
+	file.write(reinterpret_cast<const char*>(&spiCount), sizeof(spiCount));
+	if (spiCount > 0) {
+		std::vector<subpass_input_record> spis{};
+		for (const auto& spi : info.subpassInputs()) {
+			subpass_input_record spirec{};
+			spirec.baseType = spi.type;
+			spirec.componentCount = spi.componentCount;
+			spis.push_back(spirec);
+		}
+		file.write(reinterpret_cast<const char*>(spis.data()), spis.size() * sizeof(subpass_input_record));
+	}
+
+	// Write the bytecodes
+	if (bool(stages_ & ShaderStages::Vertex)) {
+		const auto& bcode = bytecodes_[ShaderStages::Vertex];
+		file.write(reinterpret_cast<const char*>(bcode.data()), bcode.size() * sizeof(uint32));
+	}
+	if (bool(stages_ & ShaderStages::TessControl)) {
+		const auto& bcode = bytecodes_[ShaderStages::TessControl];
+		file.write(reinterpret_cast<const char*>(bcode.data()), bcode.size() * sizeof(uint32));
+	}
+	if (bool(stages_ & ShaderStages::TessEval)) {
+		const auto& bcode = bytecodes_[ShaderStages::TessEval];
+		file.write(reinterpret_cast<const char*>(bcode.data()), bcode.size() * sizeof(uint32));
+	}
+	if (bool(stages_ & ShaderStages::Geometry)) {
+		const auto& bcode = bytecodes_[ShaderStages::Geometry];
+		file.write(reinterpret_cast<const char*>(bcode.data()), bcode.size() * sizeof(uint32));
+	}
+	if (bool(stages_ & ShaderStages::Fragment)) {
+		const auto& bcode = bytecodes_[ShaderStages::Fragment];
+		file.write(reinterpret_cast<const char*>(bcode.data()), bcode.size() * sizeof(uint32));
+	}
 
 	return true;
 }

@@ -127,6 +127,23 @@ uint32 ShaderType::getStructSize() const
 }
 
 // ====================================================================================================================
+void ShaderType::getMemberOffsets(std::vector<uint32>& offsets) const
+{
+	offsets.clear();
+	if (baseType != ShaderBaseType::Struct) {
+		return;
+	}
+
+	uint32 offset{ 0 };
+	offsets.reserve(userStruct.members.size());
+	for (const auto& member : userStruct.members) {
+		offsets.push_back(offset);
+		const auto compCount = uint32(member.dims[0]) * member.dims[1] * member.arraySize;
+		offset += (compCount * 4);
+	}
+}
+
+// ====================================================================================================================
 bool ShaderType::hasImplicitCast(const ShaderType* target) const
 {
 	// Check for boolean -> boolean types
