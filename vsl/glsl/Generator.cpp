@@ -132,18 +132,26 @@ void Generator::emitFragmentOutput(const InterfaceVariable& var)
 }
 
 // ====================================================================================================================
+void Generator::emitUniform(const UniformVariable& unif)
+{
+	globals_ << "layout(set = 1, binding = 0) uniform _UBUFFER0_ {\n";
+	globals_ << "\t" << unif.type->buffer.structName << "_t " << unif.name << ";\n";
+	globals_ << "};\n" << std::endl;
+}
+
+// ====================================================================================================================
 void Generator::emitBinding(const BindingVariable& bind)
 {
 	// Type info
 	string extra{};
-	const auto btype = NameHelper::GetBindingTypeName(&bind.type, &extra);
+	const auto btype = NameHelper::GetBindingTypeName(bind.type, &extra);
 	if (btype.empty()) {
 		ERROR(mkstr("Unmappable binding type for '%s'", bind.name.c_str()));
 	}
 	if (extra == "!") {
 		ERROR(mkstr("Invalid binding extra type for '%s'", bind.name.c_str()));
 	}
-	const auto tableName = NameHelper::GetBindingTableName(&bind.type);
+	const auto tableName = NameHelper::GetBindingTableName(bind.type);
 
 	// Get the set and binding
 	uint32 set, binding;
@@ -152,20 +160,11 @@ void Generator::emitBinding(const BindingVariable& bind)
 
 	// Emit
 	globals_ << "layout(set = " << set << ", binding = " << binding << (!extra.empty() ? (", " + extra) : "") << ") ";
-	if (bind.type.isBuffer()) {
-		globals_ << (
-			(bind.type.baseType == ShaderBaseType::Uniform) ? "uniform " :
-			(bind.type.baseType == ShaderBaseType::ROBuffer) ? "readonly buffer " :
-			"buffer ");
+	if (bind.type->isBuffer()) {
+		globals_ << ((bind.type->baseType == ShaderBaseType::ROBuffer) ? "readonly " : "") << "buffer ";
 		globals_ << "_BUFFER" << (uniqueId_++) << "_ {\n";
-		if (bind.type.baseType == ShaderBaseType::Uniform) {
-			globals_ << '\t' << bind.type.buffer.structName << "_t " << bind.name << ";\n";
-			globals_ << '}';
-		}
-		else {
-			globals_ << '\t' << bind.type.buffer.structName << "_t _data_[];\n";
-			globals_ << "} " << bind.name << '[' << tableSize << ']';
-		}
+		globals_ << '\t' << bind.type->buffer.structName << "_t _data_[];\n";
+		globals_ << "} " << bind.name << '[' << tableSize << ']';
 	}
 	else {
 		globals_ << "uniform " << btype << ' ' << tableName << '[' << tableSize << ']';
@@ -272,10 +271,10 @@ void Generator::emitBindingIndex(uint32 index)
 void Generator::getSetAndBinding(const BindingVariable& bind, uint32* set, uint32* binding, uint16* tableSize)
 {
 	// Easy
-	*set = (bind.type.baseType == ShaderBaseType::Uniform) ? 1 : 0;
+	*set = 0;
 
 	// Less easy
-	switch (bind.type.baseType)
+	switch (bind.type->baseType)
 	{
 	case ShaderBaseType::Sampler: *binding = 0; *tableSize = tableSizes_.samplers; break;
 	case ShaderBaseType::Image: *binding = 1; *tableSize = tableSizes_.images; break;
@@ -283,8 +282,6 @@ void Generator::getSetAndBinding(const BindingVariable& bind, uint32* set, uint3
 	case ShaderBaseType::ROBuffer: *binding = 2; *tableSize = tableSizes_.buffers; break;
 	case ShaderBaseType::ROTexels: *binding = 3; *tableSize = tableSizes_.roTexels; break;
 	case ShaderBaseType::RWTexels: *binding = 4; *tableSize = tableSizes_.rwTexels; break;
-
-	case ShaderBaseType::Uniform: *binding = 0; *tableSize = 1; break;
 
 	default: ERROR("Invalid type for set and binding indices");
 	}

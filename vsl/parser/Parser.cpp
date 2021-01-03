@@ -262,7 +262,7 @@ Variable Parser::parseVariableDeclaration(const grammar::VSL::VariableDeclaratio
 	}
 
 	// Type-specific checks
-	if (!vType->isNumeric() && (vType->baseType != ShaderBaseType::Boolean)) { // Handle types
+	if (!vType->isNumeric() && !vType->isBoolean()) { // Handle types
 		if (arrSize != 1) {
 			ERROR(ctx->arraySize, "Non-numeric types cannot be arrays");
 		}

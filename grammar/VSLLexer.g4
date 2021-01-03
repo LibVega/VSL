@@ -13,14 +13,15 @@ lexer grammar VSLLexer;
 BOOLEAN_LITERAL : 'true' | 'false' ;
 
 // Keywords
-KW_BIND   : 'bind' ;
-KW_CONST  : 'const' ;
-KW_FLAT   : 'flat' ;
-KW_IN     : 'in' ;
-KW_LOCAL  : 'local' ;
-KW_OUT    : 'out' ;
-KW_SHADER : 'shader' ;
-KW_TYPE   : '@type' ;
+KW_BIND    : 'bind' ;
+KW_CONST   : 'const' ;
+KW_FLAT    : 'flat' ;
+KW_IN      : 'in' ;
+KW_LOCAL   : 'local' ;
+KW_OUT     : 'out' ;
+KW_SHADER  : 'shader' ;
+KW_TYPE    : '@type' ;
+KW_UNIFORM : 'uniform' ;
 
 // Number literals
 INTEGER_LITERAL

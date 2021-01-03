@@ -251,6 +251,44 @@ VISIT_FUNC(ShaderConstantStatement)
 }
 
 // ====================================================================================================================
+VISIT_FUNC(ShaderUniformStatement)
+{
+	// Check parse status
+	if (bool(shaderInfo_.stages())) {
+		ERROR(ctx, "Uniform must be provided before the first stage function");
+	}
+	if (shaderInfo_.hasUniform()) {
+		ERROR(ctx, "A shader can only have one uniform declaration");
+	}
+
+	// Parse the variable declaration
+	const auto varDecl = ctx->variableDeclaration();
+	const auto bVar = parseVariableDeclaration(varDecl, true);
+	if (!bVar.dataType->isStruct()) {
+		ERROR(varDecl->baseType, "Uniforms must be structs");
+	}
+	if (bVar.arraySize != 1) {
+		ERROR(varDecl->arraySize, "Uniforms cannot be arrays");
+	}
+
+	// Create the new uniform type
+	ShaderType newType{ ShaderBaseType::Uniform, bVar.dataType->userStruct.structName };
+	const auto uType = types_.addType("uniform " + newType.buffer.structName, newType);
+
+	// Add to the shader info
+	const UniformVariable uvar{ bVar.name, uType };
+	shaderInfo_.uniform(uvar);
+	generator_.emitUniform(uvar);
+
+	// Add to the scopes
+	Variable scopeVar{ VariableType::Binding, bVar.name, uType, 1 };
+	scopeVar.extra.binding.slot = 0;
+	scopes_.addGlobal(scopeVar);
+
+	return nullptr;
+}
+
+// ====================================================================================================================
 VISIT_FUNC(ShaderBindingStatement)
 {
 	// Check parse status
@@ -261,11 +299,11 @@ VISIT_FUNC(ShaderBindingStatement)
 	// Parse the variable declaration
 	const auto varDecl = ctx->variableDeclaration();
 	const auto bVar = parseVariableDeclaration(varDecl, true);
-	if (bVar.dataType->isNumeric() || (bVar.dataType->baseType == ShaderBaseType::Boolean)) {
+	if (bVar.dataType->isNumeric() || bVar.dataType->isBoolean()) {
 		ERROR(varDecl->baseType, "Bindings cannot be numeric or boolean types");
 	}
 	if (bVar.dataType->isStruct()) {
-		ERROR(varDecl->baseType, "Bindings that are structs must be a buffer type");
+		ERROR(varDecl->baseType, "Bindings that are structs must be a buffer or uniform type");
 	}
 
 	// Check for binding limit
@@ -306,7 +344,7 @@ VISIT_FUNC(ShaderBindingStatement)
 		if (shaderInfo_.getBinding(slotIndex)) {
 			ERROR(ctx->slot, mkstr("Binding slot %s is already filled by another binding", ctx->slot->getText().c_str()));
 		}
-		const BindingVariable bvar{ bVar.name, *bVar.dataType, slotIndex };
+		const BindingVariable bvar{ bVar.name, bVar.dataType, slotIndex };
 		generator_.emitBinding(bvar);
 		shaderInfo_.bindings().push_back(bvar);
 	}

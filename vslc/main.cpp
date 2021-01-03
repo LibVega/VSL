@@ -68,7 +68,7 @@ bool ParseCommandLine(int argc, char* argv[], vsl::CompilerOptions* options)
 	
 	// Default output file
 	const auto inputPath{ fs::absolute(fs::path{ argv[argc - 1] }) };
-	options->outputFile((inputPath.parent_path() / inputPath.stem()).string() + ".vsp");
+	options->outputFile((inputPath.parent_path() / inputPath.stem()).string() + ".vbc");
 
 	return true;
 }

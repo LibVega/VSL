@@ -45,15 +45,30 @@ struct BindingVariable final
 {
 public:
 	BindingVariable() : name{}, type{}, slot{} { }
-	BindingVariable(const string& name, const ShaderType& type, uint8 slot)
+	BindingVariable(const string& name, const ShaderType* type, uint8 slot)
 		: name{ name }, type{ type }, slot{ slot }
 	{ }
 
 public:
 	string name;
-	ShaderType type;
+	const ShaderType* type;
 	uint8 slot;
 }; // struct BindingVariable
+
+
+// Describes a shader uniform
+struct UniformVariable final
+{
+public:
+	UniformVariable() : name{}, type{} { }
+	UniformVariable(const string& name, const ShaderType* type)
+		: name{ name }, type{ type }
+	{ }
+
+public:
+	string name;
+	const ShaderType* type;
+}; // struct UniformVariable
 
 
 // Describes an input attachment
@@ -117,6 +132,9 @@ public:
 	inline std::vector<SubpassInput>& subpassInputs() { return subpassInputs_; }
 	inline const std::vector<BindingVariable>& bindings() const { return bindings_; }
 	inline std::vector<BindingVariable>& bindings() { return bindings_; }
+	inline const UniformVariable& uniform() const { return uniform_; }
+	inline void uniform(const UniformVariable& var) { uniform_ = var; }
+	inline bool hasUniform() const { return !uniform_.name.empty(); }
 
 	// Interface Variables
 	const InterfaceVariable* getInput(const string& name) const;
@@ -137,6 +155,7 @@ private:
 	std::vector<InterfaceVariable> outputs_;
 	std::vector<SubpassInput> subpassInputs_;
 	std::vector<BindingVariable> bindings_;
+	UniformVariable uniform_;
 
 	VSL_NO_COPY(ShaderInfo)
 	VSL_NO_MOVE(ShaderInfo)

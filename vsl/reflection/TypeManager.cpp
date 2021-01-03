@@ -192,7 +192,6 @@ const std::unordered_map<string, ShaderType> TypeManager::BuiltinTypes_ {
 	{ "Image1DArray",   { ShaderBaseType::Image, ImageDims::E1DArray } },
 	{ "Image2DArray",   { ShaderBaseType::Image, ImageDims::E2DArray } },
 	// Buffer Types (Incomplete Descriptions, except for RO*Texels)
-	{ "Uniform",   { ShaderBaseType::Uniform, "" } },
 	{ "ROBuffer",  { ShaderBaseType::ROBuffer, "" } },
 	{ "RWBuffer",  { ShaderBaseType::RWBuffer, "" } },
 	{ "ROTexels",  { ShaderBaseType::ROTexels, ImageDims::Buffer, ShaderBaseType::Float, 4 } },

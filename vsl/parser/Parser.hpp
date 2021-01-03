@@ -123,6 +123,7 @@ public:
 	VISIT_DECL(ShaderUserTypeDefinition)
 	VISIT_DECL(ShaderInputOutputStatement)
 	VISIT_DECL(ShaderConstantStatement)
+	VISIT_DECL(ShaderUniformStatement)
 	VISIT_DECL(ShaderBindingStatement)
 	VISIT_DECL(ShaderLocalStatement)
 	VISIT_DECL(ShaderStageFunction)

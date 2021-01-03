@@ -55,6 +55,7 @@ ShaderInfo::ShaderInfo()
 	, outputs_{ }
 	, subpassInputs_{ }
 	, bindings_{ }
+	, uniform_{ }
 {
 
 }

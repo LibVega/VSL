@@ -52,6 +52,7 @@ public:
 	void emitStruct(const string& name, const std::vector<StructMember>& members);
 	void emitVertexInput(const InterfaceVariable& var);
 	void emitFragmentOutput(const InterfaceVariable& var);
+	void emitUniform(const UniformVariable& unif);
 	void emitBinding(const BindingVariable& bind);
 	void emitSubpassInput(const SubpassInput& input);
 	void emitLocal(const Variable& var);

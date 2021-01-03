@@ -28,6 +28,7 @@ topLevelStatement
     : shaderUserTypeDefinition
     | shaderInputOutputStatement
     | shaderConstantStatement
+    | shaderUniformStatement
     | shaderBindingStatement
     | shaderLocalStatement
     | shaderStageFunction
@@ -46,6 +47,11 @@ shaderInputOutputStatement
 // Shader constant declaration
 shaderConstantStatement
     : 'const' variableDeclaration '=' value=(INTEGER_LITERAL|FLOAT_LITERAL) ';'
+    ;
+
+// Shader uniform statement
+shaderUniformStatement
+    : 'uniform' variableDeclaration ';'
     ;
 
 // Shader binding declaration
