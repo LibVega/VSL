@@ -8,6 +8,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <array>
 
 #include "./parser/Parser.hpp"
 #include "./glsl/Shaderc.hpp"
@@ -67,6 +68,11 @@ bool Compiler::compileFile(const string& path, const CompilerOptions& options) n
 // ====================================================================================================================
 bool Compiler::compileSource(const string& source, const CompilerOptions& options) noexcept
 {
+	static const std::array<ShaderStages, 5> ALL_STAGES {
+		ShaderStages::Vertex, ShaderStages::TessControl, ShaderStages::TessEval, ShaderStages::Geometry,
+		ShaderStages::Fragment
+	};
+
 	// Perform parsing
 	Parser parser{ &options };
 	if (!parser.parse(source)) {
@@ -77,34 +83,12 @@ bool Compiler::compileSource(const string& source, const CompilerOptions& option
 
 	// Perform the compilation with shaderc
 	Shaderc compiler{ &options, &(parser.generator()) };
-	if (bool(info.stages() & ShaderStages::Vertex)) {
-		if (!compiler.compileStage(ShaderStages::Vertex)) {
-			lastError_ = compiler.lastError();
-			return false;
-		}
-	}
-	if (bool(info.stages() & ShaderStages::TessControl)) {
-		if (!compiler.compileStage(ShaderStages::TessControl)) {
-			lastError_ = compiler.lastError();
-			return false;
-		}
-	}
-	if (bool(info.stages() & ShaderStages::TessEval)) {
-		if (!compiler.compileStage(ShaderStages::TessEval)) {
-			lastError_ = compiler.lastError();
-			return false;
-		}
-	}
-	if (bool(info.stages() & ShaderStages::Geometry)) {
-		if (!compiler.compileStage(ShaderStages::Geometry)) {
-			lastError_ = compiler.lastError();
-			return false;
-		}
-	}
-	if (bool(info.stages() & ShaderStages::Fragment)) {
-		if (!compiler.compileStage(ShaderStages::Fragment)) {
-			lastError_ = compiler.lastError();
-			return false;
+	for (const auto stage : ALL_STAGES) {
+		if (bool(info.stages() & stage)) {
+			if (!compiler.compileStage(stage)) {
+				lastError_ = compiler.lastError();
+				return false;
+			}
 		}
 	}
 

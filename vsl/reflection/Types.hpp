@@ -89,8 +89,8 @@ public:
 	ShaderType(ShaderBaseType baseType, uint8 size, uint8 components, uint8 columns = 0)
 		: baseType{ baseType }, image{}, numeric{ size, { components, columns } }, buffer{}, userStruct{}
 	{ }
-	ShaderType(ShaderBaseType baseType, const string& bufferType)
-		: baseType{ baseType }, image{}, numeric{}, buffer{ bufferType }, userStruct{}
+	ShaderType(ShaderBaseType baseType, const ShaderType* structType)
+		: baseType{ baseType }, image{}, numeric{}, buffer{ structType }, userStruct{}
 	{ }
 	ShaderType(const string& structName, const std::vector<StructMember>& members = {})
 		: baseType{ ShaderBaseType::Struct }, image{}, numeric{}, buffer{}, userStruct{ structName, members }
@@ -136,6 +136,7 @@ public:
 	bool hasMember(const string& memberName) const; // For struct types, check if it has a member
 	const StructMember* getMember(const string& memberName) const;
 	uint32 getBindingCount() const; // For numeric types, gets the number of binding slots the type takes up for inputs
+	uint32 getStructSize() const;
 
 	/* Casting */
 	bool hasImplicitCast(const ShaderType* target) const;
@@ -163,7 +164,7 @@ public:
 	} numeric;
 	struct BufferInfo
 	{
-		string structName;        // The name of the struct type that the buffer is populated with
+		const ShaderType* structType;       // The struct type that the buffer is populated with
 	} buffer;
 	struct StructInfo
 	{

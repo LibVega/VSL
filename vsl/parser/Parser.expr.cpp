@@ -162,9 +162,8 @@ VISIT_FUNC(IndexAtom)
 
 	// Switch based on left hand type
 	if ((ltype->baseType == ShaderBaseType::ROBuffer) || (ltype->baseType == ShaderBaseType::RWBuffer)) {
-		const auto structType = types_.getType(ltype->buffer.structName);
 		return MAKE_EXPR(mkstr("%s[%s]", left->refString().c_str(), index->refString().c_str()), 
-			structType, 1);
+			ltype->buffer.structType, 1);
 	}
 	else if (ltype->baseType == ShaderBaseType::Sampler) { // `*sampler*D` -> texture(...)
 		const auto dimcount = GetImageDimsComponentCount(ltype->image.dims);
@@ -371,7 +370,7 @@ VISIT_FUNC(NameAtom)
 	const ShaderType* type;
 	string refStr{};
 	if (var->dataType->baseType == ShaderBaseType::Uniform) {
-		type = types_.getType(var->dataType->buffer.structName);
+		type = var->dataType->buffer.structType;
 		refStr = var->name;
 	}
 	else if (var->dataType->isBuffer()) {

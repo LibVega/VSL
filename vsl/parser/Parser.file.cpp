@@ -272,8 +272,8 @@ VISIT_FUNC(ShaderUniformStatement)
 	}
 
 	// Create the new uniform type
-	ShaderType newType{ ShaderBaseType::Uniform, bVar.dataType->userStruct.structName };
-	const auto uType = types_.addType("uniform " + newType.buffer.structName, newType);
+	ShaderType newType{ ShaderBaseType::Uniform, bVar.dataType };
+	const auto uType = types_.addType("uniform " + newType.buffer.structType->userStruct.structName, newType);
 
 	// Add to the shader info
 	const UniformVariable uvar{ bVar.name, uType };

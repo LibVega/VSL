@@ -65,7 +65,7 @@ bool ShaderType::isComplete() const
 	case ShaderBaseType::Uniform:
 	case ShaderBaseType::ROBuffer:
 	case ShaderBaseType::RWBuffer:
-		return !buffer.structName.empty();
+		return !!buffer.structType;
 	}
 	return false;
 }
@@ -108,6 +108,22 @@ uint32 ShaderType::getBindingCount() const
 	const auto totalSize = numeric.size * numeric.dims[0];
 	static const uint32 SLOT_SIZE = 16; // 16 bytes per binding slot for inputs
 	return ((totalSize > SLOT_SIZE) ? 2 : 1) * numeric.dims[1];
+}
+
+// ====================================================================================================================
+uint32 ShaderType::getStructSize() const
+{
+	if (baseType != ShaderBaseType::Struct) {
+		return 0;
+	}
+
+	// Calculate total size
+	uint32 totalSize{ 0 };
+	for (const auto& member : userStruct.members) {
+		const auto compCount = uint32(member.dims[0]) * member.dims[1] * member.arraySize;
+		totalSize += (compCount * 4);
+	}
+	return totalSize;
 }
 
 // ====================================================================================================================
@@ -177,9 +193,9 @@ string ShaderType::getVSLName() const
 		const auto format = NameHelper::GetImageTexelFormat(image.texel.type, image.texel.size, image.texel.components);
 		return "Image" + suffix + "<" + format + ">";
 	} break;
-	case ShaderBaseType::Uniform: return "Uniform<" + buffer.structName + ">";
-	case ShaderBaseType::ROBuffer: return "ROBuffer<" + buffer.structName + ">";
-	case ShaderBaseType::RWBuffer: return "RWBuffer<" + buffer.structName + ">";
+	case ShaderBaseType::Uniform: return "uniform " + buffer.structType->userStruct.structName;
+	case ShaderBaseType::ROBuffer: return "ROBuffer<" + buffer.structType->userStruct.structName + ">";
+	case ShaderBaseType::RWBuffer: return "RWBuffer<" + buffer.structType->userStruct.structName + ">";
 	case ShaderBaseType::ROTexels: return "ROTexels";
 	case ShaderBaseType::RWTexels: {
 		const auto format = NameHelper::GetImageTexelFormat(image.texel.type, image.texel.size, image.texel.components);
@@ -218,7 +234,7 @@ string ShaderType::getGLSLName() const
 	case ShaderBaseType::Struct: return userStruct.structName + "_t";
 	case ShaderBaseType::Uniform:
 	case ShaderBaseType::ROBuffer:
-	case ShaderBaseType::RWBuffer: return buffer.structName + "_t";
+	case ShaderBaseType::RWBuffer: return buffer.structType->userStruct.structName + "_t";
 	default: return "INVALID";
 	}
 }

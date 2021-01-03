@@ -81,15 +81,15 @@ string NameHelper::GetBindingTypeName(const ShaderType* type, string* extra)
 		return prefix + "image" + dimText;
 	} break;
 	case ShaderBaseType::Uniform: {
-		*extra = "std140";
+		*extra = "scalar";
 		return " ";
 	} break;
 	case ShaderBaseType::ROBuffer: {
-		*extra = "std430";
+		*extra = "scalar";
 		return " ";
 	} break;
 	case ShaderBaseType::RWBuffer: {
-		*extra = "std430";
+		*extra = "scalar";
 		return " ";
 	} break;
 	case ShaderBaseType::ROTexels: {

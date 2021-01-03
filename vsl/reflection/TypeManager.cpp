@@ -95,7 +95,8 @@ const ShaderType* TypeManager::getOrAddType(const string& typeName)
 		newType.image.texel = texelInfo;
 	}
 	else {
-		newType.buffer.structName = subTypeName;
+		const auto bufferType = getType(subTypeName);
+		newType.buffer.structType = bufferType;
 	}
 	return &(addedTypes_[typeName] = newType);
 }
@@ -192,8 +193,8 @@ const std::unordered_map<string, ShaderType> TypeManager::BuiltinTypes_ {
 	{ "Image1DArray",   { ShaderBaseType::Image, ImageDims::E1DArray } },
 	{ "Image2DArray",   { ShaderBaseType::Image, ImageDims::E2DArray } },
 	// Buffer Types (Incomplete Descriptions, except for RO*Texels)
-	{ "ROBuffer",  { ShaderBaseType::ROBuffer, "" } },
-	{ "RWBuffer",  { ShaderBaseType::RWBuffer, "" } },
+	{ "ROBuffer",  { ShaderBaseType::ROBuffer, nullptr } },
+	{ "RWBuffer",  { ShaderBaseType::RWBuffer, nullptr } },
 	{ "ROTexels",  { ShaderBaseType::ROTexels, ImageDims::Buffer, ShaderBaseType::Float, 4 } },
 	{ "ROITexels", { ShaderBaseType::ROTexels, ImageDims::Buffer, ShaderBaseType::Signed, 4 } },
 	{ "ROUTexels", { ShaderBaseType::ROTexels, ImageDims::Buffer, ShaderBaseType::Unsigned, 4 } },
