@@ -20,6 +20,7 @@ struct binding_record final
 {
 	uint8 slot;
 	ShaderBaseType baseType;
+	ShaderStages stages;
 	union {
 		struct {
 			ImageDims dims;
@@ -28,11 +29,9 @@ struct binding_record final
 			uint8 texelComponents;
 		} image;
 		struct {
-			uint8 _pad0_;
 			uint16 size;
 		} buffer;
 	};
-	uint8 _pad0_[2];
 }; // struct binding_record
 static_assert(sizeof(binding_record) == 8);
 
@@ -50,7 +49,7 @@ static_assert(sizeof(interface_record) == 8);
 // Used as a known layout object to write subpass input info to a shader file
 struct subpass_input_record final
 {
-	ShaderBaseType baseType;
+	ShaderBaseType componentType;
 	uint8 componentCount;
 	uint8 _pad0_[2];
 }; // struct subpass_input_record
@@ -145,6 +144,9 @@ bool Shaderc::writeProgram(const ShaderInfo& info)
 	std::ofstream file{ options_->outputFile(), std::ofstream::binary | std::ofstream::trunc };
 	file << "VBC" << uint8(1);
 
+	// Write the shader type (1 = graphics)
+	file << uint8(1);
+
 	// Write bytecode lengths
 	const uint16 sizes[5]{
 		uint16(bool(stages_ & ShaderStages::Vertex) ? bytecodes_[ShaderStages::Vertex].size() : 0),
@@ -169,7 +171,7 @@ bool Shaderc::writeProgram(const ShaderInfo& info)
 		irec.arraySize = invar.arraySize;
 		inputs.push_back(irec);
 	}
-	const auto inputCount = uint8(inputs.size());
+	const auto inputCount = uint32(inputs.size());
 	file.write(reinterpret_cast<const char*>(&inputCount), sizeof(inputCount));
 	file.write(reinterpret_cast<const char*>(inputs.data()), inputs.size() * sizeof(interface_record));
 
@@ -184,7 +186,7 @@ bool Shaderc::writeProgram(const ShaderInfo& info)
 		irec.arraySize = 1;
 		outputs.push_back(irec);
 	}
-	const auto outputCount = uint8(outputs.size());
+	const auto outputCount = uint32(outputs.size());
 	file.write(reinterpret_cast<const char*>(&outputCount), sizeof(outputCount));
 	file.write(reinterpret_cast<const char*>(outputs.data()), outputs.size() * sizeof(interface_record));
 
@@ -194,6 +196,7 @@ bool Shaderc::writeProgram(const ShaderInfo& info)
 		binding_record brec{};
 		brec.slot = binding.slot;
 		brec.baseType = binding.type->baseType;
+		brec.stages = binding.stages;
 		if (binding.type->isBuffer()) {
 			brec.buffer.size = binding.type->buffer.structType->getStructSize();
 		}
@@ -214,13 +217,14 @@ bool Shaderc::writeProgram(const ShaderInfo& info)
 		}
 		bindings.push_back(brec);
 	}
-	const auto bindingCount = uint8(bindings.size());
+	const auto bindingCount = uint32(bindings.size());
 	file.write(reinterpret_cast<const char*>(&bindingCount), sizeof(bindingCount));
 	file.write(reinterpret_cast<const char*>(bindings.data()), bindings.size() * sizeof(binding_record));
 
 	// Write the uniform data
 	const auto uniformSize = info.uniform().type->getStructSize();
 	file.write(reinterpret_cast<const char*>(&uniformSize), sizeof(uniformSize));
+	file.write(reinterpret_cast<const char*>(&info.uniform().stages), sizeof(info.uniform().stages));
 	const auto uniformMemCount = uint32(info.uniform().type->userStruct.members.size());
 	file.write(reinterpret_cast<const char*>(&uniformMemCount), sizeof(uniformMemCount));
 	if (uniformMemCount > 0) {
@@ -242,7 +246,7 @@ bool Shaderc::writeProgram(const ShaderInfo& info)
 		std::vector<subpass_input_record> spis{};
 		for (const auto& spi : info.subpassInputs()) {
 			subpass_input_record spirec{};
-			spirec.baseType = spi.type;
+			spirec.componentType = spi.type;
 			spirec.componentCount = spi.componentCount;
 			spis.push_back(spirec);
 		}
