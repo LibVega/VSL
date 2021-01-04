@@ -9,7 +9,8 @@
 #include "./Config.hpp"
 
 #define DECL_GETTER_SETTER(ftype,fname) \
-	inline ftype fname() const { return fname##_; } \
+	inline const ftype fname() const { return fname##_; } \
+	inline ftype fname() { return fname##_; } \
 	inline void fname(ftype val) { fname##_ = val; }
 
 
@@ -45,10 +46,10 @@ public:
 
 	/* Field Access */
 	DECL_GETTER_SETTER(CompilerStage, stage)
-	DECL_GETTER_SETTER(const string&, message)
+	DECL_GETTER_SETTER(string&, message)
 	DECL_GETTER_SETTER(uint32, line)
 	DECL_GETTER_SETTER(uint32, character)
-	DECL_GETTER_SETTER(const string&, badText)
+	DECL_GETTER_SETTER(string&, badText)
 
 private:
 	CompilerStage stage_;  // The compilation stage of the error
@@ -85,11 +86,12 @@ public:
 	~CompilerOptions() { }
 
 	/* Field Access */
-	DECL_GETTER_SETTER(const string&, outputFile)
-	DECL_GETTER_SETTER(const BindingTableSizes&, tableSizes)
+	DECL_GETTER_SETTER(string&, outputFile)
+	DECL_GETTER_SETTER(BindingTableSizes&, tableSizes)
 	DECL_GETTER_SETTER(bool, saveIntermediate)
 	DECL_GETTER_SETTER(bool, saveBytecode)
 	DECL_GETTER_SETTER(bool, disableOptimization)
+	DECL_GETTER_SETTER(bool, noCompile)
 
 public:
 	static constexpr BindingTableSizes DefaultTableSizes{ 4096, 512, 512, 512, 512 };
@@ -100,6 +102,7 @@ private:
 	bool saveIntermediate_;
 	bool saveBytecode_;
 	bool disableOptimization_;
+	bool noCompile_;
 }; // class CompilerOptions
 
 
