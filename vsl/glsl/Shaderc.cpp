@@ -202,12 +202,17 @@ bool Shaderc::writeProgram(const ShaderInfo& info)
 		}
 		else if (binding.type->baseType == ShaderBaseType::Sampler) {
 			brec.image.dims = binding.type->image.dims;
+			brec.image.texelType = binding.type->image.texel.type;
 		}
 		else if (binding.type->baseType == ShaderBaseType::Image) {
 			brec.image.dims = binding.type->image.dims;
 			brec.image.texelType = binding.type->image.texel.type;
 			brec.image.texelSize = binding.type->image.texel.size;
 			brec.image.texelComponents = binding.type->image.texel.components;
+		}
+		else if (binding.type->baseType == ShaderBaseType::ROTexels) {
+			brec.image.dims = ImageDims::Buffer;
+			brec.image.texelType = binding.type->image.texel.type;
 		}
 		else if (binding.type->baseType == ShaderBaseType::RWTexels) {
 			brec.image.dims = ImageDims::Buffer;

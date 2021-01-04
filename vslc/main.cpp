@@ -13,7 +13,7 @@
 namespace fs = std::filesystem;
 
 
-static bool ParseCommandLine(int argc, char* argv[], bool* help, vsl::CompilerOptions* options);
+static bool ParseCommandLine(int argc, const char* argv[], bool* help, vsl::CompilerOptions* options);
 static void PrintHelp(const char* const arg0);
 
 int main(int argc, char* argv[])
@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 	// Try to parse command line
 	CompilerOptions options{};
 	bool help{ false };
-	if (!ParseCommandLine(argc, argv, &help, &options)) {
+	if (!ParseCommandLine(argc, (const char**)argv, &help, &options)) {
 		return 2;
 	}
 	if (help) {
@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
 
 #define ERROR(msg) { std::cerr << msg << std::endl; return false; }
 
-bool ParseCommandLine(int argc, char* argv[], bool* help, vsl::CompilerOptions* options)
+bool ParseCommandLine(int argc, const char* argv[], bool* help, vsl::CompilerOptions* options)
 {
 	using namespace vsl;
 	static const auto normalize = [](const string& arg) -> std::tuple<bool, string, string, string> {
@@ -101,7 +101,8 @@ bool ParseCommandLine(int argc, char* argv[], bool* help, vsl::CompilerOptions* 
 	
 	// Default output file
 	const auto inputPath{ fs::absolute(fs::path{ argv[argc - 1] }) };
-	options->outputFile((inputPath.parent_path() / inputPath.stem()).string() + ".vbc");
+	const string defaultOutput{ (inputPath.parent_path() / inputPath.stem()).string() + ".vbc" };
+	options->outputFile() = defaultOutput;
 
 	// Loop over the arguments
 	for (uint32 i = 1; i < uint32(argc); ++i) {
@@ -176,7 +177,8 @@ bool ParseCommandLine(int argc, char* argv[], bool* help, vsl::CompilerOptions* 
 			if (i >= uint32(argc - 2)) {
 				ERROR("No output file specified with -o argument");
 			}
-			options->outputFile(string{ argv[i + 1] });
+			string outFile{ argv[i + 1] };
+			options->outputFile(outFile);
 			++i;
 		}
 		else if (name == "no-compile") {
