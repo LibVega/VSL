@@ -111,8 +111,8 @@ void Generator::emitVertexInput(const InterfaceVariable& var)
 	auto& header = stageHeaders_["vert"];
 
 	// Emit
-	const auto vtype = NameHelper::GetNumericTypeName(var.type.baseType, var.type.numeric.size, 
-		var.type.numeric.dims[0], var.type.numeric.dims[1]);
+	const auto vtype = NameHelper::GetNumericTypeName(var.type->baseType, var.type->numeric.size, 
+		var.type->numeric.dims[0], var.type->numeric.dims[1]);
 	const auto arr = (var.arraySize != 1) ? mkstr("[%u]", uint32(var.arraySize)) : "";
 	header << "layout(location = " << var.location << ") in " << vtype << ' ' << var.name << arr << ";\n" << std::endl;
 }
@@ -127,8 +127,8 @@ void Generator::emitFragmentOutput(const InterfaceVariable& var)
 	auto& header = stageHeaders_["frag"];
 
 	// Emit
-	const auto vtype = NameHelper::GetNumericTypeName(var.type.baseType, var.type.numeric.size,
-		var.type.numeric.dims[0], var.type.numeric.dims[1]);
+	const auto vtype = NameHelper::GetNumericTypeName(var.type->baseType, var.type->numeric.size,
+		var.type->numeric.dims[0], var.type->numeric.dims[1]);
 	header << "layout(location = " << var.location << ") out " << vtype << ' ' << var.name << ";\n" << std::endl;
 }
 

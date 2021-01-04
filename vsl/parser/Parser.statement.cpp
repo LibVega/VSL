@@ -172,15 +172,20 @@ VISIT_FUNC(Lvalue)
 		case VariableType::Binding: {
 			if (var->dataType->baseType == ShaderBaseType::Uniform) {
 				outname = var->name;
+				if (shaderInfo_.hasUniform()) {
+					shaderInfo_.uniform().stages |= currentStage_;
+				}
 			}
 			else if (var->dataType->isBuffer()) {
 				generator_.emitBindingIndex(var->extra.binding.slot);
 				outname = mkstr("%s[_bidx%u_]", var->name.c_str(), uint32(var->extra.binding.slot));
+				shaderInfo_.getBinding(var->extra.binding.slot)->stages |= currentStage_;
 			}
 			else {
 				const auto table = NameHelper::GetBindingTableName(var->dataType);
 				generator_.emitBindingIndex(var->extra.binding.slot);
 				outname = mkstr("(%s[_bidx%u_])", table.c_str(), uint32(var->extra.binding.slot));
+				shaderInfo_.getBinding(var->extra.binding.slot)->stages |= currentStage_;
 			}
 		} break;
 		case VariableType::Builtin: {

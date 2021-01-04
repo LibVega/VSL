@@ -139,12 +139,30 @@ const BindingVariable* ShaderInfo::getBinding(uint8 slotIndex) const
 }
 
 // ====================================================================================================================
+BindingVariable* ShaderInfo::getBinding(const string& name)
+{
+	const auto it = std::find_if(bindings_.begin(), bindings_.end(), [&name](const BindingVariable& bind) {
+		return bind.name == name;
+	});
+	return (it != bindings_.end()) ? &(*it) : nullptr;
+}
+
+// ====================================================================================================================
+BindingVariable* ShaderInfo::getBinding(uint8 slotIndex)
+{
+	const auto it = std::find_if(bindings_.begin(), bindings_.end(), [slotIndex](const BindingVariable& bind) {
+		return bind.slot == slotIndex;
+	});
+	return (it != bindings_.end()) ? &(*it) : nullptr;
+}
+
+// ====================================================================================================================
 uint32 ShaderInfo::getMaxBindingIndex() const
 {
 	const auto it = 
 		std::max_element(bindings_.begin(), bindings_.end(), [](const BindingVariable& left, const BindingVariable& right) {
 			return left.slot < right.slot;
-		});
+	});
 	return (it != bindings_.end()) ? it->slot : 0;
 }
 

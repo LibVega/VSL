@@ -169,7 +169,7 @@ VISIT_FUNC(ShaderInputOutputStatement)
 	}
 
 	// Add to shader info
-	InterfaceVariable iovar{ varDecl->name->getText(), index, *ioVar.dataType, ioVar.arraySize };
+	InterfaceVariable iovar{ varDecl->name->getText(), index, ioVar.dataType, ioVar.arraySize };
 	if (isIn) {
 		shaderInfo_.inputs().push_back(iovar);
 		ioVar.type = VariableType::Input;

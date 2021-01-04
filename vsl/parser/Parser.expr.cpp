@@ -372,11 +372,15 @@ VISIT_FUNC(NameAtom)
 	if (var->dataType->baseType == ShaderBaseType::Uniform) {
 		type = var->dataType->buffer.structType;
 		refStr = var->name;
+		if (shaderInfo_.hasUniform()) {
+			shaderInfo_.uniform().stages |= currentStage_;
+		}
 	}
 	else if (var->dataType->isBuffer()) {
 		type = var->dataType;
 		generator_.emitBindingIndex(var->extra.binding.slot);
 		refStr = mkstr("(%s[_bidx%u_]._data_)", var->name.c_str(), uint32(var->extra.binding.slot));
+		shaderInfo_.getBinding(var->extra.binding.slot)->stages |= currentStage_;
 	}
 	else if (var->dataType->baseType == ShaderBaseType::Input) {
 		type = TypeManager::GetNumericType(var->dataType->image.texel.type, 4, 1);
@@ -387,6 +391,7 @@ VISIT_FUNC(NameAtom)
 		generator_.emitBindingIndex(var->extra.binding.slot);
 		type = var->dataType;
 		refStr = mkstr("(%s[_bidx%u_])", table.c_str(), uint32(var->extra.binding.slot));
+		shaderInfo_.getBinding(var->extra.binding.slot)->stages |= currentStage_;
 	}
 	else if (var->type == VariableType::Builtin) {
 		type = var->dataType;

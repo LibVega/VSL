@@ -163,9 +163,9 @@ bool Shaderc::writeProgram(const ShaderInfo& info)
 	for (const auto& invar : info.inputs()) {
 		interface_record irec{};
 		irec.location = uint8(invar.location);
-		irec.baseType = invar.type.baseType;
-		irec.dims[0] = invar.type.numeric.dims[0];
-		irec.dims[1] = invar.type.numeric.dims[1];
+		irec.baseType = invar.type->baseType;
+		irec.dims[0] = invar.type->numeric.dims[0];
+		irec.dims[1] = invar.type->numeric.dims[1];
 		irec.arraySize = invar.arraySize;
 		inputs.push_back(irec);
 	}
@@ -178,8 +178,8 @@ bool Shaderc::writeProgram(const ShaderInfo& info)
 	for (const auto& outvar : info.outputs()) {
 		interface_record irec{};
 		irec.location = uint8(outvar.location);
-		irec.baseType = outvar.type.baseType;
-		irec.dims[0] = outvar.type.numeric.dims[0];
+		irec.baseType = outvar.type->baseType;
+		irec.dims[0] = outvar.type->numeric.dims[0];
 		irec.dims[1] = 1;
 		irec.arraySize = 1;
 		outputs.push_back(irec);

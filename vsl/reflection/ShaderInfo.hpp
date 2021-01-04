@@ -21,21 +21,46 @@
 namespace vsl
 {
 
+// The different shader stages as a bitmask
+enum class ShaderStages : uint16
+{
+	None = 0,
+	Vertex = (1 << 0),
+	TessControl = (1 << 1),
+	TessEval = (1 << 2),
+	Geometry = (1 << 3),
+	Fragment = (1 << 4),
+	AllGraphics = Vertex | TessControl | TessEval | Geometry | Fragment
+}; // enum class ShaderStages
+inline ShaderStages operator | (ShaderStages l, ShaderStages r) { return ShaderStages(uint16(l) | uint16(r)); }
+inline ShaderStages operator & (ShaderStages l, ShaderStages r) { return ShaderStages(uint16(l) & uint16(r)); }
+inline ShaderStages& operator |= (ShaderStages& l, ShaderStages r) {
+	l = l | r;
+	return l;
+}
+inline ShaderStages& operator &= (ShaderStages& l, ShaderStages r) {
+	l = l & r;
+	return l;
+}
+ShaderStages StrToShaderStage(const string& str);
+string ShaderStageToStr(ShaderStages stage);
+
+
 // Describes an interface variable for a shader (vertex input & fragment output)
 struct InterfaceVariable final
 {
 public:
 	InterfaceVariable() : name{}, location{}, type{}, arraySize{} { }
-	InterfaceVariable(const string& name, uint32 location, const ShaderType& type, uint8 arrSize)
+	InterfaceVariable(const string& name, uint32 location, const ShaderType* type, uint8 arrSize)
 		: name{ name }, location{ location }, type{ type }, arraySize{ arrSize }
 	{ }
 
-	inline uint32 bindingCount() const { return type.getBindingCount() * arraySize; }
+	inline uint32 bindingCount() const { return type->getBindingCount() * arraySize; }
 
 public:
 	string name;
 	uint32 location;
-	ShaderType type;
+	const ShaderType* type;
 	uint8 arraySize;
 }; // struct InterfaceVariable
 
@@ -44,15 +69,16 @@ public:
 struct BindingVariable final
 {
 public:
-	BindingVariable() : name{}, type{}, slot{} { }
+	BindingVariable() : name{}, type{}, slot{}, stages{} { }
 	BindingVariable(const string& name, const ShaderType* type, uint8 slot)
-		: name{ name }, type{ type }, slot{ slot }
+		: name{ name }, type{ type }, slot{ slot }, stages{}
 	{ }
 
 public:
 	string name;
 	const ShaderType* type;
 	uint8 slot;
+	ShaderStages stages; // Shader stages that use the binding
 }; // struct BindingVariable
 
 
@@ -60,14 +86,15 @@ public:
 struct UniformVariable final
 {
 public:
-	UniformVariable() : name{}, type{} { }
+	UniformVariable() : name{}, type{}, stages{} { }
 	UniformVariable(const string& name, const ShaderType* type)
-		: name{ name }, type{ type }
+		: name{ name }, type{ type }, stages{}
 	{ }
 
 public:
 	string name;
 	const ShaderType* type;
+	ShaderStages stages; // Shader stages that use the uniform
 }; // struct UniformVariable
 
 
@@ -86,31 +113,6 @@ public:
 	uint8 componentCount;
 	uint8 index;
 }; // struct SubpassInput
-
-
-// The different shader stages as a bitmask
-enum class ShaderStages : uint16
-{
-	None        = 0,
-	Vertex      = (1 << 0),
-	TessControl = (1 << 1),
-	TessEval    = (1 << 2),
-	Geometry    = (1 << 3),
-	Fragment    = (1 << 4),
-	AllGraphics = Vertex | TessControl | TessEval | Geometry | Fragment
-}; // enum class ShaderStages
-inline ShaderStages operator | (ShaderStages l, ShaderStages r) { return ShaderStages(uint16(l) | uint16(r)); }
-inline ShaderStages operator & (ShaderStages l, ShaderStages r) { return ShaderStages(uint16(l) & uint16(r)); }
-inline ShaderStages& operator |= (ShaderStages& l, ShaderStages r) {
-	l = l | r;
-	return l;
-}
-inline ShaderStages& operator &= (ShaderStages& l, ShaderStages r) {
-	l = l & r;
-	return l;
-}
-ShaderStages StrToShaderStage(const string& str);
-string ShaderStageToStr(ShaderStages stage);
 
 
 // Contains information about the public-facing interface of a shader program
@@ -134,6 +136,7 @@ public:
 	inline const std::vector<BindingVariable>& bindings() const { return bindings_; }
 	inline std::vector<BindingVariable>& bindings() { return bindings_; }
 	inline const UniformVariable& uniform() const { return uniform_; }
+	inline UniformVariable& uniform() { return uniform_; }
 	inline void uniform(const UniformVariable& var) { uniform_ = var; }
 	inline bool hasUniform() const { return !uniform_.name.empty(); }
 
@@ -148,6 +151,8 @@ public:
 	const SubpassInput* getSubpassInput(uint8 index) const;
 	const BindingVariable* getBinding(const string& name) const;
 	const BindingVariable* getBinding(uint8 slotIndex) const;
+	BindingVariable* getBinding(const string& name);
+	BindingVariable* getBinding(uint8 slotIndex);
 	uint32 getMaxBindingIndex() const;
 
 private:
