@@ -66,7 +66,7 @@ shaderLocalStatement
 
 // Shader stage function statement
 shaderStageFunction
-    : '@' stage=IDENTIFIER '{' statement* '}'
+    : '@' stage=IDENTIFIER statementBlock
     ;
 
 
@@ -76,6 +76,9 @@ statement
     : variableDefinition ';'
     | variableDeclaration ';'
     | assignment ';'
+    ;
+statementBlock
+    : '{' statement* '}'
     ;
 
 // Variable declaration, for globals, type fields, and function locals
@@ -99,6 +102,8 @@ lvalue
     | val=lvalue '[' index=expression ']'
     | val=lvalue '.' IDENTIFIER
     ;
+
+// If statement
 
 
 /////

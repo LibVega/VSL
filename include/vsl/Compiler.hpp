@@ -82,6 +82,7 @@ public:
 		, saveIntermediate_{ false }
 		, saveBytecode_{ false }
 		, disableOptimization_{ false }
+		, noCompile_{ false }
 	{ }
 	~CompilerOptions() { }
 
@@ -94,7 +95,8 @@ public:
 	DECL_GETTER_SETTER(bool, noCompile)
 
 public:
-	static constexpr BindingTableSizes DefaultTableSizes{ 4096, 512, 512, 512, 512 };
+	// These limits require VK_EXT_descriptor_indexing for some implementations (mostly Intel integrated)
+	static constexpr BindingTableSizes DefaultTableSizes{ 8192, 128, 512, 128, 128 };
 
 private:
 	string outputFile_;

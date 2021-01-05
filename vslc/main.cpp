@@ -194,6 +194,7 @@ bool ParseCommandLine(int argc, const char* argv[], bool* help, vsl::CompilerOpt
 
 void PrintHelp(const char* const arg0)
 {
+	static const auto TBL_DEF = vsl::CompilerOptions::DefaultTableSizes;
 	std::cout
 		<< "Vega Shader Language Compiler (vslc)\n"
 		<< "Usage: " << arg0 << " [options] <file>\n"
@@ -203,11 +204,11 @@ void PrintHelp(const char* const arg0)
 		<< "    -Os               - Enable bytecode optimization (default)\n"
 		<< "    -T<type>=<value>  - Set the size of the binding table for the given resource type.\n"
 		<< "                        Valid types are:\n"
-		<< "                            - samplers  (default 4096)\n"
-		<< "                            - images    (default 512)\n"
-		<< "                            - buffers   (default 512)\n"
-		<< "                            - rotexels  (default 512)\n"
-		<< "                            - rwtexels  (default 512)\n"
+		<< "                            - samplers  (default " << TBL_DEF.samplers << ")\n"
+		<< "                            - images    (default " << TBL_DEF.images << ")\n"
+		<< "                            - buffers   (default " << TBL_DEF.buffers << ")\n"
+		<< "                            - rotexels  (default " << TBL_DEF.roTexels << ")\n"
+		<< "                            - rwtexels  (default " << TBL_DEF.rwTexels << ")\n"
 		<< "    -S<format>        - Save the intermediate artifact(s) out to files.\n"
 		<< "                        Valid formats:\n"
 		<< "                            - all    -  Saves all intermediate artifacts.\n"

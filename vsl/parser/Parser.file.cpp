@@ -441,7 +441,7 @@ VISIT_FUNC(ShaderStageFunction)
 
 	// Visit the function statements
 	currentStage_ = stage;
-	for (const auto stmt : ctx->statement()) {
+	for (const auto stmt : ctx->statementBlock()->statement()) {
 		visit(stmt);
 	}
 	currentStage_ = ShaderStages::None;
