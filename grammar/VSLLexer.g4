@@ -20,7 +20,7 @@ KW_IN      : 'in' ;
 KW_LOCAL   : 'local' ;
 KW_OUT     : 'out' ;
 KW_SHADER  : 'shader' ;
-KW_TYPE    : '@type' ;
+KW_STRUCT  : '@struct' ;
 KW_UNIFORM : 'uniform' ;
 
 // Number literals

@@ -25,7 +25,7 @@ shaderTypeStatement
 
 // Shader top level statements
 topLevelStatement
-    : shaderUserTypeDefinition
+    : shaderStructDefinition
     | shaderInputOutputStatement
     | shaderConstantStatement
     | shaderUniformStatement
@@ -34,9 +34,9 @@ topLevelStatement
     | shaderStageFunction
     ;
 
-// Shader type statement, for defining new POD types
-shaderUserTypeDefinition
-    : '@type' name=IDENTIFIER '{' (variableDeclaration ';')+ '}' ';'
+// Shader struct statement, for defining new POD struct types
+shaderStructDefinition
+    : '@struct' name=IDENTIFIER '{' (variableDeclaration ';')+ '}' ';'
     ;
 
 // Shader input or output declaration

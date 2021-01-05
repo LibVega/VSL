@@ -50,7 +50,7 @@ VISIT_FUNC(ShaderTypeStatement)
 }
 
 // ====================================================================================================================
-VISIT_FUNC(ShaderUserTypeDefinition)
+VISIT_FUNC(ShaderStructDefinition)
 {
 	// Check parse status
 	if (bool(shaderInfo_.stages())) {

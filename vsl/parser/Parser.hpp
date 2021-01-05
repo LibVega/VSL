@@ -120,7 +120,7 @@ public:
 	/* File-Level Rules */
 	VISIT_DECL(File)
 	VISIT_DECL(ShaderTypeStatement)
-	VISIT_DECL(ShaderUserTypeDefinition)
+	VISIT_DECL(ShaderStructDefinition)
 	VISIT_DECL(ShaderInputOutputStatement)
 	VISIT_DECL(ShaderConstantStatement)
 	VISIT_DECL(ShaderUniformStatement)

@@ -1,8 +1,8 @@
 # Vega Shader Langauge
 
-[![Build Status](https://travis-ci.com/VegaLib/VSL.svg?branch=master)](https://travis-ci.com/VegaLib/VSL)
+[![Build Status](https://travis-ci.com/LibVega/VSL.svg?branch=master)](https://travis-ci.com/LibVega/VSL)
 
-The Vega Shader Language (VSL) is a custom GPU shading language for the [Vega](https://github.com/VegaLib) library. 
+The Vega Shader Language (VSL) is a custom GPU shading language for the [Vega](https://libvega.dev) library. 
 
 Because Vega utilizes a unique binding model and reduced subset of normal GLSL and SPIR-V features, we've implemented a custom language that matched this specific use case more directly. The resulting syntax should be easy to learn for those already familiar with GLSL or HLSL. 
 
