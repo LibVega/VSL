@@ -78,6 +78,7 @@ statement
     | assignment ';'
     | ifStatement
     | forLoopStatement
+    | controlStatement ';'
     ;
 statementBlock
     : '{' statement* '}'
@@ -123,6 +124,11 @@ forLoopStatement
             start=(IDENTIFIER|INTEGER_LITERAL) ':' 
             end=(IDENTIFIER|INTEGER_LITERAL) (':' step=(IDENTIFIER|INTEGER_LITERAL))?
         ')' statementBlock
+    ;
+
+// Control Flow Statement
+controlStatement
+    : 'break' | 'continue' | 'return'
     ;
 
 

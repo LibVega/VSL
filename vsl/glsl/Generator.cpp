@@ -310,6 +310,12 @@ void Generator::emitBlockClose()
 }
 
 // ====================================================================================================================
+void Generator::emitControlStatement(const string& keyword)
+{
+	*currentFunc_ << indentString_ << keyword << ";\n";
+}
+
+// ====================================================================================================================
 void Generator::getSetAndBinding(const BindingVariable& bind, uint32* set, uint32* binding, uint16* tableSize)
 {
 	// Easy

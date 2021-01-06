@@ -58,8 +58,9 @@ bool Variable::canWrite(ShaderStages stage) const
 
 // ====================================================================================================================
 // ====================================================================================================================
-Scope::Scope()
-	: variables_{ }
+Scope::Scope(ScopeType type)
+	: type_{ type }
+	, variables_{ }
 {
 
 }
@@ -135,12 +136,12 @@ void ScopeManager::pushGlobalScope(ShaderStages stage)
 }
 
 // ====================================================================================================================
-void ScopeManager::pushScope()
+void ScopeManager::pushScope(Scope::ScopeType type)
 {
 	if (scopes_.size() == 0) {
 		throw std::runtime_error("COMPILER BUG - Invalid scope pop");
 	}
-	scopes_.emplace_back(std::make_unique<Scope>());
+	scopes_.emplace_back(std::make_unique<Scope>(type));
 }
 
 // ====================================================================================================================
@@ -238,6 +239,17 @@ const Constant* ScopeManager::getConstant(const string& name) const
 bool ScopeManager::hasGlobalName(const string& name) const
 {
 	return hasGlobal(name) || hasConstant(name);
+}
+
+// ====================================================================================================================
+bool ScopeManager::inLoop() const
+{
+	for (int32 i = int32(scopes_.size()) - 1; i >= 0; --i) {
+		if (scopes_[i]->type() == Scope::Loop) {
+			return true;
+		}
+	}
+	return false;
 }
 
 // ====================================================================================================================

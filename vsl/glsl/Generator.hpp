@@ -68,6 +68,7 @@ public:
 	void emitElse();
 	void emitForLoop(const string& counter, int32 start, int32 end, int32 step);
 	void emitBlockClose();
+	void emitControlStatement(const string& keyword);
 
 	/* Utilities */
 	void getSetAndBinding(const BindingVariable& bind, uint32* set, uint32* binding, uint16* tableSize);

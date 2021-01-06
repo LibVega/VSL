@@ -14,7 +14,7 @@
 
 
 template <typename T> 
-inline constexpr int sgn(T val) {
+inline constexpr int signum(T val) {
 	return (T(0) < val) - (val < T(0));
 }
 
@@ -39,6 +39,9 @@ VISIT_FUNC(Statement)
 	}
 	else if (ctx->forLoopStatement()) {
 		visit(ctx->forLoopStatement());
+	}
+	else if (ctx->controlStatement()) {
+		visit(ctx->controlStatement());
 	}
 
 	return nullptr;
@@ -334,7 +337,7 @@ VISIT_FUNC(IfStatement)
 
 	// Emit and create scope
 	generator_.emitIf(cond->refString());
-	scopes_.pushScope();
+	scopes_.pushScope(Scope::Conditional);
 
 	// Visit statements
 	if (ctx->statement()) {
@@ -375,7 +378,7 @@ VISIT_FUNC(ElifStatement)
 
 	// Emit and create scope
 	generator_.emitElif(cond->refString());
-	scopes_.pushScope();
+	scopes_.pushScope(Scope::Conditional);
 
 	// Visit statements
 	if (ctx->statement()) {
@@ -399,7 +402,7 @@ VISIT_FUNC(ElseStatement)
 {
 	// Emit and create scope
 	generator_.emitElse();
-	scopes_.pushScope();
+	scopes_.pushScope(Scope::Conditional);
 
 	// Visit statements
 	if (ctx->statement()) {
@@ -514,7 +517,7 @@ VISIT_FUNC(ForLoopStatement)
 		if (stepValue == 0) {
 			ERROR(ctx->step, "Loop step value cannot be zero");
 		}
-		if (sgn(stepValue) != sgn(endValue - startValue)) {
+		if (signum(stepValue) != signum(endValue - startValue)) {
 			ERROR(ctx->step, "Sign of step is invalid for given start and end values");
 		}
 	}
@@ -526,7 +529,7 @@ VISIT_FUNC(ForLoopStatement)
 
 	// Emit and push scope, add counter as readonly variable
 	generator_.emitForLoop(counterName, startValue, endValue, stepValue);
-	scopes_.pushScope();
+	scopes_.pushScope(Scope::Loop);
 	Variable counterVar{ VariableType::Private, counterName, TypeManager::GetBuiltinType("int"), 1 };
 	counterVar.extra.priv.readonly = true;
 	scopes_.addVariable(counterVar);
@@ -539,6 +542,24 @@ VISIT_FUNC(ForLoopStatement)
 	// Emit and pop scope
 	generator_.emitBlockClose();
 	scopes_.popScope();
+
+	return nullptr;
+}
+
+// ====================================================================================================================
+VISIT_FUNC(ControlStatement)
+{
+	const auto keyword = ctx->getText();
+
+	if (keyword == "break" || keyword == "continue") {
+		if (!scopes_.inLoop()) {
+			ERROR(ctx, mkstr("Control statement '%s' only allowed in loop blocks", keyword.c_str()));
+		}
+		generator_.emitControlStatement(keyword);
+	}
+	else if (keyword == "return") {
+		generator_.emitControlStatement(keyword);
+	}
 
 	return nullptr;
 }
