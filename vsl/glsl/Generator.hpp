@@ -66,7 +66,7 @@ public:
 	void emitIf(const string& condition);
 	void emitElif(const string& condition);
 	void emitElse();
-	void emitForLoop(const string& counter, int32 start, int32 end);
+	void emitForLoop(const string& counter, int32 start, int32 end, int32 step);
 	void emitBlockClose();
 
 	/* Utilities */

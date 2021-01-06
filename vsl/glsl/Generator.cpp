@@ -290,15 +290,15 @@ void Generator::emitElse()
 }
 
 // ====================================================================================================================
-void Generator::emitForLoop(const string& counter, int32 start, int32 end)
+void Generator::emitForLoop(const string& counter, int32 start, int32 end, int32 step)
 {
-	const char comp = (start < end) ? '<' : '>';
-	const char op = (start < end) ? '+' : '-';
+	const char comp = (step > 0) ? '<' : '>';
+	const char op = (step > 0) ? '+' : '-';
 	*currentFunc_
 		<< indentString_
 		<< "for (int " << counter << " = " << start << "; "
 		<< counter << ' ' << comp << ' ' << end << "; "
-		<< counter << ' ' << op << "= 1) {\n";
+		<< counter << ' ' << op << "= " << abs(step) << ") {\n";
 	indentString_ += '\t';
 }
 

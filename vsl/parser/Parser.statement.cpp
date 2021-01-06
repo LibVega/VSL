@@ -13,6 +13,11 @@
 #define VISIT_EXPR(context) (visit(context).as<std::shared_ptr<Expr>>())
 
 
+template <typename T> 
+inline constexpr int sgn(T val) {
+	return (T(0) < val) - (val < T(0));
+}
+
 namespace vsl
 {
 
@@ -423,49 +428,104 @@ VISIT_FUNC(ForLoopStatement)
 	}
 
 	// Check the start variable
-	int32 startValue;
+	int32 startValue{};
 	if (ctx->start->getType() == grammar::VSL::IDENTIFIER) {
 		const auto constName = ctx->start->getText();
 		const auto sc = scopes_.getConstant(constName);
 		if (!sc) {
 			ERROR(ctx->start, mkstr("No such constant with name '%s'", constName.c_str()));
 		}
-		if (sc->type != Constant::Signed) {
-			ERROR(ctx->start, mkstr("Loop constant '%s' must be a signed integer type", constName.c_str()));
+		if (sc->type == Constant::Float) {
+			ERROR(ctx->start, mkstr("Loop constant '%s' must be an integer type", constName.c_str()));
 		}
-		startValue = sc->i;
+		if ((sc->type == Constant::Unsigned) && (sc->u > INT32_MAX)) {
+			ERROR(ctx->start, mkstr("Loop constant '%s' is out of range", constName.c_str()));
+		}
+		startValue = (sc->type == Constant::Signed) ? sc->i : int32(sc->u);
 	}
 	else {
 		const auto lit = ParseLiteral(this, ctx->start);
-		if (lit.type != Literal::Signed) {
+		if (lit.type == Literal::Float) {
 			ERROR(ctx->start, "Loop start value must be an integer type");
+		}
+		if ((lit.i < INT32_MIN) || (lit.i > INT32_MAX)) {
+			ERROR(ctx->start, "Loop end value is out of range");
 		}
 		startValue = int32(lit.i);
 	}
 
 	// Check the end variable
-	int32 endValue;
+	int32 endValue{};
 	if (ctx->end->getType() == grammar::VSL::IDENTIFIER) {
 		const auto constName = ctx->end->getText();
 		const auto sc = scopes_.getConstant(constName);
 		if (!sc) {
 			ERROR(ctx->end, mkstr("No such constant with name '%s'", constName.c_str()));
 		}
-		if (sc->type != Constant::Signed) {
-			ERROR(ctx->end, mkstr("Loop constant '%s' must be a signed integer type", constName.c_str()));
+		if (sc->type == Constant::Float) {
+			ERROR(ctx->end, mkstr("Loop constant '%s' must be an integer type", constName.c_str()));
 		}
-		endValue = sc->i;
+		if ((sc->type == Constant::Unsigned) && (sc->u > INT32_MAX)) {
+			ERROR(ctx->end, mkstr("Loop constant '%s' is out of range", constName.c_str()));
+		}
+		endValue = (sc->type == Constant::Signed) ? sc->i : int32(sc->u);
 	}
 	else {
 		const auto lit = ParseLiteral(this, ctx->end);
-		if (lit.type != Literal::Signed) {
+		if (lit.type == Literal::Float) {
 			ERROR(ctx->end, "Loop end value must be an integer type");
+		}
+		if ((lit.i < INT32_MIN) || (lit.i > INT32_MAX)) {
+			ERROR(ctx->end, "Loop end value is out of range");
 		}
 		endValue = int32(lit.i);
 	}
 
+	// Check the optional step value
+	int32 stepValue{ 1 };
+	if (ctx->step) {
+		// Parse
+		if (ctx->step->getType() == grammar::VSL::IDENTIFIER) {
+			const auto constName = ctx->step->getText();
+			const auto sc = scopes_.getConstant(constName);
+			if (!sc) {
+				ERROR(ctx->step, mkstr("No such constant with name '%s'", constName.c_str()));
+			}
+			if (sc->type == Constant::Float) {
+				ERROR(ctx->step, mkstr("Loop constant '%s' must be an integer type", constName.c_str()));
+			}
+			if ((sc->type == Constant::Unsigned) && (sc->u > INT32_MAX)) {
+				ERROR(ctx->step, mkstr("Loop constant '%s' is out of range", constName.c_str()));
+			}
+			stepValue = (sc->type == Constant::Signed) ? sc->i : int32(sc->u);
+		}
+		else {
+			const auto lit = ParseLiteral(this, ctx->step);
+			if (lit.type == Literal::Float) {
+				ERROR(ctx->step, "Loop step value must be an integer type");
+			}
+			if ((lit.i < INT32_MIN) || (lit.i > INT32_MAX)) {
+				ERROR(ctx->step, "Loop step value is out of range");
+			}
+			stepValue = int32(lit.i);
+		}
+
+		// Validate
+		if (stepValue == 0) {
+			ERROR(ctx->step, "Loop step value cannot be zero");
+		}
+		if (sgn(stepValue) != sgn(endValue - startValue)) {
+			ERROR(ctx->step, "Sign of step is invalid for given start and end values");
+		}
+	}
+	else {
+		if (endValue < startValue) {
+			stepValue = -1;
+		}
+	}
+
 	// Emit and push scope, add counter as readonly variable
-	generator_.emitForLoop(counterName, startValue, endValue);
+	generator_.emitForLoop(counterName, startValue, endValue, stepValue);
 	scopes_.pushScope();
 	Variable counterVar{ VariableType::Private, counterName, TypeManager::GetBuiltinType("int"), 1 };
 	counterVar.extra.priv.readonly = true;
