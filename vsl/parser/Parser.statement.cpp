@@ -560,6 +560,12 @@ VISIT_FUNC(ControlStatement)
 	else if (keyword == "return") {
 		generator_.emitControlStatement(keyword);
 	}
+	else if (keyword == "discard") {
+		if (currentStage_ != ShaderStages::Fragment) {
+			ERROR(ctx, "'discard' statement only allowed in fragment shader");
+		}
+		generator_.emitControlStatement(keyword);
+	}
 
 	return nullptr;
 }

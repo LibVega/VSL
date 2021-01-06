@@ -128,7 +128,7 @@ forLoopStatement
 
 // Control Flow Statement
 controlStatement
-    : 'break' | 'continue' | 'return'
+    : 'break' | 'continue' | 'return' | 'discard'
     ;
 
 
