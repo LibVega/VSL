@@ -290,6 +290,19 @@ void Generator::emitElse()
 }
 
 // ====================================================================================================================
+void Generator::emitForLoop(const string& counter, int32 start, int32 end)
+{
+	const char comp = (start < end) ? '<' : '>';
+	const char op = (start < end) ? '+' : '-';
+	*currentFunc_
+		<< indentString_
+		<< "for (int " << counter << " = " << start << "; "
+		<< counter << ' ' << comp << ' ' << end << "; "
+		<< counter << ' ' << op << "= 1) {\n";
+	indentString_ += '\t';
+}
+
+// ====================================================================================================================
 void Generator::emitBlockClose()
 {
 	indentString_ = indentString_.substr(0, indentString_.length() - 1);

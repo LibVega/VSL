@@ -18,6 +18,7 @@ KW_CONST   : 'const' ;
 KW_ELIF    : 'elif' ;
 KW_ELSE    : 'else' ;
 KW_FLAT    : 'flat' ;
+KW_FOR     : 'for' ;
 KW_IF      : 'if' ;
 KW_IN      : 'in' ;
 KW_LOCAL   : 'local' ;

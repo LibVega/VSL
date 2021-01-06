@@ -77,6 +77,7 @@ statement
     | variableDeclaration ';'
     | assignment ';'
     | ifStatement
+    | forLoopStatement
     ;
 statementBlock
     : '{' statement* '}'
@@ -114,6 +115,13 @@ elifStatement
 elseStatement
     : 'else' (statement|statementBlock)
     ;
+
+// For Loop Statement
+forLoopStatement
+    : 'for' '(' counter=IDENTIFIER ';' start=(IDENTIFIER|INTEGER_LITERAL) ':' end=(IDENTIFIER|INTEGER_LITERAL) ')' 
+        statementBlock
+    ;
+
 
 /////
 // Expressions

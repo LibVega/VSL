@@ -32,6 +32,9 @@ VISIT_FUNC(Statement)
 	else if (ctx->ifStatement()) {
 		visit(ctx->ifStatement());
 	}
+	else if (ctx->forLoopStatement()) {
+		visit(ctx->forLoopStatement());
+	}
 
 	return nullptr;
 }
@@ -404,6 +407,76 @@ VISIT_FUNC(ElseStatement)
 	}
 
 	// Close scope
+	generator_.emitBlockClose();
+	scopes_.popScope();
+
+	return nullptr;
+}
+
+// ====================================================================================================================
+VISIT_FUNC(ForLoopStatement)
+{
+	// Check the variable
+	const auto counterName = ctx->counter->getText();
+	if (scopes_.hasName(counterName) || scopes_.hasGlobalName(counterName)) {
+		ERROR(ctx->counter, mkstr("The name '%s' already exists and cannot be reused", counterName.c_str()));
+	}
+
+	// Check the start variable
+	int32 startValue;
+	if (ctx->start->getType() == grammar::VSL::IDENTIFIER) {
+		const auto constName = ctx->start->getText();
+		const auto sc = scopes_.getConstant(constName);
+		if (!sc) {
+			ERROR(ctx->start, mkstr("No such constant with name '%s'", constName.c_str()));
+		}
+		if (sc->type != Constant::Signed) {
+			ERROR(ctx->start, mkstr("Loop constant '%s' must be a signed integer type", constName.c_str()));
+		}
+		startValue = sc->i;
+	}
+	else {
+		const auto lit = ParseLiteral(this, ctx->start);
+		if (lit.type != Literal::Signed) {
+			ERROR(ctx->start, "Loop start value must be an integer type");
+		}
+		startValue = int32(lit.i);
+	}
+
+	// Check the end variable
+	int32 endValue;
+	if (ctx->end->getType() == grammar::VSL::IDENTIFIER) {
+		const auto constName = ctx->end->getText();
+		const auto sc = scopes_.getConstant(constName);
+		if (!sc) {
+			ERROR(ctx->end, mkstr("No such constant with name '%s'", constName.c_str()));
+		}
+		if (sc->type != Constant::Signed) {
+			ERROR(ctx->end, mkstr("Loop constant '%s' must be a signed integer type", constName.c_str()));
+		}
+		endValue = sc->i;
+	}
+	else {
+		const auto lit = ParseLiteral(this, ctx->end);
+		if (lit.type != Literal::Signed) {
+			ERROR(ctx->end, "Loop end value must be an integer type");
+		}
+		endValue = int32(lit.i);
+	}
+
+	// Emit and push scope, add counter as readonly variable
+	generator_.emitForLoop(counterName, startValue, endValue);
+	scopes_.pushScope();
+	Variable counterVar{ VariableType::Private, counterName, TypeManager::GetBuiltinType("int"), 1 };
+	counterVar.extra.priv.readonly = true;
+	scopes_.addVariable(counterVar);
+
+	// Visit the inner statements
+	for (const auto& stmt : ctx->statementBlock()->statement()) {
+		visit(stmt);
+	}
+
+	// Emit and pop scope
 	generator_.emitBlockClose();
 	scopes_.popScope();
 

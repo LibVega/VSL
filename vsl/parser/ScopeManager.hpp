@@ -71,6 +71,9 @@ public:
 		struct {
 			uint8 slot;
 		} binding;
+		struct {
+			bool readonly;
+		} priv;
 	} extra;
 }; // class Variable
 

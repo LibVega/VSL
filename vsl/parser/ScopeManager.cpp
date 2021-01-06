@@ -50,7 +50,7 @@ bool Variable::canWrite(ShaderStages stage) const
 	case VariableType::Constant: return false;
 	case VariableType::Local: return stage == ShaderStages::Vertex; // TODO: Support more stages
 	case VariableType::Parameter: return false;
-	case VariableType::Private: return true;
+	case VariableType::Private: return !extra.priv.readonly;
 	default: return false;
 	}
 }

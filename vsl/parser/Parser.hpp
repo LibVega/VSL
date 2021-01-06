@@ -137,6 +137,7 @@ public:
 	VISIT_DECL(IfStatement)
 	VISIT_DECL(ElifStatement)
 	VISIT_DECL(ElseStatement)
+	VISIT_DECL(ForLoopStatement)
 
 	/* Expressions */
 	VISIT_DECL(FactorExpr)
