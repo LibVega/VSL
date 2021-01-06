@@ -29,6 +29,9 @@ VISIT_FUNC(Statement)
 	else if (ctx->assignment()) {
 		visit(ctx->assignment());
 	}
+	else if (ctx->ifStatement()) {
+		visit(ctx->ifStatement());
+	}
 
 	return nullptr;
 }
@@ -307,6 +310,104 @@ VISIT_FUNC(Lvalue)
 			}
 		}
 	}
+}
+
+// ====================================================================================================================
+VISIT_FUNC(IfStatement)
+{
+	// Check the condition
+	const auto cond = VISIT_EXPR(ctx->cond);
+	if (cond->arraySize() != 1) {
+		ERROR(ctx->cond, "If statement condition cannot be an array");
+	}
+	if (!cond->type()->isScalar() || !cond->type()->isBoolean()) {
+		ERROR(ctx->cond, "If statement condition must be a scalar boolean");
+	}
+
+	// Emit and create scope
+	generator_.emitIf(cond->refString());
+	scopes_.pushScope();
+
+	// Visit statements
+	if (ctx->statement()) {
+		visit(ctx->statement());
+	}
+	else {
+		for (const auto& stmt : ctx->statementBlock()->statement()) {
+			visit(stmt);
+		}
+	}
+
+	// Close scope
+	generator_.emitBlockClose();
+	scopes_.popScope();
+
+	// Visit the elif and else statements
+	for (const auto& elif : ctx->elifStatement()) {
+		visit(elif);
+	}
+	if (ctx->elseStatement()) {
+		visit(ctx->elseStatement());
+	}
+
+	return nullptr;
+}
+
+// ====================================================================================================================
+VISIT_FUNC(ElifStatement)
+{
+	// Check the condition
+	const auto cond = VISIT_EXPR(ctx->cond);
+	if (cond->arraySize() != 1) {
+		ERROR(ctx->cond, "If statement condition cannot be an array");
+	}
+	if (!cond->type()->isScalar() || !cond->type()->isBoolean()) {
+		ERROR(ctx->cond, "If statement condition must be a scalar boolean");
+	}
+
+	// Emit and create scope
+	generator_.emitElif(cond->refString());
+	scopes_.pushScope();
+
+	// Visit statements
+	if (ctx->statement()) {
+		visit(ctx->statement());
+	}
+	else {
+		for (const auto& stmt : ctx->statementBlock()->statement()) {
+			visit(stmt);
+		}
+	}
+
+	// Close scope
+	generator_.emitBlockClose();
+	scopes_.popScope();
+
+	return nullptr;
+}
+
+// ====================================================================================================================
+VISIT_FUNC(ElseStatement)
+{
+	// Emit and create scope
+	generator_.emitElse();
+	scopes_.pushScope();
+
+	// Visit statements
+	if (ctx->statement()) {
+		visit(ctx->statement());
+	}
+	else {
+		for (const auto& stmt : ctx->statementBlock()->statement()) {
+			visit(stmt);
+		}
+	}
+
+	// Close scope
+	generator_.emitBlockClose();
+	scopes_.popScope();
+
+	return nullptr;
 }
 
 } // namespace vsl

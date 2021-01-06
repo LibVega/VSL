@@ -134,6 +134,9 @@ public:
 	VISIT_DECL(VariableDeclaration)
 	VISIT_DECL(Assignment)
 	VISIT_DECL(Lvalue)
+	VISIT_DECL(IfStatement)
+	VISIT_DECL(ElifStatement)
+	VISIT_DECL(ElseStatement)
 
 	/* Expressions */
 	VISIT_DECL(FactorExpr)

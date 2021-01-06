@@ -63,6 +63,10 @@ public:
 	void emitAssignment(const string& left, const string& op, const string& right);
 	void emitImageStore(const string& imStore, const string& value);
 	void emitBindingIndex(uint32 index);
+	void emitIf(const string& condition);
+	void emitElif(const string& condition);
+	void emitElse();
+	void emitBlockClose();
 
 	/* Utilities */
 	void getSetAndBinding(const BindingVariable& bind, uint32* set, uint32* binding, uint16* tableSize);

@@ -269,6 +269,34 @@ void Generator::emitBindingIndex(uint32 index)
 }
 
 // ====================================================================================================================
+void Generator::emitIf(const string& condition)
+{
+	*currentFunc_ << indentString_ << "if (" << condition << ") {\n";
+	indentString_ += '\t';
+}
+
+// ====================================================================================================================
+void Generator::emitElif(const string& condition)
+{
+	*currentFunc_ << indentString_ <<  "else if (" << condition << ") {\n";
+	indentString_ += '\t';
+}
+
+// ====================================================================================================================
+void Generator::emitElse()
+{
+	*currentFunc_ << indentString_ << "else {\n";
+	indentString_ += '\t';
+}
+
+// ====================================================================================================================
+void Generator::emitBlockClose()
+{
+	indentString_ = indentString_.substr(0, indentString_.length() - 1);
+	*currentFunc_ << indentString_ << "}\n";
+}
+
+// ====================================================================================================================
 void Generator::getSetAndBinding(const BindingVariable& bind, uint32* set, uint32* binding, uint16* tableSize)
 {
 	// Easy

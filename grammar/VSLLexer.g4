@@ -15,7 +15,10 @@ BOOLEAN_LITERAL : 'true' | 'false' ;
 // Keywords
 KW_BIND    : 'bind' ;
 KW_CONST   : 'const' ;
+KW_ELIF    : 'elif' ;
+KW_ELSE    : 'else' ;
 KW_FLAT    : 'flat' ;
+KW_IF      : 'if' ;
 KW_IN      : 'in' ;
 KW_LOCAL   : 'local' ;
 KW_OUT     : 'out' ;

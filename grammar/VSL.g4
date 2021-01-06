@@ -76,6 +76,7 @@ statement
     : variableDefinition ';'
     | variableDeclaration ';'
     | assignment ';'
+    | ifStatement
     ;
 statementBlock
     : '{' statement* '}'
@@ -104,7 +105,15 @@ lvalue
     ;
 
 // If statement
-
+ifStatement
+    : 'if' '(' cond=expression ')' (statement|statementBlock) elifStatement* elseStatement?
+    ;
+elifStatement
+    : 'elif' '(' cond=expression ')' (statement|statementBlock)
+    ;
+elseStatement
+    : 'else' (statement|statementBlock)
+    ;
 
 /////
 // Expressions
