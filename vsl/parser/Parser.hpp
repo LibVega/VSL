@@ -175,6 +175,9 @@ private:
 		throw ParserError(msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()));
 	}
 
+public:
+	static constexpr uint32 MAX_NAME_LENGTH{ 64u };
+
 private:
 	const CompilerOptions* options_;
 	ErrorListener errorListener_;

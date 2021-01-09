@@ -62,6 +62,9 @@ VISIT_FUNC(ShaderStructDefinition)
 	if (types_.getType(typeName)) {
 		ERROR(ctx->name, mkstr("Duplicate type name '%s'", typeName.c_str()));
 	}
+	if (typeName.length() > MAX_NAME_LENGTH) {
+		ERROR(ctx->name, mkstr("Type names cannot be longer than %u characters", MAX_NAME_LENGTH));
+	}
 	if (typeName[0] == '_' && *(typeName.rbegin()) == '_') {
 		ERROR(ctx->name, "Type names that start and end with '_' are reserved");
 	}

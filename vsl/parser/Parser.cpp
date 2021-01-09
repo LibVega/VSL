@@ -201,13 +201,16 @@ Variable Parser::parseVariableDeclaration(const grammar::VSL::VariableDeclaratio
 {
 	// Validate name against either the globals, or the current scope tree
 	const auto varName = ctx->name->getText();
-	if (ctx->name->getText()[0] == '$') {
+	if (varName[0] == '$') {
 		ERROR(ctx->name, "Identifiers starting with '$' are reserved for builtins");
 	}
-	if ((global && scopes_.hasGlobalName(ctx->name->getText())) || scopes_.hasName(ctx->name->getText())) {
-		ERROR(ctx->name, mkstr("Duplicate variable name '%s'", ctx->name->getText().c_str()));
+	if (varName.length() > MAX_NAME_LENGTH) {
+		ERROR(ctx->name, mkstr("Indentifier names cannot be longer than %u bytes", MAX_NAME_LENGTH));
 	}
-	if (ctx->name->getText()[0] == '_' && *(ctx->name->getText().rbegin()) == '_') {
+	if ((global && scopes_.hasGlobalName(varName)) || scopes_.hasName(varName)) {
+		ERROR(ctx->name, mkstr("Duplicate variable name '%s'", varName.c_str()));
+	}
+	if (varName[0] == '_' && *(varName.rbegin()) == '_') {
 		ERROR(ctx->name, "Names that start and end with '_' are reserved");
 	}
 	if (Functions::HasFunction(varName)) {

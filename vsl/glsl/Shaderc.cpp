@@ -236,8 +236,13 @@ bool Shaderc::writeProgram(const ShaderInfo& info)
 		std::vector<uint32> offsets{};
 		info.uniform().type->getMemberOffsets(offsets);
 		for (uint32 i = 0; i < offsets.size(); ++i) {
+			const auto& member = info.uniform().type->userStruct.members[i];
 			file.write(reinterpret_cast<const char*>(&offsets[i]), sizeof(offsets[i]));
-			const auto& name = info.uniform().type->userStruct.members[i].name;
+			const auto& name = member.name;
+			const uint8 memTypeInfo[4] {
+				uint8(member.baseType), member.dims[0], member.dims[1], member.arraySize
+			};
+			file.write(reinterpret_cast<const char*>(memTypeInfo), sizeof(memTypeInfo));
 			const auto nameLen = uint32(name.length());
 			file.write(reinterpret_cast<const char*>(&nameLen), sizeof(nameLen));
 			file.write(name.c_str(), nameLen);
