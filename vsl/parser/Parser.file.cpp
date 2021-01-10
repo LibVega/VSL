@@ -169,6 +169,9 @@ VISIT_FUNC(ShaderInputOutputStatement)
 		if (ioVar.dataType->numeric.dims[1] != 1) {
 			ERROR(varDecl->baseType, "Fragment outputs cannot be matrix types");
 		}
+		if (ioVar.dataType->numeric.dims[0] == 3) {
+			ERROR(varDecl->baseType, "Fragment outputs cannot be 3-component vectors");
+		}
 	}
 
 	// Add to shader info

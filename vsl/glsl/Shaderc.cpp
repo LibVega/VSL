@@ -227,16 +227,17 @@ bool Shaderc::writeProgram(const ShaderInfo& info)
 	file.write(reinterpret_cast<const char*>(bindings.data()), bindings.size() * sizeof(binding_record));
 
 	// Write the uniform data
-	const auto uniformSize = info.uniform().type->getStructSize();
+	const auto uniformStruct = info.uniform().type->buffer.structType;
+	const auto uniformSize = uniformStruct->getStructSize();
 	file.write(reinterpret_cast<const char*>(&uniformSize), sizeof(uniformSize));
 	file.write(reinterpret_cast<const char*>(&info.uniform().stages), sizeof(info.uniform().stages));
-	const auto uniformMemCount = uint32(info.uniform().type->userStruct.members.size());
+	const auto uniformMemCount = uint32(uniformStruct->userStruct.members.size());
 	file.write(reinterpret_cast<const char*>(&uniformMemCount), sizeof(uniformMemCount));
 	if (uniformMemCount > 0) {
 		std::vector<uint32> offsets{};
-		info.uniform().type->getMemberOffsets(offsets);
+		uniformStruct->getMemberOffsets(offsets);
 		for (uint32 i = 0; i < offsets.size(); ++i) {
-			const auto& member = info.uniform().type->userStruct.members[i];
+			const auto& member = uniformStruct->userStruct.members[i];
 			file.write(reinterpret_cast<const char*>(&offsets[i]), sizeof(offsets[i]));
 			const auto& name = member.name;
 			const uint8 memTypeInfo[4] {
