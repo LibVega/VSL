@@ -227,27 +227,33 @@ bool Shaderc::writeProgram(const ShaderInfo& info)
 	file.write(reinterpret_cast<const char*>(bindings.data()), bindings.size() * sizeof(binding_record));
 
 	// Write the uniform data
-	const auto uniformStruct = info.uniform().type->buffer.structType;
-	const auto uniformSize = uniformStruct->getStructSize();
-	file.write(reinterpret_cast<const char*>(&uniformSize), sizeof(uniformSize));
-	file.write(reinterpret_cast<const char*>(&info.uniform().stages), sizeof(info.uniform().stages));
-	const auto uniformMemCount = uint32(uniformStruct->userStruct.members.size());
-	file.write(reinterpret_cast<const char*>(&uniformMemCount), sizeof(uniformMemCount));
-	if (uniformMemCount > 0) {
-		std::vector<uint32> offsets{};
-		uniformStruct->getMemberOffsets(offsets);
-		for (uint32 i = 0; i < offsets.size(); ++i) {
-			const auto& member = uniformStruct->userStruct.members[i];
-			file.write(reinterpret_cast<const char*>(&offsets[i]), sizeof(offsets[i]));
-			const auto& name = member.name;
-			const uint8 memTypeInfo[4] {
-				uint8(member.baseType), member.dims[0], member.dims[1], member.arraySize
-			};
-			file.write(reinterpret_cast<const char*>(memTypeInfo), sizeof(memTypeInfo));
-			const auto nameLen = uint32(name.length());
-			file.write(reinterpret_cast<const char*>(&nameLen), sizeof(nameLen));
-			file.write(name.c_str(), nameLen);
+	if (info.hasUniform()) {
+		const auto uniformStruct = info.uniform().type->buffer.structType;
+		const auto uniformSize = uniformStruct->getStructSize();
+		file.write(reinterpret_cast<const char*>(&uniformSize), sizeof(uniformSize));
+		file.write(reinterpret_cast<const char*>(&info.uniform().stages), sizeof(info.uniform().stages));
+		const auto uniformMemCount = uint32(uniformStruct->userStruct.members.size());
+		file.write(reinterpret_cast<const char*>(&uniformMemCount), sizeof(uniformMemCount));
+		if (uniformMemCount > 0) {
+			std::vector<uint32> offsets{};
+			uniformStruct->getMemberOffsets(offsets);
+			for (uint32 i = 0; i < offsets.size(); ++i) {
+				const auto& member = uniformStruct->userStruct.members[i];
+				file.write(reinterpret_cast<const char*>(&offsets[i]), sizeof(offsets[i]));
+				const auto& name = member.name;
+				const uint8 memTypeInfo[4]{
+					uint8(member.baseType), member.dims[0], member.dims[1], member.arraySize
+				};
+				file.write(reinterpret_cast<const char*>(memTypeInfo), sizeof(memTypeInfo));
+				const auto nameLen = uint32(name.length());
+				file.write(reinterpret_cast<const char*>(&nameLen), sizeof(nameLen));
+				file.write(name.c_str(), nameLen);
+			}
 		}
+	}
+	else {
+		static const uint32 ZERO{ 0 };
+		file.write(reinterpret_cast<const char*>(&ZERO), sizeof(ZERO));
 	}
 
 	// Write the subpass inputs
