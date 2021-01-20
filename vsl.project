@@ -25,6 +25,11 @@ end
 local VULKAN_LIB = VULKAN_SDK .. '/lib'
 local VULKAN_INC = VULKAN_SDK .. '/include'
 
+-- Perform additional dependency downloads
+if os.get() == "macosx" then
+    os.execute("(cd ./lib/macos && chmod +x get_antlr.sh && ./get_antlr.sh)")
+end
+
 
 -- Project Workspace
 workspace "VSL"
