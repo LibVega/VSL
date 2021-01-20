@@ -98,6 +98,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <sstream>
 #include <utility>
 #include <functional>
 

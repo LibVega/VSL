@@ -6,6 +6,11 @@
 
 #include "./Compiler.hpp"
 
+#include <filesystem>
+#include <fstream>
+
+#define SET_ERROR(stage,...) lastError_ = CompilerError(CompilerStage::stage, ##__VA_ARGS__);
+
 
 namespace vsl
 {
@@ -29,7 +34,29 @@ bool Compiler::compileFile(const string& path, const CompilerOptions& options) n
 	// Clear old compile state
 	lastError_ = {};
 
-	return true;
+	// Validate the path and file
+	std::error_code ioError{};
+	const auto inPath = std::filesystem::absolute({ path }, ioError);
+	if (ioError) {
+		SET_ERROR(FileRead, "Input path is invalid");
+		return false;
+	}
+	if (!std::filesystem::exists(inPath, ioError) || ioError) {
+		SET_ERROR(FileRead, "Input file does not exist");
+		return false;
+	}
+
+	// Try to read the file
+	std::ifstream inFile{ inPath.c_str(), std::istream::in };
+	if (!inFile) {
+		SET_ERROR(FileRead, "Could not open input file for reading");
+		return false;
+	}
+	std::stringstream fileContents{};
+	fileContents << inFile.rdbuf();
+
+	// Parse the loaded source
+	return compileSource(fileContents.str(), options);
 }
 
 // ====================================================================================================================
