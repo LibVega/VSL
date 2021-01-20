@@ -103,10 +103,6 @@ project "vsl"
 
     -- Project Files
     files {
-        "generated/**.h",
-        "generated/**.cpp",
-        "include/vsl/**.hpp",
-        "include/vsl/**.h",
         "vsl/**.hpp",
         "vsl/**.h",
         "vsl/**.cpp"

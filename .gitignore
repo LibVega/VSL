@@ -5,8 +5,8 @@ build/
 grammar/\.antlr/
 
 # Libraries
-lib/macos/libantlr4-runtime.a
+lib/macos/libantlr4-runtime\.a
 
 # Generated lexer/parser files
-generated/*
-!generated/README.md
+vsl/Grammar/*
+!vsl/Grammar/README\.md
