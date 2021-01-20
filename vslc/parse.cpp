@@ -6,7 +6,7 @@
 
 /// The main function entry point for the command-line VSL compiler 'vslc'
 
-#include "../vsl/Compiler.hpp"
+#include "../vsl/Shader.hpp"
 
 #include <iostream>
 #include <filesystem>
@@ -44,7 +44,7 @@ static std::tuple<bool, std::string, std::string, std::string> normalizeArg(cons
 
 // ====================================================================================================================
 #define ERROR(msg) { std::cerr << msg << std::endl; return false; }
-bool ParseCommandLine(int argc, const char* argv[], bool* help, vsl::CompilerOptions* options)
+bool ParseCommandLine(int argc, const char* argv[], bool* help, vsl::CompileOptions* options)
 {
 	using namespace vsl;
 
@@ -147,7 +147,7 @@ bool ParseCommandLine(int argc, const char* argv[], bool* help, vsl::CompilerOpt
 // ====================================================================================================================
 void PrintHelp(const char* const arg0)
 {
-	static const auto TBL_DEF = vsl::CompilerOptions::DefaultTableSizes;
+	static const auto TBL_DEF = vsl::CompileOptions::DefaultTableSizes;
 
 	std::cout
 		<< "Vega Shader Language Compiler (vslc)\n"

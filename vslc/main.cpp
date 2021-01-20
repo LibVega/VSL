@@ -6,12 +6,12 @@
 
 /// The main function entry point for the command-line VSL compiler 'vslc'
 
-#include "../vsl/Compiler.hpp"
+#include "../vsl/Shader.hpp"
 
 #include <iostream>
 
 
-bool ParseCommandLine(int argc, const char* argv[], bool* help, vsl::CompilerOptions* options);
+bool ParseCommandLine(int argc, const char* argv[], bool* help, vsl::CompileOptions* options);
 void PrintHelp(const char* const arg0);
 
 int main(int argc, char* argv[])
@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
 	}
 
 	// Try to parse command line
-	CompilerOptions options{};
+	CompileOptions options{};
 	bool help{ false };
 	if (!ParseCommandLine(argc, (const char**)argv, &help, &options)) {
 		return 2;
@@ -35,30 +35,32 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 
-	// Run the compiler
+	// Build the shader
 	try {
-		Compiler c{ };
-		if (!c.compileFile(argv[argc - 1], options)) {
-			const auto& err = c.lastError();
-			if (err.stage() == CompilerStage::Parse) {
-				std::cerr << "Failed to compile (at " << err.line() << ':' << err.character() << ")";
-				if (!err.badText().empty()) {
-					std::cerr << " ('" << err.badText() << "')";
-				}
-				std::cerr << " - " << err.message() << std::endl;
+		Shader shader{};
+		if (!shader.parseFile(argv[argc - 1], options)) {
+			const auto& err = shader.lastError();
+			std::cerr << "Failed to parse [" << err.line() << ':' << err.character() << "]";
+			if (!err.badText().empty()) {
+				std::cerr << " ('" << err.badText() << "')";
 			}
-			else if (err.stage() == CompilerStage::Generate) {
-				std::cerr << "Failed to generate - " << err.message() << std::endl;
-			}
-			else {
-				std::cerr << "Failed to compile - " << err.message() << std::endl;
-			}
+			std::cerr << " - " << err.message() << std::endl;
 			return 3;
+		}
+		if (!shader.generate()) {
+			const auto& err = shader.lastError();
+			std::cerr << "Failed to generate - " << err.message() << std::endl;
+			return 4;
+		}
+		if (!shader.compile()) {
+			const auto& err = shader.lastError();
+			std::cerr << "Failed to compile - " << err.message() << std::endl;
+			return 5;
 		}
 	}
 	catch (const std::exception& ex) {
 		std::cerr << "Unhandled exception: " << ex.what() << std::endl;
-		return 4;
+		return 6;
 	}
 
 	return 0;
