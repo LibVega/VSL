@@ -8,6 +8,8 @@ Because Vega utilizes a unique binding model and reduced subset of normal GLSL a
 
 This repository contains the compiler library, which implements the parsing, compilation, and linking of the shaders, as well as the command line compiler tool. The VSL source is first cross-compiled into equivalent GLSL, and is then compiled with the ShaderC library.
 
+A tutorial and spec guide is coming soon.
+
 ## Acknowledgements
 
 Many thanks to the authors of the following libraries and tools used in VSL:
