@@ -5,6 +5,7 @@
  */
 
 #include "./Shader.hpp"
+#include "./Parser/Parser.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -67,7 +68,7 @@ bool Shader::parseFile(const string& path, const CompileOptions& options)
 }
 
 // ====================================================================================================================
-bool Shader::parseString(const string& path, const CompileOptions& options)
+bool Shader::parseString(const string& source, const CompileOptions& options)
 {
 	// Validate state
 	if (isParsed()) {
@@ -77,6 +78,13 @@ bool Shader::parseString(const string& path, const CompileOptions& options)
 
 	// Save options
 	options_ = options;
+
+	// Perform parsing
+	Parser parser{ this, &options };
+	if (!parser.parse(source)) {
+		lastError_ = parser.error();
+		return false;
+	}
 
 	return true;
 }

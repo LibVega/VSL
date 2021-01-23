@@ -31,6 +31,7 @@ topLevelStatement
     | shaderUniformStatement
     | shaderBindingStatement
     | shaderLocalStatement
+    | shaderSubpassInputStatement
     | shaderStageFunction
     ;
 
@@ -62,6 +63,11 @@ shaderBindingStatement
 // Shader local statement
 shaderLocalStatement
     : 'local' '(' pstage=IDENTIFIER ')' 'flat'? variableDeclaration ';'
+    ;
+
+// Shader subpass input statement
+shaderSubpassInputStatement
+    : 'passinput' '(' index=INTEGER_LITERAL ')' variableDeclaration ';'
     ;
 
 // Shader stage function statement

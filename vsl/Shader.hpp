@@ -106,7 +106,7 @@ public:
 	inline bool isGenerated() const { return progress_.generated; }
 	inline bool isCompiled() const { return progress_.compiled; }
 	bool parseFile(const string& path, const CompileOptions& options);
-	bool parseString(const string& path, const CompileOptions& options);
+	bool parseString(const string& source, const CompileOptions& options);
 	bool generate();
 	bool compile();
 
