@@ -7,6 +7,7 @@
 #pragma once
 
 #include "./Config.hpp"
+#include "./ShaderInfo.hpp"
 
 #define DECL_GETTER_SETTER(ftype,fname) \
 	inline const ftype fname() const { return fname##_; } \
@@ -114,6 +115,12 @@ public:
 	inline const ShaderError& lastError() const { return lastError_; }
 	inline bool hasError() const { return !lastError_.message().empty(); }
 
+	/* Accessors */
+	inline const ShaderInfo& info() const { return info_; }
+	inline ShaderInfo& info() { return info_; }
+	inline const TypeList& types() const { return types_; }
+	inline TypeList& types() { return types_; }
+
 private:
 	CompileOptions options_;
 	struct {
@@ -122,6 +129,12 @@ private:
 		bool compiled;
 	} progress_;
 	ShaderError lastError_;
+	ShaderInfo info_;
+	TypeList types_;
+
+public:
+	static constexpr uint32 MAX_NAME_LENGTH{ 32u };    // Max length for type and variable names
+	static constexpr uint32 MAX_STRUCT_SIZE{ 1024u };  // Max size in bytes for struct types
 }; // class Shader
 
 } // namespace vsl

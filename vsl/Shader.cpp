@@ -12,8 +12,6 @@
 
 namespace fs = std::filesystem;
 
-#define SET_ERROR(...) lastError_ = ShaderError(##__VA_ARGS__);
-
 
 namespace vsl
 {
@@ -23,6 +21,8 @@ Shader::Shader()
 	: options_{ }
 	, progress_{ false, false, false }
 	, lastError_{ }
+	, info_{ }
+	, types_{ }
 {
 
 }
@@ -38,7 +38,7 @@ bool Shader::parseFile(const string& path, const CompileOptions& options)
 {
 	// Validate state
 	if (isParsed()) {
-		SET_ERROR("Shader has already parsed VSL source");
+		lastError_ = ShaderError("Shader has already parsed VSL source");
 		return false;
 	}
 
@@ -46,18 +46,18 @@ bool Shader::parseFile(const string& path, const CompileOptions& options)
 	std::error_code ioError{};
 	const auto inPath = fs::absolute({ path }, ioError);
 	if (ioError) {
-		SET_ERROR("Input path is invalid");
+		lastError_ = ShaderError("Input path is invalid");
 		return false;
 	}
 	if (!fs::exists(inPath, ioError) || ioError) {
-		SET_ERROR("Input file does not exist");
+		lastError_ = ShaderError("Input file does not exist");
 		return false;
 	}
 
 	// Try to read the file
 	std::ifstream inFile{ inPath.c_str(), std::istream::in };
 	if (!inFile) {
-		SET_ERROR("Could not open input file for reading");
+		lastError_ = ShaderError("Could not open input file for reading");
 		return false;
 	}
 	std::stringstream fileContents{};
@@ -72,7 +72,7 @@ bool Shader::parseString(const string& source, const CompileOptions& options)
 {
 	// Validate state
 	if (isParsed()) {
-		SET_ERROR("Shader has already parsed VSL source");
+		lastError_ = ShaderError("Shader has already parsed VSL source");
 		return false;
 	}
 
@@ -86,6 +86,16 @@ bool Shader::parseString(const string& source, const CompileOptions& options)
 		return false;
 	}
 
+	// After-parse validation
+	if (!bool(info_.stageMask() & ShaderStages::Vertex)) {
+		lastError_ = { "Shader is missing required vertex stage", 0, 0 };
+		return false;
+	}
+	if (!bool(info_.stageMask() & ShaderStages::Fragment)) {
+		lastError_ = { "Shader is missing required fragment stage", 0, 0 };
+		return false;
+	}
+
 	return true;
 }
 
@@ -94,11 +104,11 @@ bool Shader::generate()
 {
 	// Validate state
 	if (!isParsed()) {
-		SET_ERROR("Cannot generate a shader before parsing it");
+		lastError_ = ShaderError("Cannot generate a shader before parsing it");
 		return false;
 	}
 	if (isGenerated()) {
-		SET_ERROR("Shader has already parsed VSL source");
+		lastError_ = ShaderError("Shader has already parsed VSL source");
 		return false;
 	}
 
@@ -110,11 +120,11 @@ bool Shader::compile()
 {
 	// Validate state
 	if (!isGenerated()) {
-		SET_ERROR("Cannot compile a shader before generating it");
+		lastError_ = ShaderError("Cannot compile a shader before generating it");
 		return false;
 	}
 	if (isCompiled()) {
-		SET_ERROR("Shader has already parsed VSL source");
+		lastError_ = ShaderError("Shader has already parsed VSL source");
 		return false;
 	}
 
