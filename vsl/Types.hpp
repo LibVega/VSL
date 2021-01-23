@@ -107,6 +107,16 @@ public:
 		: type{ type }, size{ size }, count{ count }
 	{ }
 
+	/* Base Type Checks */
+	inline bool isSigned() const { return type == TexelType::Signed; }
+	inline bool isUnsigned() const { return type == TexelType::Unsigned; }
+	inline bool isFloat() const { return type == TexelType::Float; }
+	inline bool isUNorm() const { return type == TexelType::UNorm; }
+	inline bool isSNorm() const { return type == TexelType::SNorm; }
+	inline bool isIntegerType() const { return isSigned() || isUnsigned(); }
+	inline bool isFloatingType() const { return isFloat() || isUNorm() || isSNorm(); }
+	inline bool isNormlizedType() const { return isUNorm() || isSNorm(); }
+
 	/* Type Check */
 	bool isSame(const TexelFormat* format) const;
 
@@ -176,6 +186,9 @@ public:
 	string getVSLName() const;
 	string getGLSLName() const;
 
+	/* Type-Specific Functions */
+	uint32 getBindingCount() const;
+
 	/* Operators */
 	inline bool operator == (const ShaderType& r) const { return (this == &r) || isSame(&r); }
 	inline bool operator != (const ShaderType& r) const { return (this != &r) && !isSame(&r); }
@@ -229,9 +242,10 @@ public:
 	/* Access */
 	inline static const TypeMap& BuiltinTypes() { return BuiltinTypes_; }
 
+	static const TexelFormat* GetTexelFormat(const string& format);
+
 private:
 	static ShaderType ParseGenericType(const string& baseType);
-	static const TexelFormat* GetTexelFormat(const string& format);
 	static void Initialize();
 
 private:

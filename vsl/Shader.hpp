@@ -133,9 +133,13 @@ private:
 	TypeList types_;
 
 public:
-	static constexpr uint32 MAX_NAME_LENGTH{ 32u };    // Max length for type and variable names
-	static constexpr uint32 MAX_STRUCT_SIZE{ 1024u };  // Max size in bytes for struct types
-	static constexpr uint32 MAX_ARRAY_SIZE{ 64u };     // Max length for an array
+	static constexpr uint32 MAX_NAME_LENGTH{ 32u };      // Max length for type and variable names
+	static constexpr uint32 MAX_STRUCT_SIZE{ 1024u };    // Max size in bytes for struct types
+	static constexpr uint32 MAX_ARRAY_SIZE{ 64u };       // Max length for an array
+	static constexpr uint32 MAX_VERTEX_ATTRIBS{ 16u };   // Maximum number of vertex attribute binding slots
+	static constexpr uint32 MAX_FRAGMENT_OUTPUTS{ 8u };  // Maximum number of fragment output slots
+	static constexpr uint32 MAX_BINDINGS{ 32u };         // Maximum number of resource bindings
+	static constexpr uint32 MAX_SUBPASS_INPUTS{ 4u };    // Maximum number of subpass inputs
 }; // class Shader
 
 } // namespace vsl

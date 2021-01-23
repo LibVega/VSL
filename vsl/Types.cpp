@@ -330,6 +330,17 @@ string ShaderType::getGLSLName() const
 	}
 }
 
+// ====================================================================================================================
+uint32 ShaderType::getBindingCount() const
+{
+	if (!isNumericType()) {
+		return 0;
+	}
+
+	const uint32 slotCount = ((numeric.size * numeric.dims[0]) > 16) ? 2u : 1u;
+	return slotCount * numeric.dims[1];
+}
+
 
 // ====================================================================================================================
 // ====================================================================================================================
@@ -428,6 +439,16 @@ const ShaderType* TypeList::parseOrGetType(const string& name)
 }
 
 // ====================================================================================================================
+const TexelFormat* TypeList::GetTexelFormat(const string& format)
+{
+	auto it = Formats_.find(format);
+	if (it != Formats_.end()) {
+		return &(it->second);
+	}
+	return nullptr;
+}
+
+// ====================================================================================================================
 ShaderType TypeList::ParseGenericType(const string& baseType)
 {
 	static const auto E1D = TexelRankGetSuffix(TexelRank::E1D);
@@ -471,16 +492,6 @@ ShaderType TypeList::ParseGenericType(const string& baseType)
 	else {
 		return { };
 	}
-}
-
-// ====================================================================================================================
-const TexelFormat* TypeList::GetTexelFormat(const string& format)
-{
-	auto it = Formats_.find(format);
-	if (it != Formats_.end()) {
-		return &(it->second);
-	}
-	return nullptr;
 }
 
 // ====================================================================================================================

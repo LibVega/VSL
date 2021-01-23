@@ -61,7 +61,7 @@ shaderLocalStatement
 
 // Shader subpass input statement
 shaderSubpassInputStatement
-    : 'passinput' '(' index=INTEGER_LITERAL ')' variableDeclaration ';'
+    : 'passinput' '(' index=INTEGER_LITERAL ')' format=IDENTIFIER name=IDENTIFIER ';'
     ;
 
 // Shader stage function statement

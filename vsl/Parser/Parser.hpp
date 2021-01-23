@@ -66,6 +66,7 @@ public:
 	inline bool hasError() const { return !error_.message().empty(); }
 
 	/* Utilities */
+	void validateName(const antlr4::Token* name);
 	Variable parseVariableDeclaration(const grammar::VSL::VariableDeclarationContext* ctx, bool global);
 	Literal parseLiteral(const antlr4::Token* token);
 
@@ -130,6 +131,7 @@ private:
 	ShaderError error_;
 	antlr4::CommonTokenStream* tokens_;
 	ScopeManager scopes_;
+	ShaderStages currentStage_;
 
 	VSL_NO_COPY(Parser)
 	VSL_NO_MOVE(Parser)

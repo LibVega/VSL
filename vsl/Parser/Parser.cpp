@@ -19,6 +19,7 @@ Parser::Parser(Shader* shader, const CompileOptions* options)
 	, error_{ }
 	, tokens_{ nullptr }
 	, scopes_{ }
+	, currentStage_{ ShaderStages::None }
 {
 
 }
@@ -74,26 +75,32 @@ end_parse:
 }
 
 // ====================================================================================================================
+void Parser::validateName(const antlr4::Token* name)
+{
+	const auto varName = name->getText();
+	if (varName[0] == '$') {
+		ERROR(name, "Identifiers starting with '$' are reserved for builtin variables");
+	}
+	if (varName.length() > Shader::MAX_NAME_LENGTH) {
+		ERROR(name, mkstr("Variable names cannot be longer than %u bytes", Shader::MAX_NAME_LENGTH));
+	}
+	if ((varName[0] == '_') && (*varName.rbegin() == '_')) {
+		ERROR(name, "Names that start and end with '_' are reserved");
+	}
+	if (shader_->types().getType(varName)) {
+		ERROR(name, mkstr("Variable name '%s' overlaps with type name", varName.c_str()));
+	}
+	if (scopes_.hasGlobalName(varName) || scopes_.hasName(varName)) {
+		ERROR(name, mkstr("Duplicate variable name '%s'", varName.c_str()));
+	}
+	// TODO: Check function names
+}
+
+// ====================================================================================================================
 Variable Parser::parseVariableDeclaration(const grammar::VSL::VariableDeclarationContext* ctx, bool global)
 {
 	// Perform name validation
-	const auto varName = ctx->name->getText();
-	if (varName[0] == '$') {
-		ERROR(ctx->name, "Identifiers starting with '$' are reserved for builtin variables");
-	}
-	if (varName.length() > Shader::MAX_NAME_LENGTH) {
-		ERROR(ctx->name, mkstr("Variable names cannot be longer than %u bytes", Shader::MAX_NAME_LENGTH));
-	}
-	if ((varName[0] == '_') && (*varName.rbegin() == '_')) {
-		ERROR(ctx->name, "Names that start and end with '_' are reserved");
-	}
-	if (shader_->types().getType(varName)) {
-		ERROR(ctx->name, mkstr("Variable name '%s' overlaps with type name", varName.c_str()));
-	}
-	if ((global && scopes_.hasGlobalName(varName)) || scopes_.hasName(varName)) {
-		ERROR(ctx->name, mkstr("Duplicate variable name '%s'", varName.c_str()));
-	}
-	// TODO: Check function names
+	validateName(ctx->name);
 
 	// Get type
 	const auto typeName = ctx->baseType->getText() + (ctx->subType ? '<' + ctx->subType->getText() + '>' : "");
@@ -123,7 +130,7 @@ Variable Parser::parseVariableDeclaration(const grammar::VSL::VariableDeclaratio
 	}
 
 	// Return
-	return { varName, VariableType::Unknown, vType, arrSize, Variable::READWRITE };
+	return { ctx->name->getText(), VariableType::Unknown, vType, arrSize, Variable::READWRITE };
 }
 
 // ====================================================================================================================
