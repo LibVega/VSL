@@ -18,6 +18,9 @@
 namespace vsl
 {
 
+class FuncGenerator;
+
+
 // Used to provide the sizes of the binding tables in generated shaders
 struct BindingTableSizes final
 {
@@ -120,6 +123,8 @@ public:
 	inline ShaderInfo& info() { return info_; }
 	inline const TypeList& types() const { return types_; }
 	inline TypeList& types() { return types_; }
+	FuncGenerator* getOrCreateFunctionGenerator(ShaderStages stage);
+	const FuncGenerator* getFunctionGenerator(ShaderStages stage) const;
 
 private:
 	CompileOptions options_;
@@ -131,6 +136,7 @@ private:
 	ShaderError lastError_;
 	ShaderInfo info_;
 	TypeList types_;
+	std::unordered_map<ShaderStages, UPtr<FuncGenerator>> functions_;
 
 public:
 	static constexpr uint32 MAX_NAME_LENGTH{ 32u };      // Max length for type and variable names

@@ -9,6 +9,7 @@
 #include "../Shader.hpp"
 #include "../Grammar/VSLBaseVisitor.h"
 #include "./ScopeManager.hpp"
+#include "../Generator/FuncGenerator.hpp"
 
 #include <antlr4/CommonTokenStream.h>
 #include <antlr4/RuleContext.h>
@@ -138,6 +139,7 @@ private:
 	antlr4::CommonTokenStream* tokens_;
 	ScopeManager scopes_;
 	ShaderStages currentStage_;
+	FuncGenerator* funcGen_;
 
 	VSL_NO_COPY(Parser)
 	VSL_NO_MOVE(Parser)

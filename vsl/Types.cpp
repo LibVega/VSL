@@ -170,6 +170,21 @@ string TexelFormat::getGLSLPrefix() const
 	return (type == TexelType::Signed) ? "i" : (type == TexelType::Unsigned) ? "u" : "";
 }
 
+// ====================================================================================================================
+const ShaderType* TexelFormat::asDataType() const
+{
+	const auto& bit = TypeList::BuiltinTypes();
+	if (isFloatingType()) {
+		return &bit.at((count == 1) ? "float" : (count == 2) ? "float2" : "float4");
+	}
+	else if (isSigned()) {
+		return &bit.at((count == 1) ? "int" : (count == 2) ? "int2" : "int4");
+	}
+	else { // isUnsigned()
+		return &bit.at((count == 1) ? "uint" : (count == 2) ? "uint2" : "uint4");
+	}
+}
+
 
 // ====================================================================================================================
 // ====================================================================================================================

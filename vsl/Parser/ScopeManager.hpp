@@ -42,8 +42,12 @@ public:
 		: name{ name }, varType{ varType }, dataType{ dataType }, arraySize{ arraySize }, access{ access }, extra{ }
 	{ }
 
-	inline bool canRead() const { return access != WRITEONLY; }
-	inline bool canWrite() const { return access != READONLY; }
+	inline bool canRead(ShaderStages stage) const { 
+		return (varType == VariableType::Local) ? (stage == ShaderStages::Fragment) : (access != WRITEONLY);
+	}
+	inline bool canWrite(ShaderStages stage) const { 
+		return (varType == VariableType::Local) ? (stage == ShaderStages::Vertex) : (access != READONLY);
+	}
 
 public:
 	string name;

@@ -8,6 +8,8 @@
 #include "./ErrorListener.hpp"
 #include "../Grammar/VSLLexer.h"
 
+#include <cmath>
+
 
 namespace vsl
 {
@@ -20,6 +22,7 @@ Parser::Parser(Shader* shader, const CompileOptions* options)
 	, tokens_{ nullptr }
 	, scopes_{ }
 	, currentStage_{ ShaderStages::None }
+	, funcGen_{ nullptr }
 {
 
 }

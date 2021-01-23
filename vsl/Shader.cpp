@@ -7,6 +7,7 @@
 #include "./Shader.hpp"
 #include "./Parser/Parser.hpp"
 #include "./Compiler/Compiler.hpp"
+#include "./Generator/FuncGenerator.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -24,6 +25,7 @@ Shader::Shader()
 	, lastError_{ }
 	, info_{ }
 	, types_{ }
+	, functions_{ }
 {
 
 }
@@ -141,6 +143,28 @@ bool Shader::compile()
 
 	progress_.compiled = true;
 	return true;
+}
+
+// ====================================================================================================================
+FuncGenerator* Shader::getOrCreateFunctionGenerator(ShaderStages stage)
+{
+	const auto it = functions_.find(stage);
+	if (it != functions_.end()) {
+		return it->second.get();
+	}
+	else {
+		return (functions_[stage] = std::make_unique<FuncGenerator>(stage)).get();
+	}
+}
+
+// ====================================================================================================================
+const FuncGenerator* Shader::getFunctionGenerator(ShaderStages stage) const
+{
+	const auto it = functions_.find(stage);
+	if (it != functions_.end()) {
+		return it->second.get();
+	}
+	return nullptr;
 }
 
 } // namespace vsl

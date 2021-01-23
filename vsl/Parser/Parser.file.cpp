@@ -354,7 +354,9 @@ VISIT_FUNC(ShaderSubpassInputStatement)
 
 	// Add to info and scope
 	shader_->info().subpassInputs().push_back({ ctx->name->getText(), slotIndex, format });
-	scopes_.addGlobal({ ctx->name->getText(), VariableType::Binding, spiType, 1, Variable::READONLY });
+	Variable var{ ctx->name->getText(), VariableType::Binding, spiType, 1, Variable::READONLY };
+	var.extra.binding.slot = slotIndex;
+	scopes_.addGlobal(var);
 
 	return nullptr;
 }
@@ -385,6 +387,7 @@ VISIT_FUNC(ShaderStageFunction)
 
 	// Push the global scope for the stage
 	scopes_.pushGlobalScope(stage);
+	funcGen_ = shader_->getOrCreateFunctionGenerator(stage);
 
 	// Visit the function statements
 	currentStage_ = stage;
@@ -395,6 +398,7 @@ VISIT_FUNC(ShaderStageFunction)
 
 	// Pop the global scope
 	scopes_.popScope();
+	funcGen_ = nullptr;
 
 	// Update shader info
 	shader_->info().stageMask(shader_->info().stageMask() | stage);

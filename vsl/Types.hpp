@@ -134,6 +134,9 @@ public:
 	string getVSLPrefix() const;
 	string getGLSLPrefix() const;
 
+	/* Conversion */
+	const ShaderType* asDataType() const;
+
 public:
 	TexelType type;
 	uint32 size;
