@@ -92,13 +92,17 @@ VISIT_FUNC(ShaderStructDefinition)
 		members.push_back(member);
 		names.push_back(fVar.name);
 	}
+	if (members.size() == 0) {
+		ERROR(ctx->name, "Empty struct types are not allowed");
+	}
 	StructType structType{ typeName, members };
 	if (structType.size() > Shader::MAX_STRUCT_SIZE) {
 		ERROR(ctx->name, mkstr("Struct types cannot be larger than %u bytes", Shader::MAX_STRUCT_SIZE));
 	}
 
 	// Add the struct type
-	shader_->types().addStructType(typeName, structType);
+	const auto sType = shader_->types().addStructType(typeName, structType);
+	shader_->types().addType(typeName, { BaseType::Struct, sType });
 
 	return nullptr;
 }

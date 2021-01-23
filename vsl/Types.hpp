@@ -31,7 +31,10 @@ enum class BaseType : uint32
 	RWTexels = 10,  // Vk storage texel buffer, glsl `imageBuffer` w/ layout
 	SPInput  = 11,  // Vk input attachment, glsl `[ ui]subpassInput`
 	Uniform  = 12,  // Vk uniform buffer, glsl `uniform <name> { ... }`
-	Struct   = 13   // User-defined POD struct
+	Struct   = 13,  // User-defined POD struct
+
+	// Max value
+	MAX = Struct
 }; // enum class BaseType
 
 
@@ -74,13 +77,16 @@ private:
 // The different ranks (dimension counts) that texel-like objects can have
 enum class TexelRank : uint32
 {
-	E1D = 0,  // Single 1D texture
-	E2D = 1,  // Single 2D texture
-	E3D = 2,  // Single 3D texture
+	E1D = 0,       // Single 1D texture
+	E2D = 1,       // Single 2D texture
+	E3D = 2,       // Single 3D texture
 	E1DArray = 3,  // Array of 1D textures
 	E2DArray = 4,  // Array of 2D textures
-	Cube = 5,  // Single cubemap texture
-	Buffer = 6   // The dims specific to a ROTexels object
+	Cube = 5,      // Single cubemap texture
+	Buffer = 6,    // The dims specific to a ROTexels object
+
+	// Max value
+	MAX = Buffer
 }; // enum class TexelRank
 
 string TexelRankGetSuffix(TexelRank rank);
@@ -94,7 +100,9 @@ enum class TexelType : uint32
 	Unsigned = 1,
 	Float    = 2,
 	UNorm    = 3,
-	SNorm    = 4
+	SNorm    = 4,
+
+	MAX = SNorm
 };
 
 

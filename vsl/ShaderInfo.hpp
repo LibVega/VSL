@@ -105,11 +105,11 @@ public:
 	~ShaderInfo();
 
 	DECL_GETTER_SETTER(ShaderStages, stageMask)
-	DECL_GETTER_SETTER(std::vector<InterfaceVariable>, inputs)
-	DECL_GETTER_SETTER(std::vector<InterfaceVariable>, outputs)
-	DECL_GETTER_SETTER(std::vector<BindingVariable>, bindings)
-	DECL_GETTER_SETTER(BindingVariable, uniform)
-	DECL_GETTER_SETTER(std::vector<SubpassInputVariable>, subpassInputs)
+	DECL_GETTER_SETTER(std::vector<InterfaceVariable>&, inputs)
+	DECL_GETTER_SETTER(std::vector<InterfaceVariable>&, outputs)
+	DECL_GETTER_SETTER(std::vector<BindingVariable>&, bindings)
+	DECL_GETTER_SETTER(BindingVariable&, uniform)
+	DECL_GETTER_SETTER(std::vector<SubpassInputVariable>&, subpassInputs)
 
 	/* Interface Variables */
 	const InterfaceVariable* getInput(const string& name) const;

@@ -114,15 +114,21 @@ public:
 private:
 	/* Error */
 	NORETURN inline void ERROR(const antlr4::Token* tk, const string& msg) const {
-		throw ShaderError(msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()));
+		ShaderError err{ msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()) };
+		err.badText(tk->getText());
+		throw err;
 	}
 	NORETURN inline void ERROR(antlr4::RuleContext* ctx, const string& msg) const {
 		const auto tk = tokens_->get(ctx->getSourceInterval().a);
-		throw ShaderError(msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()));
+		ShaderError err{ msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()) };
+		err.badText(tk->getText());
+		throw err;
 	}
 	NORETURN inline void ERROR(antlr4::tree::TerminalNode* node, const string& msg) const {
 		const auto tk = tokens_->get(node->getSourceInterval().a);
-		throw ShaderError(msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()));
+		ShaderError err{ msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()) };
+		err.badText(tk->getText());
+		throw err;
 	}
 
 private:

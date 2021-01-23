@@ -55,24 +55,26 @@ StructType::StructType(const string& name, const std::vector<Member>& members)
 	, size_{ 0 }
 	, alignment_{ 0 }
 {
-	for (const auto& mem : members_) {
-		// Align
-		const auto align = mem.type->numeric.size;
-		if ((size_ % align) != 0) {
-			size_ += (align - (size_ % align));
-		}
-		if (align > alignment_) {
-			alignment_ = align;
+	if (!members.empty()) {
+		for (const auto& mem : members_) {
+			// Align
+			const auto align = mem.type->numeric.size;
+			if ((size_ % align) != 0) {
+				size_ += (align - (size_ % align));
+			}
+			if (align > alignment_) {
+				alignment_ = align;
+			}
+
+			// Add member
+			offsets_.push_back(size_);
+			size_ += (mem.type->numeric.size * mem.type->numeric.dims[0] * mem.type->numeric.dims[1] * mem.arraySize);
 		}
 
-		// Add member
-		offsets_.push_back(size_);
-		size_ += (mem.type->numeric.size * mem.type->numeric.dims[0] * mem.type->numeric.dims[1] * mem.arraySize);
-	}
-
-	// Final size alignment
-	if ((size_ % alignment_) != 0) {
-		size_ += (alignment_ - (size_ % alignment_));
+		// Final size alignment
+		if ((size_ % alignment_) != 0) {
+			size_ += (alignment_ - (size_ % alignment_));
+		}
 	}
 }
 

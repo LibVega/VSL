@@ -6,6 +6,7 @@
 
 #include "./Shader.hpp"
 #include "./Parser/Parser.hpp"
+#include "./Compiler/Compiler.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -96,6 +97,7 @@ bool Shader::parseString(const string& source, const CompileOptions& options)
 		return false;
 	}
 
+	progress_.parsed = true;
 	return true;
 }
 
@@ -112,6 +114,7 @@ bool Shader::generate()
 		return false;
 	}
 
+	progress_.generated = true;
 	return true;
 }
 
@@ -128,6 +131,15 @@ bool Shader::compile()
 		return false;
 	}
 
+	// Create compiler
+	Compiler compiler{ this, &options_ };
+
+	// TODO: Compile stages
+
+	// Write final output file
+	compiler.writeOutput();
+
+	progress_.compiled = true;
 	return true;
 }
 
