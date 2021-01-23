@@ -135,6 +135,7 @@ private:
 public:
 	static constexpr uint32 MAX_NAME_LENGTH{ 32u };    // Max length for type and variable names
 	static constexpr uint32 MAX_STRUCT_SIZE{ 1024u };  // Max size in bytes for struct types
+	static constexpr uint32 MAX_ARRAY_SIZE{ 64u };     // Max length for an array
 }; // class Shader
 
 } // namespace vsl

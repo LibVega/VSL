@@ -226,6 +226,9 @@ public:
 	const StructType* getStructType(const string& name) const;
 	const ShaderType* parseOrGetType(const string& name);
 
+	/* Access */
+	inline static const TypeMap& BuiltinTypes() { return BuiltinTypes_; }
+
 private:
 	static ShaderType ParseGenericType(const string& baseType);
 	static const TexelFormat* GetTexelFormat(const string& format);

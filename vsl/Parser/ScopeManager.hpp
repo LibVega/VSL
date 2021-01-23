@@ -62,4 +62,62 @@ public:
 	} extra;
 }; // class Variable
 
+
+// Manages a specific variable and name scope within the scope stack
+class Scope final
+{
+public:
+	enum ScopeType {
+		Function,     // Function scope
+		Conditional,  // If/elif/else scope
+		Loop          // Looping scope
+	};
+
+	Scope(ScopeType type = Function);
+	~Scope();
+
+	bool hasName(const string& name) const;
+
+	inline ScopeType type() const { return type_; }
+	inline const std::vector<Variable>& variables() const { return variables_; }
+	inline std::vector<Variable>& variables() { return variables_; }
+
+private:
+	ScopeType type_;
+	std::vector<Variable> variables_;
+}; // class Scope
+
+
+// Manages the tree of variable and name scopes that are entered and exited during parsing
+class ScopeManager final
+{
+public:
+	ScopeManager();
+	~ScopeManager();
+
+	/* Globals */
+	bool addGlobal(const Variable& var);
+	bool hasGlobal(const string& name) const;
+	bool hasGlobalName(const string& name) const;  // Checks global and constants for used name
+
+	/* Scopes */
+	void pushGlobalScope(ShaderStages stage); // Starts a new scope stack for the given stage
+	void pushScope(Scope::ScopeType type); // Push a new scope to the stack, must already have an active scope stack
+	void popScope();
+	bool hasName(const string& name) const; // If the name exists in the current scope stack
+	const Variable* getVariable(const string& name) const;
+	void addVariable(const Variable& var);
+	bool inLoop() const; // If the scope stack contains a loop scope at any depth
+
+private:
+	static void PopulateBuiltins(ShaderStages stage, std::vector<Variable>& vars);
+
+private:
+	std::vector<Variable> allGlobals_;
+	std::vector<UPtr<Scope>> scopes_;
+
+	VSL_NO_COPY(ScopeManager)
+	VSL_NO_MOVE(ScopeManager)
+}; // class ScopeManager
+
 } // namespace vsl

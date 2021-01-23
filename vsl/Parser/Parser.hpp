@@ -8,14 +8,46 @@
 
 #include "../Shader.hpp"
 #include "../Grammar/VSLBaseVisitor.h"
+#include "./ScopeManager.hpp"
 
 #include <antlr4/CommonTokenStream.h>
+#include <antlr4/RuleContext.h>
+#include <antlr4/Token.h>
+#include <antlr4/tree/TerminalNode.h>
 
 #define VISIT_DECL(type) antlrcpp::Any visit##type(grammar::VSL::type##Context* ctx) override;
 
 
 namespace vsl
 {
+
+// Result value and code for attempting to parse a literal
+struct Literal final
+{
+public:
+	Literal() : u{ 0 }, type{ Unsigned } { }
+	Literal(uint64_t val) : u{ val }, type{ Unsigned } { }
+	Literal(int64_t val) : i{ val }, type{ Signed } { }
+	Literal(double val) : f{ val }, type{ Float } { }
+
+	inline bool isNegative() const {
+		return (type == Float) ? f < 0 : (type == Signed) ? i < 0 : false;
+	}
+	inline bool isZero() const { return u == 0 || (f == -0); }
+
+public:
+	union {
+		uint64 u;  // The unsigned parsed literal
+		int64  i;  // The signed parsed literal
+		double f;  // The floating point parsed literal
+	};
+	enum : uint32 {
+		Unsigned,
+		Signed,
+		Float
+	} type;
+}; // struct Literal
+
 
 // Central ANTLR parser type for VSL programs
 class Parser final
@@ -33,12 +65,15 @@ public:
 	inline const ShaderError& error() const { return error_; }
 	inline bool hasError() const { return !error_.message().empty(); }
 
+	/* Utilities */
+	Variable parseVariableDeclaration(const grammar::VSL::VariableDeclarationContext* ctx, bool global);
+	Literal parseLiteral(const antlr4::Token* token);
+
 	/* File Level Rules */
 	VISIT_DECL(File)
 	VISIT_DECL(ShaderTypeStatement)
 	VISIT_DECL(ShaderStructDefinition)
 	VISIT_DECL(ShaderInputOutputStatement)
-	VISIT_DECL(ShaderConstantStatement)
 	VISIT_DECL(ShaderUniformStatement)
 	VISIT_DECL(ShaderBindingStatement)
 	VISIT_DECL(ShaderLocalStatement)
@@ -76,10 +111,25 @@ public:
 	VISIT_DECL(NameAtom)
 
 private:
+	/* Error */
+	NORETURN inline void ERROR(const antlr4::Token* tk, const string& msg) const {
+		throw ShaderError(msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()));
+	}
+	NORETURN inline void ERROR(antlr4::RuleContext* ctx, const string& msg) const {
+		const auto tk = tokens_->get(ctx->getSourceInterval().a);
+		throw ShaderError(msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()));
+	}
+	NORETURN inline void ERROR(antlr4::tree::TerminalNode* node, const string& msg) const {
+		const auto tk = tokens_->get(node->getSourceInterval().a);
+		throw ShaderError(msg, uint32(tk->getLine()), uint32(tk->getCharPositionInLine()));
+	}
+
+private:
 	Shader* const shader_;
 	const CompileOptions* const options_;
 	ShaderError error_;
 	antlr4::CommonTokenStream* tokens_;
+	ScopeManager scopes_;
 
 	VSL_NO_COPY(Parser)
 	VSL_NO_MOVE(Parser)

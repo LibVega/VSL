@@ -27,7 +27,6 @@ shaderTypeStatement
 topLevelStatement
     : shaderStructDefinition
     | shaderInputOutputStatement
-    | shaderConstantStatement
     | shaderUniformStatement
     | shaderBindingStatement
     | shaderLocalStatement
@@ -43,11 +42,6 @@ shaderStructDefinition
 // Shader input or output declaration
 shaderInputOutputStatement
     : io=('in'|'out') '(' index=INTEGER_LITERAL ')' variableDeclaration ';'
-    ;
-
-// Shader constant declaration
-shaderConstantStatement
-    : 'const' variableDeclaration '=' value=(INTEGER_LITERAL|FLOAT_LITERAL) ';'
     ;
 
 // Shader uniform statement
@@ -92,7 +86,7 @@ statementBlock
 
 // Variable declaration, for globals, type fields, and function locals
 variableDeclaration
-    : baseType=IDENTIFIER ('<' subType=IDENTIFIER '>')? name=IDENTIFIER ('[' arraySize=(INTEGER_LITERAL|IDENTIFIER) ']')?
+    : baseType=IDENTIFIER ('<' subType=IDENTIFIER '>')? name=IDENTIFIER ('[' arraySize=INTEGER_LITERAL ']')?
     ;
 
 // Variable definition (declaration with immediate assignment)

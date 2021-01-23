@@ -18,6 +18,7 @@ Parser::Parser(Shader* shader, const CompileOptions* options)
 	, options_{ options }
 	, error_{ }
 	, tokens_{ nullptr }
+	, scopes_{ }
 {
 
 }
@@ -70,6 +71,124 @@ bool Parser::parse(const string& source)
 end_parse:
 	tokens_ = nullptr;
 	return result;
+}
+
+// ====================================================================================================================
+Variable Parser::parseVariableDeclaration(const grammar::VSL::VariableDeclarationContext* ctx, bool global)
+{
+	// Perform name validation
+	const auto varName = ctx->name->getText();
+	if (varName[0] == '$') {
+		ERROR(ctx->name, "Identifiers starting with '$' are reserved for builtin variables");
+	}
+	if (varName.length() > Shader::MAX_NAME_LENGTH) {
+		ERROR(ctx->name, mkstr("Variable names cannot be longer than %u bytes", Shader::MAX_NAME_LENGTH));
+	}
+	if ((varName[0] == '_') && (*varName.rbegin() == '_')) {
+		ERROR(ctx->name, "Names that start and end with '_' are reserved");
+	}
+	if (shader_->types().getType(varName)) {
+		ERROR(ctx->name, mkstr("Variable name '%s' overlaps with type name", varName.c_str()));
+	}
+	if ((global && scopes_.hasGlobalName(varName)) || scopes_.hasName(varName)) {
+		ERROR(ctx->name, mkstr("Duplicate variable name '%s'", varName.c_str()));
+	}
+	// TODO: Check function names
+
+	// Get type
+	const auto typeName = ctx->baseType->getText() + (ctx->subType ? '<' + ctx->subType->getText() + '>' : "");
+	const auto vType = shader_->types().parseOrGetType(typeName);
+	if (!vType) {
+		ERROR(ctx->baseType, mkstr("Unknown type: %s", shader_->types().lastError().c_str()));
+	}
+
+	// Get array size
+	uint32 arrSize = 1;
+	if (ctx->arraySize) {
+		const auto arrSizeLiteral = parseLiteral(ctx->arraySize);
+		if (arrSizeLiteral.isNegative() || arrSizeLiteral.isZero()) {
+			ERROR(ctx->arraySize, "Array size cannot be zero or negative");
+		}
+		if (arrSizeLiteral.u > Shader::MAX_ARRAY_SIZE) {
+			ERROR(ctx->arraySize, mkstr("Array is larger than max allowed size %u", Shader::MAX_ARRAY_SIZE));
+		}
+		arrSize = uint32(arrSizeLiteral.u);
+	}
+
+	// Type-specific checks
+	if (!vType->isNumericType() && !vType->isBoolean()) { // Handle types
+		if (arrSize != 1) {
+			ERROR(ctx->arraySize, "Non-numeric types cannot be arrays");
+		}
+	}
+
+	// Return
+	return { varName, VariableType::Unknown, vType, arrSize, Variable::READWRITE };
+}
+
+// ====================================================================================================================
+Literal Parser::parseLiteral(const antlr4::Token* token)
+{
+	const auto txt = token->getText();
+	const char* beg = txt.data();
+	char* end;
+
+	// Basic checks
+	if (txt.empty()) {
+		ERROR(token, "Cannot parse empty literal");
+	}
+
+	// Try parse float first
+	const bool isFlt = (txt.find_first_of(".eE", 0) != string::npos);
+	if (isFlt) {
+		const auto val = std::strtod(beg, &end);
+		if (errno == ERANGE) {
+			ERROR(token, "Floating point literal is outside representable range");
+		}
+		else if (std::isnan(val) || std::isinf(val)) {
+			ERROR(token, "Floating point literal cannot be NaN or inf");
+		}
+		else if (end == beg) {
+			ERROR(token, "Invalid floating point literal");
+		}
+		else {
+			return { val };
+		}
+	}
+
+	// Check integer components
+	const bool isNeg = (txt[0] == '-');
+	const bool isHex = (txt[0] == '0') && (txt.length() > 1) && (std::tolower(txt[1]) == 'x');
+	const bool isU = std::tolower(*txt.rbegin()) == 'u';
+
+	// Parse integers
+	if (isHex || isU) {
+		if (isNeg) {
+			ERROR(token, "Cannot negate hex or unsigned integer literal");
+		}
+		const auto val = std::strtoull(beg, &end, isHex ? 16 : 10);
+		if (errno == ERANGE) {
+			ERROR(token, "Unsigned integer literal is outside representable range");
+		}
+		else if (end == beg) {
+			ERROR(token, "Invalid unsigned integer literal");
+		}
+		else {
+			return { uint64(val) };
+		}
+	}
+	else {
+		const auto val = std::strtoll(beg, &end, 10);
+		if (errno == ERANGE) {
+			ERROR(token, "Signed integer literal is outside representable range");
+		}
+		else if (end == beg) {
+			ERROR(token, "Invalid signed integer literal");
+		}
+		else {
+			return { int64(val) };
+		}
+	}
 }
 
 } // namespace vsl

@@ -15,7 +15,6 @@ BOOLEAN_LITERAL : 'true' | 'false' ;
 // Keywords
 KW_BIND       : 'bind' ;
 KW_BREAK      : 'break' ;
-KW_CONST      : 'const' ;
 KW_CONTINUE   : 'continue' ;
 KW_DISCARD    : 'discard' ;
 KW_ELIF       : 'elif' ;
