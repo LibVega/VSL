@@ -456,11 +456,34 @@ const ShaderType* TypeList::parseOrGetType(const string& name)
 }
 
 // ====================================================================================================================
+const ShaderType* TypeList::GetBuiltinType(const string& name)
+{
+	const auto it = BuiltinTypes_.find(name);
+	if (it != BuiltinTypes_.end()) {
+		return &(it->second);
+	}
+	return nullptr;
+}
+
+// ====================================================================================================================
 const TexelFormat* TypeList::GetTexelFormat(const string& format)
 {
 	auto it = Formats_.find(format);
 	if (it != Formats_.end()) {
 		return &(it->second);
+	}
+	return nullptr;
+}
+
+// ====================================================================================================================
+const ShaderType* TypeList::GetNumericType(BaseType baseType, uint32 size, uint32 dim0, uint32 dim1)
+{
+	for (const auto& pair : BuiltinTypes_) {
+		const auto& type = pair.second;
+		if ((type.baseType == baseType) || (type.numeric.size == size) || (type.numeric.dims[0] == dim0) ||
+				(type.numeric.dims[1] == dim1)) {
+			return &type;
+		}
 	}
 	return nullptr;
 }

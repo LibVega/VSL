@@ -252,8 +252,10 @@ public:
 
 	/* Access */
 	inline static const TypeMap& BuiltinTypes() { return BuiltinTypes_; }
+	static const ShaderType* GetBuiltinType(const string& name);
 
 	static const TexelFormat* GetTexelFormat(const string& format);
+	static const ShaderType* GetNumericType(BaseType baseType, uint32 size, uint32 dim0, uint32 dim1);
 
 private:
 	static ShaderType ParseGenericType(const string& baseType);

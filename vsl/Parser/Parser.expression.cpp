@@ -5,8 +5,8 @@
  */
 
 #include "./Parser.hpp"
-#include "./Expr.hpp"
 #include "../Generator/NameGeneration.hpp"
+#include "./Func.hpp"
 
 #define VISIT_FUNC(type) antlrcpp::Any Parser::visit##type(grammar::VSL::type##Context* ctx)
 #define MAKE_EXPR(name,type,arrSize) (std::make_shared<Expr>(name,type,arrSize))
@@ -79,25 +79,187 @@ VISIT_FUNC(TernaryExpr)
 // ====================================================================================================================
 VISIT_FUNC(GroupAtom)
 {
-	return nullptr;
+	auto expr = VISIT_EXPR(ctx->expression());
+	expr->refString = "(" + expr->refString + ")";
+	return expr;
 }
 
 // ====================================================================================================================
 VISIT_FUNC(IndexAtom)
 {
-	return nullptr;
+	// Visit components
+	const auto left = VISIT_EXPR(ctx->atom());
+	const auto& leftStr = left->refString;
+	const auto index = VISIT_EXPR(ctx->index);
+	const auto& indexStr = index->refString;
+	const auto index2 = ctx->index2 ? VISIT_EXPR(ctx->index2) : nullptr;
+	const auto& index2Str = index2 ? index2->refString : "";
+
+	// General checks
+	if (index2 && !left->type->isMatrix() && !left->type->isSampler()) {
+		ERROR(ctx->index2, mkstr("Second indexer is invalid for type '%s'", left->type->getVSLName().c_str()));
+	}
+
+	// Switch based on type
+	if (left->arraySize != 1) {
+		if (index2) {
+			ERROR(ctx->index2, "Second indexer not valid for arrays");
+		}
+		return MAKE_EXPR(mkstr("%s[%s]", leftStr.c_str(), indexStr.c_str()), left->type, 1);
+	}
+	else if (left->type->isScalar()) {
+		ERROR(ctx->atom(), "Indexing is not valid for scalar types");
+	}
+	else if (left->type->isVector()) {
+		if (!index->type->isInteger() || !index->type->isScalar()) {
+			ERROR(ctx->index, "Vector indexer must have scalar integer type");
+		}
+		return MAKE_EXPR(mkstr("%s[%s]", leftStr.c_str(), indexStr.c_str()),
+			TypeList::GetNumericType(left->type->baseType, left->type->numeric.size, 1, 1), 1);
+	}
+	else if (left->type->isMatrix()) {
+		if (!index->type->isInteger() || !index->type->isScalar()) {
+			ERROR(ctx->index, "Matrix indexer must have scalar integer type");
+		}
+		if (index2 && (!index2->type->isInteger() || !index2->type->isScalar())) {
+			ERROR(ctx->index2, "Second matrix indexer must have scalar integer type");
+		}
+
+		if (index2) {
+			return MAKE_EXPR(mkstr("%s[%s][%s]", leftStr.c_str(), indexStr.c_str(), index2Str.c_str()),
+				TypeList::GetNumericType(left->type->baseType, left->type->numeric.size, 1, 1), 1);
+		}
+		else {
+			return MAKE_EXPR(mkstr("%s[%s]", leftStr.c_str(), indexStr.c_str()),
+				TypeList::GetNumericType(left->type->baseType, left->type->numeric.size,
+					left->type->numeric.dims[0], 1), 1);
+		}
+	}
+	else if (left->type->isSampler()) {
+		const auto compCount = TexelRankGetComponentCount(left->type->texel.rank);
+		if (!index->type->isFloat() || (index->type->numeric.dims[0] != compCount)) {
+			ERROR(ctx->index, mkstr("Invalid coordinates, %s expects float%u", left->type->getVSLName().c_str(),
+				compCount));
+		}
+		if (index2 && (!index2->type->isInteger() || !index2->type->isScalar())) {
+			ERROR(ctx->index2, "Second sampler indexer must have scalar integer type");
+		}
+
+		if (index2) {
+			return MAKE_EXPR(mkstr("texture(%s, %s, %s)", leftStr.c_str(), indexStr.c_str(), index2Str.c_str()),
+				left->type->texel.format->asDataType(), 1);
+		}
+		else {
+			return MAKE_EXPR(mkstr("texture(%s, %s)", leftStr.c_str(), indexStr.c_str()),
+				left->type->texel.format->asDataType(), 1);
+		}
+	}
+	else if (left->type->isImage()) {
+		const auto compCount = TexelRankGetComponentCount(left->type->texel.rank);
+		if (!index->type->isInteger() || (index->type->numeric.dims[0] != compCount)) {
+			ERROR(ctx->index, mkstr("Invalid coordinates, %s expects int%u or uint%u",
+				left->type->getVSLName().c_str(), compCount, compCount));
+		}
+
+		const auto swizzle =
+			(left->type->texel.format->count == 1) ? ".x" :
+			(left->type->texel.format->count == 2) ? ".xy" : "";
+		return MAKE_EXPR(mkstr("(imageLoad(%s, %s)%s)", leftStr.c_str(), indexStr.c_str(), swizzle),
+			left->type->texel.format->asDataType(), 1);
+	}
+	else if (left->type->isROBuffer() || left->type->isRWBuffer()) {
+		if (!index->type->isInteger() || !index->type->isScalar()) {
+			ERROR(ctx->index, "Buffer indexer must have scalar integer type");
+		}
+
+		const auto sType = shader_->types().getType(left->type->buffer.structType->name());
+		return MAKE_EXPR(mkstr("%s[%s]", leftStr.c_str(), indexStr.c_str()), sType, 1);
+	}
+	else if (left->type->isROTexels()) {
+		if (!index->type->isInteger() || !index->type->isScalar()) {
+			ERROR(ctx->index, "ROTexels indexer must have scalar integer type");
+		}
+
+		return MAKE_EXPR(mkstr("texelFetch(%s, %s)", leftStr.c_str(), indexStr.c_str()),
+			left->type->texel.format->asDataType(), 1);
+	}
+	else if (left->type->isRWTexels()) {
+		if (!index->type->isInteger() || !index->type->isScalar()) {
+			ERROR(ctx->index, "RWTexels indexer must have scalar integer type");
+		}
+
+		const auto swizzle =
+			(left->type->texel.format->count == 1) ? ".x" :
+			(left->type->texel.format->count == 2) ? ".xy" : "";
+		return MAKE_EXPR(mkstr("(imageLoad(%s, %s)%s)", leftStr.c_str(), indexStr.c_str(), swizzle),
+			left->type->texel.format->asDataType(), 1);
+	}
+	else {
+		ERROR(ctx->atom(), "Invalid type for indexing operations");
+	}
 }
 
 // ====================================================================================================================
 VISIT_FUNC(MemberAtom)
 {
+	// Visit left atom
+	const auto left = VISIT_EXPR(ctx->atom());
+	const auto ltype = left->type;
+	const auto memberName = ctx->IDENTIFIER()->getText();
+
+	// Switch on type
+	if (ltype->isStruct()) {
+		// Get the member and type
+		const auto member = ltype->userStruct.type->getMember(memberName);
+		if (!member) {
+			ERROR(ctx->IDENTIFIER(), mkstr("Type '%s' has no member '%s'",
+				ltype->userStruct.type->name().c_str(), memberName.c_str()));
+		}
+
+		return MAKE_EXPR(mkstr("%s.%s", left->refString.c_str(), memberName.c_str()), member->type, member->arraySize);
+	}
+	else if (ltype->isVector()) {
+		// Validate the swizzle
+		validateSwizzle(ltype->numeric.dims[0], ctx->IDENTIFIER());
+
+		return MAKE_EXPR(mkstr("%s.%s", left->refString.c_str(), memberName.c_str()),
+			TypeList::GetNumericType(ltype->baseType, ltype->numeric.size, uint32(memberName.length()), 1), 1);
+	}
+	else {
+		ERROR(ctx->atom(), "Operator '.' is only valid for structs (members) or vectors (swizzles)");
+	}
+
 	return nullptr;
 }
 
 // ====================================================================================================================
 VISIT_FUNC(CallAtom)
 {
-	return nullptr;
+	// Visit the argument expressions
+	std::vector<SPtr<Expr>> arguments{};
+	for (const auto arg : ctx->functionCall()->args) {
+		const auto argexpr = VISIT_EXPR(arg);
+		arguments.push_back(argexpr);
+	}
+
+	// Validate the constructor/function
+	const auto fnName = ctx->functionCall()->name->getText();
+	const auto [callType, callName] = Functions::CheckFunction(fnName, arguments);
+	if (!callType) {
+		ERROR(ctx->functionCall()->name, Functions::LastError());
+	}
+
+	// Create the call string
+	std::stringstream ss{ std::stringstream::out };
+	ss << callName << "( ";
+	for (const auto& arg : arguments) {
+		ss << arg->refString << ", ";
+	}
+	ss.seekp(-2, std::stringstream::cur);
+	ss << " )"; // Overwrite last ", " with function close " )"
+
+	// Emit temp and return
+	return MAKE_EXPR(ss.str(), callType, 1);
 }
 
 // ====================================================================================================================

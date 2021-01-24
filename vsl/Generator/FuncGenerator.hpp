@@ -22,6 +22,7 @@ public:
 
 	/* Assignment */
 	void emitVariableDefinition(const ShaderType* type, const string& name, const string& value);
+	string emitTempDefinition(const ShaderType* type, const string& value);
 
 	/* Binding */
 	void emitBindingIndex(uint32 index);

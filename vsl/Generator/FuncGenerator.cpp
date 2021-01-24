@@ -40,6 +40,13 @@ void FuncGenerator::emitVariableDefinition(const ShaderType* type, const string&
 }
 
 // ====================================================================================================================
+string FuncGenerator::emitTempDefinition(const ShaderType* type, const string& value)
+{
+	source_ << indent_ << type->getGLSLName() << " _t" << (uid_++) << "_ = " << value << ";" << CRLF;
+	return mkstr("_t%u_", uid_ - 1);
+}
+
+// ====================================================================================================================
 void FuncGenerator::emitBindingIndex(uint32 index)
 {
 	if (bindingMask_ & (1u << index)) {

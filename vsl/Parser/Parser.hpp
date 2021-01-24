@@ -50,6 +50,21 @@ public:
 }; // struct Literal
 
 
+// Describes the result of an expression node in a program tree
+class Expr final
+{
+public:
+	Expr(const string& refString, const ShaderType* type, uint32 arraySize)
+		: refString{ refString }, type{ type }, arraySize{ arraySize }
+	{ }
+
+public:
+	string refString;
+	const ShaderType* type;
+	uint32 arraySize;
+}; // class Expr
+
+
 // Central ANTLR parser type for VSL programs
 class Parser final
 	: public grammar::VSLBaseVisitor
@@ -70,6 +85,7 @@ public:
 	void validateName(const antlr4::Token* name);
 	Variable parseVariableDeclaration(const grammar::VSL::VariableDeclarationContext* ctx, bool global);
 	Literal parseLiteral(const antlr4::Token* token);
+	void validateSwizzle(uint32 compCount, antlr4::tree::TerminalNode* swizzle);
 
 	/* File Level Rules */
 	VISIT_DECL(File)

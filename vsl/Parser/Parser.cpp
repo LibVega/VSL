@@ -201,4 +201,48 @@ Literal Parser::parseLiteral(const antlr4::Token* token)
 	}
 }
 
+// ====================================================================================================================
+void Parser::validateSwizzle(uint32 compCount, antlr4::tree::TerminalNode* swizzle)
+{
+	// Check length
+	const auto swtxt = swizzle->getText();
+	if (swtxt.length() > 4) {
+		ERROR(swizzle, "Swizzles have a max length of 4");
+	}
+
+	// Check each character
+	uint32 cclass = UINT32_MAX;
+	for (const auto ch : swizzle->getText()) {
+		uint32 idx = UINT32_MAX;
+		uint32 cc = UINT32_MAX;
+
+		switch (ch)
+		{
+		case 'x': case 'r': case 's': idx = 1; break;
+		case 'y': case 'g': case 't': idx = 2; break;
+		case 'z': case 'b': case 'p': idx = 3; break;
+		case 'w': case 'a': case 'q': idx = 4; break;
+		}
+		if (idx > compCount) {
+			ERROR(swizzle, mkstr("Invalid swizzle character '%c' for vector size", ch));
+		}
+
+		switch (ch)
+		{
+		case 'x': case 'y': case 'z': case 'w': cc = 1; break;
+		case 'r': case 'g': case 'b': case 'a': cc = 2; break;
+		case 's': case 't': case 'p': case 'q': cc = 3; break;
+		}
+		if (cclass != UINT32_MAX) {
+			if (cc != cclass) {
+				const auto expect = (cclass == 1) ? "xyzw" : (cclass == 2) ? "rgba" : "stpq";
+				ERROR(swizzle, mkstr("Swizzle class mismatch for character '%c', expected one of '%s'", ch, expect));
+			}
+		}
+		else {
+			cclass = cc;
+		}
+	}
+}
+
 } // namespace vsl
