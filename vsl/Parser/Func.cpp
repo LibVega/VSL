@@ -71,6 +71,9 @@ FunctionType::FunctionType(const string& typeName)
 bool FunctionType::match(const SPtr<Expr> expr) const
 {
 	const auto etype = expr->type;
+	if (expr->arraySize != 1) {
+		return false; // No functions take arrays as arguments
+	}
 	if (genType) {
 		const auto casttype = TypeList::GetNumericType(type->baseType, etype->numeric.size, etype->numeric.dims[0], 1);
 		return etype->hasImplicitCast(casttype);

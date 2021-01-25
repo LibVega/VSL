@@ -7,6 +7,7 @@
 #include "./Parser.hpp"
 #include "../Generator/NameGeneration.hpp"
 #include "./Func.hpp"
+#include "./Op.hpp"
 
 #define VISIT_FUNC(type) antlrcpp::Any Parser::visit##type(grammar::VSL::type##Context* ctx)
 #define MAKE_EXPR(name,type,arrSize) (std::make_shared<Expr>(name,type,arrSize))
@@ -19,61 +20,120 @@ namespace vsl
 // ====================================================================================================================
 VISIT_FUNC(FactorExpr)
 {
-	return nullptr;
+	const auto expr = VISIT_EXPR(ctx->expression());
+	const auto [resType, refStr] = Ops::CheckOp(ctx->op->getText(), { expr });
+	if (!resType) {
+		ERROR(ctx, Ops::LastError());
+	}
+	return MAKE_EXPR(refStr, resType, 1);
 }
 
 // ====================================================================================================================
 VISIT_FUNC(NegateExpr)
 {
-	return nullptr;
+	const auto expr = VISIT_EXPR(ctx->expression());
+	const auto [resType, refStr] = Ops::CheckOp(ctx->op->getText(), { expr });
+	if (!resType) {
+		ERROR(ctx, Ops::LastError());
+	}
+	return MAKE_EXPR(refStr, resType, 1);
 }
 
 // ====================================================================================================================
 VISIT_FUNC(MulDivModExpr)
 {
-	return nullptr;
+	const auto left = VISIT_EXPR(ctx->left);
+	const auto right = VISIT_EXPR(ctx->right);
+	const auto [resType, refStr] = Ops::CheckOp(ctx->op->getText(), { left, right });
+	if (resType) {
+		ERROR(ctx, Ops::LastError());
+	}
+	return MAKE_EXPR(refStr, resType, 1);
 }
 
 // ====================================================================================================================
 VISIT_FUNC(AddSubExpr)
 {
-	return nullptr;
+	const auto left = VISIT_EXPR(ctx->left);
+	const auto right = VISIT_EXPR(ctx->right);
+	const auto [resType, refStr] = Ops::CheckOp(ctx->op->getText(), { left, right });
+	if (resType) {
+		ERROR(ctx, Ops::LastError());
+	}
+	return MAKE_EXPR(refStr, resType, 1);
 }
 
 // ====================================================================================================================
 VISIT_FUNC(ShiftExpr)
 {
-	return nullptr;
+	const auto left = VISIT_EXPR(ctx->left);
+	const auto right = VISIT_EXPR(ctx->right);
+	const auto [resType, refStr] = Ops::CheckOp(ctx->op->getText(), { left, right });
+	if (resType) {
+		ERROR(ctx, Ops::LastError());
+	}
+	return MAKE_EXPR(refStr, resType, 1);
 }
 
 // ====================================================================================================================
 VISIT_FUNC(RelationalExpr)
 {
-	return nullptr;
+	const auto left = VISIT_EXPR(ctx->left);
+	const auto right = VISIT_EXPR(ctx->right);
+	const auto [resType, refStr] = Ops::CheckOp(ctx->op->getText(), { left, right });
+	if (resType) {
+		ERROR(ctx, Ops::LastError());
+	}
+	return MAKE_EXPR(refStr, resType, 1);
 }
 
 // ====================================================================================================================
 VISIT_FUNC(EqualityExpr)
 {
-	return nullptr;
+	const auto left = VISIT_EXPR(ctx->left);
+	const auto right = VISIT_EXPR(ctx->right);
+	const auto [resType, refStr] = Ops::CheckOp(ctx->op->getText(), { left, right });
+	if (resType) {
+		ERROR(ctx, Ops::LastError());
+	}
+	return MAKE_EXPR(refStr, resType, 1);
 }
 
 // ====================================================================================================================
 VISIT_FUNC(BitwiseExpr)
 {
-	return nullptr;
+	const auto left = VISIT_EXPR(ctx->left);
+	const auto right = VISIT_EXPR(ctx->right);
+	const auto [resType, refStr] = Ops::CheckOp(ctx->op->getText(), { left, right });
+	if (resType) {
+		ERROR(ctx, Ops::LastError());
+	}
+	return MAKE_EXPR(refStr, resType, 1);
 }
 
 // ====================================================================================================================
 VISIT_FUNC(LogicalExpr)
 {
-	return nullptr;
+	const auto left = VISIT_EXPR(ctx->left);
+	const auto right = VISIT_EXPR(ctx->right);
+	const auto [resType, refStr] = Ops::CheckOp(ctx->op->getText(), { left, right });
+	if (resType) {
+		ERROR(ctx, Ops::LastError());
+	}
+	return MAKE_EXPR(refStr, resType, 1);
 }
 
 // ====================================================================================================================
 VISIT_FUNC(TernaryExpr)
 {
-	return nullptr;
+	const auto cond = VISIT_EXPR(ctx->cond);
+	const auto tval = VISIT_EXPR(ctx->texpr);
+	const auto fval = VISIT_EXPR(ctx->fexpr);
+	const auto [resType, refStr] = Ops::CheckOp("?:", { cond, tval, fval });
+	if (resType) {
+		ERROR(ctx, Ops::LastError());
+	}
+	return MAKE_EXPR(refStr, resType, 1);
 }
 
 // ====================================================================================================================

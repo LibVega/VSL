@@ -251,7 +251,12 @@ public:
 	const ShaderType* parseOrGetType(const string& name);
 
 	/* Access */
-	inline static const TypeMap& BuiltinTypes() { return BuiltinTypes_; }
+	inline static const TypeMap& BuiltinTypes() { 
+		if (BuiltinTypes_.empty()) {
+			Initialize();
+		}
+		return BuiltinTypes_;
+	}
 	static const ShaderType* GetBuiltinType(const string& name);
 
 	static const TexelFormat* GetTexelFormat(const string& format);
