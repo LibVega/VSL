@@ -7,6 +7,7 @@
 #include "./Parser.hpp"
 #include "./ErrorListener.hpp"
 #include "../Grammar/VSLLexer.h"
+#include "./Func.hpp"
 
 #include <cmath>
 
@@ -96,7 +97,12 @@ void Parser::validateName(const antlr4::Token* name)
 	if (scopes_.hasGlobalName(varName) || scopes_.hasName(varName)) {
 		ERROR(name, mkstr("Duplicate variable name '%s'", varName.c_str()));
 	}
-	// TODO: Check function names
+	if (Functions::HasFunction(varName)) {
+		ERROR(name, mkstr("Variable name '%s' overlaps with function name", varName.c_str()));
+	}
+	if (shader_->types().getType(varName)) {
+		ERROR(name, mkstr("Variable name '%s' overlaps with type name", varName.c_str()));
+	}
 }
 
 // ====================================================================================================================

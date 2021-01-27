@@ -21,8 +21,21 @@ public:
 	~FuncGenerator();
 
 	/* Assignment */
+	void emitDeclaration(const ShaderType* type, const string& name);
 	void emitVariableDefinition(const ShaderType* type, const string& name, const string& value);
+	void emitAssignment(const string& left, const string& op, const string& value);
 	string emitTempDefinition(const ShaderType* type, const string& value);
+	void emitImageStore(const string& imStore, const string& value);
+
+	/* Blocks */
+	void emitIf(const string& cond);
+	void emitElif(const string& cond);
+	void emitElse();
+	void emitForLoop(const string& name, int32 start, int32 end, int32 step);
+	void closeBlock();
+
+	/* Other */
+	void emitControlStatement(const string& keyword);
 
 	/* Binding */
 	void emitBindingIndex(uint32 index);

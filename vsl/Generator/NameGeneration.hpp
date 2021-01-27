@@ -21,6 +21,9 @@ public:
 	static string GetBindingTableName(const ShaderType* type);
 	static string GetBindingIndexLoadString(uint32 index);
 
+	/* Names */
+	static string GetGLSLBuiltinName(const string& name);
+
 	VSL_NO_MOVE(NameGeneration)
 	VSL_NO_COPY(NameGeneration)
 	VSL_NO_INIT(NameGeneration)

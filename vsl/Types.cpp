@@ -413,7 +413,7 @@ const ShaderType* TypeList::parseOrGetType(const string& name)
 {
 	// Normalize
 	auto typeName = name;
-	typeName.erase(std::remove_if(typeName.begin(), typeName.end(), std::isspace), typeName.end());
+	typeName.erase(std::remove_if(typeName.begin(), typeName.end(), ::isspace), typeName.end());
 
 	// Check if it exists already
 	if (const auto type = getType(typeName); type) {

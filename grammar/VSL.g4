@@ -121,8 +121,8 @@ elseStatement
 forLoopStatement
     : 'for' '(' 
             counter=IDENTIFIER ';' 
-            start=(IDENTIFIER|INTEGER_LITERAL) ':' 
-            end=(IDENTIFIER|INTEGER_LITERAL) (':' step=(IDENTIFIER|INTEGER_LITERAL))?
+            start=INTEGER_LITERAL ':' 
+            end=INTEGER_LITERAL (':' step=INTEGER_LITERAL)?
         ')' statementBlock
     ;
 

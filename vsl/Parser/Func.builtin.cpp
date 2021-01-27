@@ -349,11 +349,11 @@ void Functions::Initialize()
 		{ "textureSize", "int2", { "USampler1DArray", "int" } },
 		{ "textureSize", "int3", { "USampler2DArray", "int" } },
 		{ "textureSize", "int2", { "USamplerCube", "int" } },
-		{ "imageSize", "int",  { "Image1D" } },
-		{ "imageSize", "int2", { "Image2D" } },
-		{ "imageSize", "int3", { "Image3D" } },
-		{ "imageSize", "int2", { "Image1DArray" } },
-		{ "imageSize", "int3", { "Image2DArray" } }
+		//{ "imageSize", "int",  { "Image1D" } },
+		//{ "imageSize", "int2", { "Image2D" } },
+		//{ "imageSize", "int3", { "Image3D" } },
+		//{ "imageSize", "int2", { "Image1DArray" } },
+		//{ "imageSize", "int3", { "Image2DArray" } }
 	};
 }
 
