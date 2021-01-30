@@ -119,6 +119,16 @@ void Compiler::writeOutput() const
 	// Write the shader type (1 = graphics)
 	file << uint8(1);
 
+	// Write the bytecode sizes
+	uint16 bytecode[5] {
+		uint16(bool(info.stageMask() & ShaderStages::Vertex) ? bytecodes_.at(ShaderStages::Vertex).size() : 0),
+		uint16(bool(info.stageMask() & ShaderStages::TessControl) ? bytecodes_.at(ShaderStages::TessControl).size() : 0),
+		uint16(bool(info.stageMask() & ShaderStages::TessEval) ? bytecodes_.at(ShaderStages::TessEval).size() : 0),
+		uint16(bool(info.stageMask() & ShaderStages::Geometry) ? bytecodes_.at(ShaderStages::Geometry).size() : 0),
+		uint16(bool(info.stageMask() & ShaderStages::Fragment) ? bytecodes_.at(ShaderStages::Fragment).size() : 0)
+	};
+	file_write(file, bytecode);
+
 	// Write table sizes
 	file_write(file, options_->tableSizes());
 
