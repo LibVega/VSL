@@ -13,6 +13,8 @@
 namespace vsl
 {
 
+class StageGenerator;
+
 // Performs bytecode compilation and final vbc file writes
 class Compiler final
 {
@@ -20,11 +22,20 @@ public:
 	Compiler(const Shader* shader, const CompileOptions* options);
 	~Compiler();
 
+	inline const string& lastError() const { return lastError_; }
+	inline bool hasError() const { return !lastError_.empty(); }
+
+	bool compileStage(const StageGenerator& gen);
 	void writeOutput() const;
+
+private:
+	bool writeStageBytecode(ShaderStages stage);
 
 private:
 	const Shader* const shader_;
 	const CompileOptions* const options_;
+	string lastError_;
+	std::unordered_map<ShaderStages, std::vector<uint32>> bytecodes_;
 
 	VSL_NO_COPY(Compiler)
 	VSL_NO_MOVE(Compiler)

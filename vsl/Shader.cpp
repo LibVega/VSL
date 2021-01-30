@@ -185,7 +185,32 @@ bool Shader::compile()
 	// Create compiler
 	Compiler compiler{ this, &options_ };
 
-	// TODO: Compile stages
+	// Compile stages
+	if (bool(info_.stageMask() & ShaderStages::Vertex) && 
+			!compiler.compileStage(*stages_[ShaderStages::Vertex])) {
+		lastError_ = ShaderError(compiler.lastError());
+		return false;
+	}
+	if (bool(info_.stageMask() & ShaderStages::TessControl) &&
+			!compiler.compileStage(*stages_[ShaderStages::TessControl])) {
+		lastError_ = ShaderError(compiler.lastError());
+		return false;
+	}
+	if (bool(info_.stageMask() & ShaderStages::TessEval) &&
+			!compiler.compileStage(*stages_[ShaderStages::TessEval])) {
+		lastError_ = ShaderError(compiler.lastError());
+		return false;
+	}
+	if (bool(info_.stageMask() & ShaderStages::Geometry) &&
+			!compiler.compileStage(*stages_[ShaderStages::Geometry])) {
+		lastError_ = ShaderError(compiler.lastError());
+		return false;
+	}
+	if (bool(info_.stageMask() & ShaderStages::Fragment) &&
+			!compiler.compileStage(*stages_[ShaderStages::Fragment])) {
+		lastError_ = ShaderError(compiler.lastError());
+		return false;
+	}
 
 	// Write final output file
 	compiler.writeOutput();

@@ -23,6 +23,9 @@ public:
 	StageGenerator(const CompileOptions* options, ShaderStages stage);
 	~StageGenerator();
 
+	inline ShaderStages stage() const { return stage_; }
+	inline const std::stringstream& source() const { return source_; }
+
 	void generate(const FuncGenerator& func, const ShaderInfo& info);
 	bool save();
 

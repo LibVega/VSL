@@ -6,6 +6,9 @@
 
 #include "./Compiler.hpp"
 #include "./Reflection.hpp"
+#include "../Generator/StageGenerator.hpp"
+
+#include <shaderc/shaderc.hpp>
 
 #include <fstream>
 
@@ -38,6 +41,8 @@ static_assert(uint32(TexelType::MAX) <= UINT8_MAX);
 Compiler::Compiler(const Shader* shader, const CompileOptions* options)
 	: shader_{ shader }
 	, options_{ options }
+	, lastError_{ }
+	, bytecodes_{ }
 {
 
 }
@@ -46,6 +51,55 @@ Compiler::Compiler(const Shader* shader, const CompileOptions* options)
 Compiler::~Compiler()
 {
 
+}
+
+// ====================================================================================================================
+bool Compiler::compileStage(const StageGenerator& gen)
+{
+	const auto stage = gen.stage();
+
+	// Check options
+	if (options_->noCompile()) {
+		return true;
+	}
+
+	// Create the compiler options
+	shaderc::CompileOptions opts{};
+	opts.SetOptimizationLevel(options_->disableOptimization()
+		? shaderc_optimization_level_zero
+		: shaderc_optimization_level_performance);
+	opts.SetTargetSpirv(shaderc_spirv_version_1_5); // Vega targets Vulkan 1.2, so we can use SPIRV 1.5
+
+	// Perform compilation
+	const auto skind =
+		(stage == ShaderStages::Vertex) ? shaderc_vertex_shader :
+		(stage == ShaderStages::TessControl) ? shaderc_tess_control_shader :
+		(stage == ShaderStages::TessEval) ? shaderc_tess_evaluation_shader :
+		(stage == ShaderStages::Geometry) ? shaderc_geometry_shader : shaderc_fragment_shader;
+	shaderc::Compiler compiler{ };
+	const auto result = compiler.CompileGlslToSpv(
+		gen.source().str(),
+		skind,
+		"VSLC",
+		"main",
+		opts
+	);
+
+	// Check compile result
+	if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
+		lastError_ = result.GetErrorMessage();
+		return false;
+	}
+
+	// Save the bytecode
+	auto& bytecode = (bytecodes_[stage] = {});
+	bytecode.insert(bytecode.end(), result.begin(), result.end());
+	if (options_->saveBytecode() && !writeStageBytecode(stage)) {
+		lastError_ = "Failed to write intermediate bytecode file";
+		return false;
+	}
+
+	return true;
 }
 
 // ====================================================================================================================
@@ -117,6 +171,25 @@ void Compiler::writeOutput() const
 		subpass_input_record rec{ spi };
 		file_write(file, spi);
 	}
+}
+
+// ====================================================================================================================
+bool Compiler::writeStageBytecode(ShaderStages stage)
+{
+	// Open the file
+	const auto stageName = ShaderStageToStr(stage);
+	std::ofstream file{
+		mkstr("%s.%s.glsl", options_->outputFile().c_str(), stageName.c_str()),
+		std::ofstream::trunc | std::ofstream::binary
+	};
+	if (!file.is_open()) {
+		return false;
+	}
+
+	// Write file
+	const auto& bytecode = bytecodes_[stage];
+	file.write(reinterpret_cast<const char*>(bytecode.data()), bytecode.size() * sizeof(uint32));
+	return true;
 }
 
 } // namespace vsl
