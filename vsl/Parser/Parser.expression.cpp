@@ -396,6 +396,7 @@ VISIT_FUNC(NameAtom)
 		funcGen_->emitVariableDefinition(type, refStr, mkstr("subpassLoad(%s)", var->name.c_str()));
 	}
 	else { // Uniform
+		shader_->info().uniform().stageMask |= currentStage_;
 		type = var->dataType->buffer.structType;
 		refStr = var->name;
 	}

@@ -426,11 +426,12 @@ const ShaderType* TypeList::parseOrGetType(const string& name)
 		error_ = mkstr("unknown type '%s'", typeName.c_str());
 		return nullptr;
 	}
-	auto type = *ParseGenericType(typeName.substr(0, stIndex));
-	if (type.baseType == BaseType::Void) {
+	auto genType = ParseGenericType(typeName.substr(0, stIndex));
+	if (!genType) {
 		error_ = mkstr("unknown generic type '%s'", typeName.c_str());
 		return nullptr;
 	}
+	auto type = *genType;
 
 	// Parse subtype
 	const auto subtype = typeName.substr(stIndex + 1, typeName.length() - stIndex - 2);

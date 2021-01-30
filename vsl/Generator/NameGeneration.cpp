@@ -21,7 +21,8 @@ string NameGeneration::GetBindingTableName(const ShaderType* type)
 	{
 	case BaseType::Sampler: {
 		const auto rtxt = TexelRankGetSuffix(type->texel.rank);
-		basename = "sampler" + rtxt;
+		const auto ltxt = type->texel.format->getGLSLPrefix();
+		basename = ltxt + "sampler" + rtxt;
 	} break;
 	case BaseType::Image: {
 		const auto rtxt = TexelRankGetSuffix(type->texel.rank);

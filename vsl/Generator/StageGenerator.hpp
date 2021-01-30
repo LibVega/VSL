@@ -20,15 +20,28 @@ class CompileOptions;
 class StageGenerator final
 {
 public:
-	StageGenerator(ShaderStages stage);
+	StageGenerator(const CompileOptions* options, ShaderStages stage);
 	~StageGenerator();
 
 	void generate(const FuncGenerator& func, const ShaderInfo& info);
-	bool save(const CompileOptions& options);
+	bool save();
 
 private:
+	void emitStruct(const StructType* type);
+	void emitVertexInput(const InterfaceVariable& var);
+	void emitFragmentOutput(const InterfaceVariable& var);
+	void emitBinding(const BindingVariable& bind);
+	void emitSubpassInput(const SubpassInputVariable& var);
+	void emitBindingIndices(uint32 maxIndex);
+
+	void getBindingInfo(const ShaderType* type, uint32* set, uint32* binding, uint32* tableSize, string* tableName);
+
+private:
+	const CompileOptions* const options_;
 	const ShaderStages stage_;
 	std::stringstream source_;
+	std::vector<const StructType*> generatedStructs_;
+	uint32 uid_;
 
 	VSL_NO_COPY(StageGenerator)
 	VSL_NO_MOVE(StageGenerator)

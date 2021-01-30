@@ -259,9 +259,11 @@ VISIT_FUNC(ShaderBindingStatement)
 	shader_->info().bindings().push_back({ bVar.name, bVar.dataType, slotIndex });
 	const auto canWrite =
 		(bVar.dataType->isImage() || bVar.dataType->isRWBuffer() || bVar.dataType->isRWTexels());
-	scopes_.addGlobal({ 
-		bVar.name, VariableType::Binding, bVar.dataType, 1, canWrite ? Variable::READWRITE : Variable::READONLY 
-	});
+	Variable var {
+		bVar.name, VariableType::Binding, bVar.dataType, 1, canWrite ? Variable::READWRITE : Variable::READONLY
+	};
+	var.extra.binding.slot = slotIndex;
+	scopes_.addGlobal(var);
 
 	return nullptr;
 }
