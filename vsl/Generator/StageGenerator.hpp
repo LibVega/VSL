@@ -33,6 +33,7 @@ private:
 	void emitBinding(const BindingVariable& bind);
 	void emitSubpassInput(const SubpassInputVariable& var);
 	void emitBindingIndices(uint32 maxIndex);
+	void emitLocal(const LocalVariable& var);
 
 	void getBindingInfo(const ShaderType* type, uint32* set, uint32* binding, uint32* tableSize, string* tableName);
 
@@ -42,6 +43,10 @@ private:
 	std::stringstream source_;
 	std::vector<const StructType*> generatedStructs_;
 	uint32 uid_;
+	struct {
+		uint32 in;
+		uint32 out;
+	} localIdx_;
 
 	VSL_NO_COPY(StageGenerator)
 	VSL_NO_MOVE(StageGenerator)

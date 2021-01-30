@@ -25,6 +25,7 @@ StageGenerator::StageGenerator(const CompileOptions* options, ShaderStages stage
 	, source_{ }
 	, generatedStructs_{ }
 	, uid_{ 0 }
+	, localIdx_{ 0, 0 }
 {
 
 }
@@ -108,6 +109,14 @@ void StageGenerator::generate(const FuncGenerator& func, const ShaderInfo& info)
 	// Write the binding indices
 	if (bindCount > 0) {
 		emitBindingIndices(info.getMaxBindingIndex());
+	}
+
+	// Write the locals (right now this is easy because we only support vert/frag)
+	if (!info.locals().empty()) {
+		for (const auto& local : info.locals()) {
+			emitLocal(local);
+		}
+		source_ << CRLF;
 	}
 
 	// Write function text
@@ -235,6 +244,19 @@ void StageGenerator::emitBindingIndices(uint32 maxIndex)
 		source_ << "\tuint index" << i << ";" << CRLF;
 	}
 	source_ << "} _bidx_;" << CRLF << CRLF;
+}
+
+// ====================================================================================================================
+void StageGenerator::emitLocal(const LocalVariable& var)
+{
+	const auto dirstr = (var.pStage == stage_) ? "out" : "in";
+	const auto loc = (var.pStage == stage_) ? (localIdx_.out++) : (localIdx_.in++);
+
+	source_ << "layout(location = " << loc << ") " << dirstr << ' ';
+	if (var.isFlat) {
+		source_ << "flat ";
+	}
+	source_ << var.type->getGLSLName() << " _l" << dirstr << '_' << var.name << ";" << CRLF;
 }
 
 // ====================================================================================================================

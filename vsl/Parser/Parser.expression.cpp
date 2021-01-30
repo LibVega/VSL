@@ -401,6 +401,12 @@ VISIT_FUNC(NameAtom)
 		refStr = var->name;
 	}
 
+	// For locals, one more name translation
+	if (var->varType == VariableType::Local) {
+		const auto inout = (var->extra.local.sourceStage == currentStage_) ? "out" : "in";
+		refStr = mkstr("_l%s_%s", inout, refStr.c_str());
+	}
+
 	return MAKE_EXPR(refStr, type, arraySize);
 }
 

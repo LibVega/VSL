@@ -52,6 +52,12 @@ string ShaderStageToStr(ShaderStages stage)
 // ====================================================================================================================
 ShaderInfo::ShaderInfo()
 	: stageMask_{ ShaderStages::None }
+	, inputs_{ }
+	, outputs_{ }
+	, locals_{ }
+	, bindings_{ }
+	, uniform_{ }
+	, subpassInputs_{ }
 {
 
 }

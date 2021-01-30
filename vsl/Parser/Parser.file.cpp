@@ -306,6 +306,9 @@ VISIT_FUNC(ShaderLocalStatement)
 	var.extra.local.flat = isFlat;
 	scopes_.addGlobal(var);
 
+	// Add to info
+	shader_->info().locals().push_back({ lVar.name, pStage, lVar.dataType, isFlat });
+
 	return nullptr;
 }
 

@@ -200,7 +200,8 @@ VISIT_FUNC(Lvalue)
 			outname = NameGeneration::GetGLSLBuiltinName(var->name);
 		} break;
 		case VariableType::Local: {
-			outname = mkstr("_%s_%s", ShaderStageToStr(currentStage_).c_str(), varName.c_str());
+			const auto inout = (var->extra.local.sourceStage == currentStage_) ? "out" : "in";
+			outname = mkstr("_l%s_%s", inout, varName.c_str());
 		} break;
 		default: outname = varName;
 		}

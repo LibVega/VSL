@@ -97,6 +97,23 @@ public:
 }; // struct SubpassInputVariable
 
 
+// Describes a shader local variable
+struct LocalVariable final
+{
+public:
+	LocalVariable() : name{}, pStage{}, type{ nullptr }, isFlat{} { }
+	LocalVariable(const string& name, ShaderStages pStage, const ShaderType* type, bool flat)
+		: name{ name }, pStage{ pStage }, type{ type }, isFlat{ flat }
+	{ }
+
+public:
+	string name;
+	ShaderStages pStage;
+	const ShaderType* type;
+	bool isFlat;
+}; // struct LocalVariable
+
+
 // Contains information about a shader
 class ShaderInfo final
 {
@@ -107,6 +124,7 @@ public:
 	DECL_GETTER_SETTER(ShaderStages, stageMask)
 	DECL_GETTER_SETTER(std::vector<InterfaceVariable>&, inputs)
 	DECL_GETTER_SETTER(std::vector<InterfaceVariable>&, outputs)
+	DECL_GETTER_SETTER(std::vector<LocalVariable>&, locals)
 	DECL_GETTER_SETTER(std::vector<BindingVariable>&, bindings)
 	DECL_GETTER_SETTER(BindingVariable&, uniform)
 	DECL_GETTER_SETTER(std::vector<SubpassInputVariable>&, subpassInputs)
@@ -131,6 +149,7 @@ private:
 	ShaderStages stageMask_;
 	std::vector<InterfaceVariable> inputs_;
 	std::vector<InterfaceVariable> outputs_;
+	std::vector<LocalVariable> locals_;
 	std::vector<BindingVariable> bindings_;
 	BindingVariable uniform_;
 	std::vector<SubpassInputVariable> subpassInputs_;
