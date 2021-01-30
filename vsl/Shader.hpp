@@ -99,7 +99,7 @@ private:
 
 
 // Represents a shader program, which can have successive transforms (parse/generate/compile) applied to it
-class Shader final
+class VSL_API Shader final
 {
 public:
 	Shader();
