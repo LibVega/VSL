@@ -45,7 +45,7 @@ VISIT_FUNC(MulDivModExpr)
 	const auto left = VISIT_EXPR(ctx->left);
 	const auto right = VISIT_EXPR(ctx->right);
 	const auto [resType, refStr] = Ops::CheckOp(ctx->op->getText(), { left, right });
-	if (resType) {
+	if (!resType) {
 		ERROR(ctx, Ops::LastError());
 	}
 	return MAKE_EXPR(refStr, resType, 1);
@@ -57,7 +57,7 @@ VISIT_FUNC(AddSubExpr)
 	const auto left = VISIT_EXPR(ctx->left);
 	const auto right = VISIT_EXPR(ctx->right);
 	const auto [resType, refStr] = Ops::CheckOp(ctx->op->getText(), { left, right });
-	if (resType) {
+	if (!resType) {
 		ERROR(ctx, Ops::LastError());
 	}
 	return MAKE_EXPR(refStr, resType, 1);
@@ -69,7 +69,7 @@ VISIT_FUNC(ShiftExpr)
 	const auto left = VISIT_EXPR(ctx->left);
 	const auto right = VISIT_EXPR(ctx->right);
 	const auto [resType, refStr] = Ops::CheckOp(ctx->op->getText(), { left, right });
-	if (resType) {
+	if (!resType) {
 		ERROR(ctx, Ops::LastError());
 	}
 	return MAKE_EXPR(refStr, resType, 1);
@@ -81,7 +81,7 @@ VISIT_FUNC(RelationalExpr)
 	const auto left = VISIT_EXPR(ctx->left);
 	const auto right = VISIT_EXPR(ctx->right);
 	const auto [resType, refStr] = Ops::CheckOp(ctx->op->getText(), { left, right });
-	if (resType) {
+	if (!resType) {
 		ERROR(ctx, Ops::LastError());
 	}
 	return MAKE_EXPR(refStr, resType, 1);
@@ -93,7 +93,7 @@ VISIT_FUNC(EqualityExpr)
 	const auto left = VISIT_EXPR(ctx->left);
 	const auto right = VISIT_EXPR(ctx->right);
 	const auto [resType, refStr] = Ops::CheckOp(ctx->op->getText(), { left, right });
-	if (resType) {
+	if (!resType) {
 		ERROR(ctx, Ops::LastError());
 	}
 	return MAKE_EXPR(refStr, resType, 1);
@@ -105,7 +105,7 @@ VISIT_FUNC(BitwiseExpr)
 	const auto left = VISIT_EXPR(ctx->left);
 	const auto right = VISIT_EXPR(ctx->right);
 	const auto [resType, refStr] = Ops::CheckOp(ctx->op->getText(), { left, right });
-	if (resType) {
+	if (!resType) {
 		ERROR(ctx, Ops::LastError());
 	}
 	return MAKE_EXPR(refStr, resType, 1);
@@ -117,7 +117,7 @@ VISIT_FUNC(LogicalExpr)
 	const auto left = VISIT_EXPR(ctx->left);
 	const auto right = VISIT_EXPR(ctx->right);
 	const auto [resType, refStr] = Ops::CheckOp(ctx->op->getText(), { left, right });
-	if (resType) {
+	if (!resType) {
 		ERROR(ctx, Ops::LastError());
 	}
 	return MAKE_EXPR(refStr, resType, 1);
@@ -130,7 +130,7 @@ VISIT_FUNC(TernaryExpr)
 	const auto tval = VISIT_EXPR(ctx->texpr);
 	const auto fval = VISIT_EXPR(ctx->fexpr);
 	const auto [resType, refStr] = Ops::CheckOp("?:", { cond, tval, fval });
-	if (resType) {
+	if (!resType) {
 		ERROR(ctx, Ops::LastError());
 	}
 	return MAKE_EXPR(refStr, resType, 1);
@@ -396,7 +396,7 @@ VISIT_FUNC(NameAtom)
 		funcGen_->emitVariableDefinition(type, refStr, mkstr("subpassLoad(%s)", var->name.c_str()));
 	}
 	else { // Uniform
-		type = shader_->types().getType(var->dataType->buffer.structType->userStruct.type->name());
+		type = var->dataType->buffer.structType;
 		refStr = var->name;
 	}
 

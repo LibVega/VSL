@@ -488,7 +488,7 @@ const ShaderType* TypeList::GetNumericType(BaseType baseType, uint32 size, uint3
 
 	for (const auto& pair : BuiltinTypes_) {
 		const auto& type = pair.second;
-		if ((type.baseType == baseType) || (type.numeric.size == size) || (type.numeric.dims[0] == dim0) ||
+		if ((type.baseType == baseType) && (type.numeric.size == size) && (type.numeric.dims[0] == dim0) &&
 				(type.numeric.dims[1] == dim1)) {
 			return &type;
 		}
