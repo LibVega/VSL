@@ -69,6 +69,7 @@ bool Compiler::compileStage(const StageGenerator& gen)
 		? shaderc_optimization_level_zero
 		: shaderc_optimization_level_performance);
 	opts.SetTargetSpirv(shaderc_spirv_version_1_5); // Vega targets Vulkan 1.2, so we can use SPIRV 1.5
+	opts.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
 
 	// Perform compilation
 	const auto skind =
@@ -179,7 +180,7 @@ bool Compiler::writeStageBytecode(ShaderStages stage)
 	// Open the file
 	const auto stageName = ShaderStageToStr(stage);
 	std::ofstream file{
-		mkstr("%s.%s.glsl", options_->outputFile().c_str(), stageName.c_str()),
+		mkstr("%s.%s.spv", options_->outputFile().c_str(), stageName.c_str()),
 		std::ofstream::trunc | std::ofstream::binary
 	};
 	if (!file.is_open()) {

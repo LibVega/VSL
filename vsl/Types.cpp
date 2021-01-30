@@ -39,7 +39,7 @@ uint32 TexelRankGetComponentCount(TexelRank rank)
 	case TexelRank::E3D: return 3;
 	case TexelRank::E1DArray: return 2;
 	case TexelRank::E2DArray: return 3;
-	case TexelRank::Cube: return 2;
+	case TexelRank::Cube: return 3;
 	case TexelRank::Buffer: return 1;
 	default: return 0;
 	}

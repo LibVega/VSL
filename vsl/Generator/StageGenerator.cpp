@@ -198,29 +198,29 @@ void StageGenerator::emitBinding(const BindingVariable& bind)
 	getBindingInfo(bind.type, &set, &binding, &tableSize, &tableName);
 
 	// Generate based on type
-	if (bind.type->isSampler()) {
+	if (bind.type->isSampler() || bind.type->isROTexels()) {
 		source_
 			<< "layout(set = " << set << ", binding = " << binding << ") uniform "
 			<< bind.type->getGLSLName() << ' ' << tableName << '[' << tableSize << "];" << CRLF;
 	}
-	else if (bind.type->isImage() || bind.type->isROTexels() || bind.type->isRWTexels()) {
+	else if (bind.type->isImage() || bind.type->isRWTexels()) {
 		auto extra = bind.type->texel.format->getGLSLName();
 		source_
 			<< "layout(set = " << set << ", binding = " << binding << ", " << extra << ") uniform "
 			<< bind.type->getGLSLName() << ' ' << tableName << '[' << tableSize << "];" << CRLF;
 	}
 	else if (bind.type->isRWBuffer() || bind.type->isROBuffer()) {
-		const auto access = bind.type->isROBuffer() ? "readonly" : "readwrite";
+		const auto access = bind.type->isROBuffer() ? "readonly " : "";
 		const auto name = bind.type->buffer.structType->userStruct.type->name() + "_t";
 		source_
-			<< "layout(set = " << set << ", binding = " << binding << ") " << access << " buffer _BUFFER"
+			<< "layout(set = " << set << ", binding = " << binding << ", scalar) " << access << "buffer _BUFFER"
 			<< (uid_++) << "_ {" << CRLF << '\t' << name << " _data_[];" << CRLF << 
 			"} " << bind.name << '[' << tableSize << "];" << CRLF;
 	}
 	else if (bind.type->isUniform()) {
 		const auto name = bind.type->buffer.structType->userStruct.type->name() + "_t";
 		source_
-			<< "layout(set = " << set << ", binding = " << binding << ") uniform _UNIFORM_ {" << CRLF
+			<< "layout(set = " << set << ", binding = " << binding << ", scalar) uniform _UNIFORM_ {" << CRLF
 			<< '\t' << name << ' ' << bind.name << ';' << CRLF
 			<< "};" << CRLF;
 	}
