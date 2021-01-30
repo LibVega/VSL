@@ -221,6 +221,11 @@ bool ShaderType::isSame(const ShaderType* otherType) const
 // ====================================================================================================================
 bool ShaderType::hasImplicitCast(const ShaderType* targetType) const
 {
+	// Check for same-ness
+	if ((this == targetType) || isSame(targetType)) {
+		return true;
+	}
+
 	// Only numerics can cast
 	if (!isNumericType() || !targetType->isNumericType()) {
 		return false;

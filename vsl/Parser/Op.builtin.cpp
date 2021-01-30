@@ -18,8 +18,8 @@ void Ops::Initialize()
 	const string GENU{ "genUType" };
 	const string GENI{ "genIType" };
 	const string GENB{ "genBType" };
-	const string DEFAULT1{ "($op$1)" };
-	const string DEFAULT2{ "($1 $op $2)" };
+	const string DEFAULT1{ "$op$1" };
+	const string DEFAULT2{ "$1 $op $2" };
 	const string DEFAULT3{ "($1 ? ($2) : ($3))" };
 
 	// Unary Ops

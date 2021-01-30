@@ -120,7 +120,7 @@ void StageGenerator::generate(const FuncGenerator& func, const ShaderInfo& info)
 	}
 
 	// Write function text
-	source_ << func.source().str();
+	source_ << "void main()" << CRLF << "{" << CRLF << func.source().str() << "}" << CRLF;
 }
 
 // ====================================================================================================================

@@ -187,9 +187,15 @@ public:
 	/* Composite Type Checks */
 	inline bool isInteger() const     { return isSigned() || isUnsigned(); }
 	inline bool isNumericType() const { return isInteger() || isFloat(); }
-	inline bool isScalar() const      { return isNumericType() && (numeric.dims[0] == 1) && (numeric.dims[1] == 1); }
-	inline bool isVector() const      { return isNumericType() && (numeric.dims[0] != 1) && (numeric.dims[1] == 1); }
-	inline bool isMatrix() const      { return isNumericType() && (numeric.dims[0] != 1) && (numeric.dims[1] != 1); }
+	inline bool isScalar() const      { 
+		return (isNumericType() || isBoolean()) && (numeric.dims[0] == 1) && (numeric.dims[1] == 1); 
+	}
+	inline bool isVector() const      { 
+		return (isNumericType() || isBoolean()) && (numeric.dims[0] != 1) && (numeric.dims[1] == 1);
+	}
+	inline bool isMatrix() const      { 
+		return isNumericType() && (numeric.dims[0] != 1) && (numeric.dims[1] != 1);
+	}
 	inline bool isTexelType() const   { return isSampler() || isImage() || isROTexels() || isRWTexels() || isSPInput(); }
 	inline bool isBufferType() const  { return isROBuffer() || isRWBuffer(); }
 	inline bool hasStructType() const { return isUniform() || isBufferType() || isStruct(); }

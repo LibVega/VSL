@@ -23,20 +23,15 @@ FuncGenerator::FuncGenerator(ShaderStages stage)
 	, indent_{ "\t" }
 	, uid_{ 0 }
 	, bindingMask_{ 0 }
+	, spiMask_{ 0 }
 {
-	source_ << "void main()" << CRLF << "{" << CRLF;
+	
 }
 
 // ====================================================================================================================
 FuncGenerator::~FuncGenerator()
 {
 
-}
-
-// ====================================================================================================================
-void FuncGenerator::emitClose()
-{
-	source_ << "}" << CRLF;
 }
 
 // ====================================================================================================================
@@ -128,8 +123,12 @@ void FuncGenerator::emitBindingIndex(uint32 index)
 	}
 	bindingMask_ |= (1u << index);
 
+	// Put at beginning
 	const auto load = NameGeneration::GetBindingIndexLoadString(index);
-	source_ << indent_ << "uint _bidx" << index << "_ = " << load << ";" << CRLF;
+	const auto saved = source_.str();
+	source_ = {};
+	source_ << "\tuint _bidx" << index << "_ = " << load << ";" << CRLF;
+	source_ << saved;
 }
 
 } // namespace vsl

@@ -122,7 +122,7 @@ string OpEntry::generateString(const string& op, const std::vector<SPtr<Expr>>& 
 	static const string STR2{ "$2" };
 	static const string STR3{ "$3" };
 
-	string gen = "(" + genStr + ")";
+	string gen = genStr;
 	if (const auto posOp = gen.find(STROP); posOp != string::npos) {
 		gen.replace(posOp, 3, op);
 	}

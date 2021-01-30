@@ -403,7 +403,6 @@ VISIT_FUNC(ShaderStageFunction)
 
 	// Pop the global scope
 	scopes_.popScope();
-	funcGen_->emitClose();
 	funcGen_ = nullptr;
 
 	// Update shader info

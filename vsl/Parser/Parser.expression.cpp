@@ -221,10 +221,10 @@ VISIT_FUNC(IndexAtom)
 				left->type->getVSLName().c_str(), compCount, compCount));
 		}
 
-		const auto swizzle =
-			(left->type->texel.format->count == 1) ? ".x" :
-			(left->type->texel.format->count == 2) ? ".xy" : "";
-		return MAKE_EXPR(mkstr("(imageLoad(%s, %s)%s)", leftStr.c_str(), indexStr.c_str(), swizzle),
+		const auto loadStr =
+			(left->type->texel.format->count == 1) ? "(imageLoad(%s, %s).x)" :
+			(left->type->texel.format->count == 2) ? "(imageLoad(%s, %s).xy)" : "imageLoad(%s, %s)";
+		return MAKE_EXPR(mkstr(loadStr, leftStr.c_str(), indexStr.c_str()),
 			left->type->texel.format->asDataType(), 1);
 	}
 	else if (left->type->isROBuffer() || left->type->isRWBuffer()) {
@@ -248,10 +248,10 @@ VISIT_FUNC(IndexAtom)
 			ERROR(ctx->index, "RWTexels indexer must have scalar integer type");
 		}
 
-		const auto swizzle =
-			(left->type->texel.format->count == 1) ? ".x" :
-			(left->type->texel.format->count == 2) ? ".xy" : "";
-		return MAKE_EXPR(mkstr("(imageLoad(%s, %s)%s)", leftStr.c_str(), indexStr.c_str(), swizzle),
+		const auto loadStr =
+			(left->type->texel.format->count == 1) ? "(imageLoad(%s, %s).x)" :
+			(left->type->texel.format->count == 2) ? "(imageLoad(%s, %s).xy)" : "imageLoad(%s, %s)";
+		return MAKE_EXPR(mkstr(loadStr, leftStr.c_str(), indexStr.c_str()),
 			left->type->texel.format->asDataType(), 1);
 	}
 	else {
@@ -371,7 +371,7 @@ VISIT_FUNC(NameAtom)
 		// Get type/refstr
 		type = var->dataType;
 		const auto table = NameGeneration::GetBindingTableName(var->dataType);
-		refStr = mkstr("(%s[_bidx%u_])", table.c_str(), var->extra.binding.slot);
+		refStr = mkstr("%s[_bidx%u_]", table.c_str(), var->extra.binding.slot);
 
 		// Update binding
 		funcGen_->emitBindingIndex(var->extra.binding.slot);
@@ -380,7 +380,7 @@ VISIT_FUNC(NameAtom)
 	else if (var->dataType->isROBuffer() || var->dataType->isRWBuffer()) {
 		// Get type/refstr
 		type = var->dataType;
-		refStr = mkstr("(%s[_bidx%u_]._data_)", var->name.c_str(), var->extra.binding.slot);
+		refStr = mkstr("%s[_bidx%u_]._data_", var->name.c_str(), var->extra.binding.slot);
 
 		// Update binding
 		funcGen_->emitBindingIndex(var->extra.binding.slot);
@@ -391,9 +391,7 @@ VISIT_FUNC(NameAtom)
 			ERROR(ctx, "Cannot access subpass inputs outside of fragment shader function");
 		}
 		type = var->dataType->texel.format->asDataType();
-		refStr = mkstr("_spi%u_", var->extra.binding.slot);
-		
-		funcGen_->emitVariableDefinition(type, refStr, mkstr("subpassLoad(%s)", var->name.c_str()));
+		refStr = mkstr("subpassLoad(%s)", var->name.c_str());
 	}
 	else { // Uniform
 		shader_->info().uniform().stageMask |= currentStage_;

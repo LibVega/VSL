@@ -20,8 +20,6 @@ public:
 	FuncGenerator(ShaderStages stage);
 	~FuncGenerator();
 
-	void emitClose();
-
 	/* Assignment */
 	void emitDeclaration(const ShaderType* type, const string& name);
 	void emitVariableDefinition(const ShaderType* type, const string& name, const string& value);
@@ -52,6 +50,7 @@ private:
 	string indent_;
 	uint32 uid_;
 	uint32 bindingMask_;
+	uint32 spiMask_;
 
 	VSL_NO_COPY(FuncGenerator)
 	VSL_NO_MOVE(FuncGenerator)
