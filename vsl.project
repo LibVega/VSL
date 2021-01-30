@@ -25,6 +25,11 @@ end
 local VULKAN_LIB = VULKAN_SDK .. '/lib'
 local VULKAN_INC = VULKAN_SDK .. '/include'
 
+-- Perform additional dependency downloads
+if os.target() == "macosx" then
+    os.execute("(cd ./lib/macos && chmod +x get_antlr.sh && ./get_antlr.sh)")
+end
+
 
 -- Project Workspace
 workspace "VSL"
@@ -32,22 +37,31 @@ workspace "VSL"
     language "C++"
     cppdialect "C++17"
     location "build"
-    configurations { "Static", "Shared" }
+    configurations { "Static", "Shared", "Debug" }
     platforms { "x64" }
     architecture "x86_64"
-    flags { "MultiProcessorCompile", "NoImportLib", "LinkTimeOptimization" }
+    flags { "MultiProcessorCompile", "NoImportLib" }
 
     -- Output Directories
     filter { "configurations:Static" }
         targetdir "build/bin/Static"
     filter { "configurations:Shared" }
         targetdir "build/bin/Shared"
+    filter { "configurations:Debug" }
+        targetdir "build/bin/Debug"
     filter {}
 
     -- Release Settings
-    runtime "Release"
-    symbols "Off"
-    optimize "Speed"
+    filter { "configurations:Debug" }
+        runtime "Release"
+        symbols "On"
+        optimize "Off"
+    filter { "configurations:not Debug"}
+        runtime "Release"
+        symbols "Off"
+        optimize "Speed"
+        flags { "LinkTimeOptimization" }
+    filter {}
 
     -- Compiler/Platform Settings
     filter { "system:windows" }
@@ -83,7 +97,7 @@ project "vsl"
     targetname "vsl"
 
     -- Output Types
-    filter { "configurations:Static" }
+    filter { "configurations:Static or Debug" }
         kind "StaticLib"
         defines { "VSL_STATIC" }
     filter { "configurations:Shared" }
@@ -98,10 +112,6 @@ project "vsl"
 
     -- Project Files
     files {
-        "generated/**.h",
-        "generated/**.cpp",
-        "include/vsl/**.hpp",
-        "include/vsl/**.h",
         "vsl/**.hpp",
         "vsl/**.h",
         "vsl/**.cpp"
@@ -116,7 +126,7 @@ project "vslc"
     targetname "vslc"
     filter { "configurations:Shared" }
         kind "None"
-    filter { "configurations:Static" }
+    filter { "configurations:Static or Debug" }
         kind "ConsoleApp"
     filter {}
     dependson { "vsl" }

@@ -20,17 +20,17 @@ file
 
 // Shader type statement
 shaderTypeStatement
-    : 'shader' type=IDENTIFIER ';'
+    : '@shader' type=IDENTIFIER ';'
     ;
 
 // Shader top level statements
 topLevelStatement
     : shaderStructDefinition
     | shaderInputOutputStatement
-    | shaderConstantStatement
     | shaderUniformStatement
     | shaderBindingStatement
     | shaderLocalStatement
+    | shaderSubpassInputStatement
     | shaderStageFunction
     ;
 
@@ -42,11 +42,6 @@ shaderStructDefinition
 // Shader input or output declaration
 shaderInputOutputStatement
     : io=('in'|'out') '(' index=INTEGER_LITERAL ')' variableDeclaration ';'
-    ;
-
-// Shader constant declaration
-shaderConstantStatement
-    : 'const' variableDeclaration '=' value=(INTEGER_LITERAL|FLOAT_LITERAL) ';'
     ;
 
 // Shader uniform statement
@@ -62,6 +57,11 @@ shaderBindingStatement
 // Shader local statement
 shaderLocalStatement
     : 'local' '(' pstage=IDENTIFIER ')' 'flat'? variableDeclaration ';'
+    ;
+
+// Shader subpass input statement
+shaderSubpassInputStatement
+    : 'passinput' '(' index=INTEGER_LITERAL ')' format=IDENTIFIER name=IDENTIFIER ';'
     ;
 
 // Shader stage function statement
@@ -86,7 +86,7 @@ statementBlock
 
 // Variable declaration, for globals, type fields, and function locals
 variableDeclaration
-    : baseType=IDENTIFIER ('<' subType=IDENTIFIER '>')? name=IDENTIFIER ('[' arraySize=(INTEGER_LITERAL|IDENTIFIER) ']')?
+    : baseType=IDENTIFIER ('<' subType=IDENTIFIER '>')? name=IDENTIFIER ('[' arraySize=INTEGER_LITERAL ']')?
     ;
 
 // Variable definition (declaration with immediate assignment)
@@ -121,8 +121,8 @@ elseStatement
 forLoopStatement
     : 'for' '(' 
             counter=IDENTIFIER ';' 
-            start=(IDENTIFIER|INTEGER_LITERAL) ':' 
-            end=(IDENTIFIER|INTEGER_LITERAL) (':' step=(IDENTIFIER|INTEGER_LITERAL))?
+            start=INTEGER_LITERAL ':' 
+            end=INTEGER_LITERAL (':' step=INTEGER_LITERAL)?
         ')' statementBlock
     ;
 

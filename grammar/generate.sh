@@ -10,7 +10,7 @@
 java -jar ../tools/antlr-4.9-complete.jar \
     -no-listener                          \
     -visitor                              \
-    -o ../generated                       \
+    -o ../vsl/Grammar                     \
     -package grammar                      \
     -Xexact-output-dir                    \
     -Dlanguage=Cpp                        \
@@ -19,7 +19,7 @@ java -jar ../tools/antlr-4.9-complete.jar \
 java -jar ../tools/antlr-4.9-complete.jar \
     -no-listener                          \
     -visitor                              \
-    -o ../generated                       \
+    -o ../vsl/Grammar                     \
     -package grammar                      \
     -Xexact-output-dir                    \
     -Dlanguage=Cpp                        \

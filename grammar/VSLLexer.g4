@@ -13,23 +13,23 @@ lexer grammar VSLLexer;
 BOOLEAN_LITERAL : 'true' | 'false' ;
 
 // Keywords
-KW_BIND     : 'bind' ;
-KW_BREAK    : 'break' ;
-KW_CONST    : 'const' ;
-KW_CONTINUE : 'continue' ;
-KW_DISCARD  : 'discard' ;
-KW_ELIF     : 'elif' ;
-KW_ELSE     : 'else' ;
-KW_FLAT     : 'flat' ;
-KW_FOR      : 'for' ;
-KW_IF       : 'if' ;
-KW_IN       : 'in' ;
-KW_LOCAL    : 'local' ;
-KW_OUT      : 'out' ;
-KW_RETURN   : 'return' ;
-KW_SHADER   : 'shader' ;
-KW_STRUCT   : '@struct' ;
-KW_UNIFORM  : 'uniform' ;
+KW_BIND       : 'bind' ;
+KW_BREAK      : 'break' ;
+KW_CONTINUE   : 'continue' ;
+KW_DISCARD    : 'discard' ;
+KW_ELIF       : 'elif' ;
+KW_ELSE       : 'else' ;
+KW_FLAT       : 'flat' ;
+KW_FOR        : 'for' ;
+KW_IF         : 'if' ;
+KW_IN         : 'in' ;
+KW_LOCAL      : 'local' ;
+KW_OUT        : 'out' ;
+KW_RETURN     : 'return' ;
+KW_SHADER     : '@shader' ;
+KW_PASSINPUT  : 'passinput' ;
+KW_STRUCT     : '@struct' ;
+KW_UNIFORM    : 'uniform' ;
 
 // Number literals
 INTEGER_LITERAL
