@@ -172,6 +172,28 @@ void Compiler::writeOutput() const
 		subpass_input_record rec{ spi };
 		file_write(file, spi);
 	}
+
+	// Write bytecodes
+	if (bool(info.stageMask() & ShaderStages::Vertex)) {
+		const auto& bc = bytecodes_.at(ShaderStages::Vertex);
+		file.write(reinterpret_cast<const char*>(bc.data()), bc.size() * sizeof(uint32));
+	}
+	if (bool(info.stageMask() & ShaderStages::TessControl)) {
+		const auto& bc = bytecodes_.at(ShaderStages::TessControl);
+		file.write(reinterpret_cast<const char*>(bc.data()), bc.size() * sizeof(uint32));
+	}
+	if (bool(info.stageMask() & ShaderStages::TessEval)) {
+		const auto& bc = bytecodes_.at(ShaderStages::TessEval);
+		file.write(reinterpret_cast<const char*>(bc.data()), bc.size() * sizeof(uint32));
+	}
+	if (bool(info.stageMask() & ShaderStages::Geometry)) {
+		const auto& bc = bytecodes_.at(ShaderStages::Geometry);
+		file.write(reinterpret_cast<const char*>(bc.data()), bc.size() * sizeof(uint32));
+	}
+	if (bool(info.stageMask() & ShaderStages::Fragment)) {
+		const auto& bc = bytecodes_.at(ShaderStages::Fragment);
+		file.write(reinterpret_cast<const char*>(bc.data()), bc.size() * sizeof(uint32));
+	}
 }
 
 // ====================================================================================================================
