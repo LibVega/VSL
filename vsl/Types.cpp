@@ -208,11 +208,11 @@ bool ShaderType::isSame(const ShaderType* otherType) const
 	case BaseType::Sampler:
 	case BaseType::Image: return (texel.rank == otherType->texel.rank) && texel.format->isSame(otherType->texel.format);
 	case BaseType::ROBuffer:
-	case BaseType::RWBuffer: return (buffer.structType->name() == otherType->buffer.structType->name());
+	case BaseType::RWBuffer: return (buffer.structType == otherType->buffer.structType);
 	case BaseType::ROTexels:
 	case BaseType::RWTexels: 
 	case BaseType::SPInput: return texel.format->isSame(otherType->texel.format);
-	case BaseType::Uniform: return (buffer.structType->name() == otherType->buffer.structType->name());
+	case BaseType::Uniform: return (buffer.structType == otherType->buffer.structType);
 	case BaseType::Struct: return (userStruct.type->name() == otherType->userStruct.type->name());
 	default: return false;
 	}
@@ -288,13 +288,13 @@ string ShaderType::getVSLName() const
 	} break;
 	case BaseType::Sampler: return texel.format->getVSLPrefix() + "Sampler" + TexelRankGetSuffix(texel.rank);
 	case BaseType::Image: return texel.format->getVSLPrefix() + "Image" + TexelRankGetSuffix(texel.rank);
-	case BaseType::ROBuffer: return "ROBuffer<" + buffer.structType->name() + ">";
-	case BaseType::RWBuffer: return "RWBuffer<" + buffer.structType->name() + ">";
+	case BaseType::ROBuffer: return "ROBuffer<" + buffer.structType->userStruct.type->name() + ">";
+	case BaseType::RWBuffer: return "RWBuffer<" + buffer.structType->userStruct.type->name() + ">";
 	case BaseType::ROTexels: return "RO" + texel.format->getVSLPrefix() + "Texels";
 	case BaseType::RWTexels: return "RWTexels<" + texel.format->getVSLName() + ">";
 	case BaseType::SPInput: return texel.format->getVSLName();
-	case BaseType::Uniform: return buffer.structType->name();
-	case BaseType::Struct: return buffer.structType->name();
+	case BaseType::Uniform: return buffer.structType->userStruct.type->name();
+	case BaseType::Struct: return buffer.structType->userStruct.type->name();
 	default: return "INVALID_TYPE";
 	}
 }
@@ -337,12 +337,12 @@ string ShaderType::getGLSLName() const
 	case BaseType::Sampler: return texel.format->getGLSLPrefix() + "sampler" + TexelRankGetSuffix(texel.rank);
 	case BaseType::Image: return texel.format->getGLSLPrefix() + "image" + TexelRankGetSuffix(texel.rank);
 	case BaseType::ROBuffer:
-	case BaseType::RWBuffer: return buffer.structType->name() + "_t";
+	case BaseType::RWBuffer: return buffer.structType->userStruct.type->name() + "_t";
 	case BaseType::ROTexels: return texel.format->getGLSLPrefix() + "textureBuffer";
 	case BaseType::RWTexels: return texel.format->getGLSLPrefix() + "imageBuffer";
 	case BaseType::SPInput: return texel.format->getGLSLPrefix() + "subpassInput";
-	case BaseType::Uniform: return buffer.structType->name() + "_t";
-	case BaseType::Struct: return buffer.structType->name() + "_t";
+	case BaseType::Uniform: return buffer.structType->userStruct.type->name() + "_t";
+	case BaseType::Struct: return buffer.structType->userStruct.type->name() + "_t";
 	default: return "INVALID_TYPE";
 	}
 }
@@ -426,7 +426,7 @@ const ShaderType* TypeList::parseOrGetType(const string& name)
 		error_ = mkstr("unknown type '%s'", typeName.c_str());
 		return nullptr;
 	}
-	auto type = ParseGenericType(typeName.substr(0, stIndex));
+	auto type = *ParseGenericType(typeName.substr(0, stIndex));
 	if (type.baseType == BaseType::Void) {
 		error_ = mkstr("unknown generic type '%s'", typeName.c_str());
 		return nullptr;
@@ -443,8 +443,8 @@ const ShaderType* TypeList::parseOrGetType(const string& name)
 		type.texel.format = format;
 	}
 	else { // Buffer types
-		const auto structType = getStructType(subtype);
-		if (!structType) {
+		const auto structType = getType(subtype);
+		if (!structType || !structType->isStruct()) {
 			error_ = mkstr("no struct type '%s' found", subtype.c_str());
 			return nullptr;
 		}
@@ -497,7 +497,7 @@ const ShaderType* TypeList::GetNumericType(BaseType baseType, uint32 size, uint3
 }
 
 // ====================================================================================================================
-ShaderType TypeList::ParseGenericType(const string& baseType)
+const ShaderType* TypeList::ParseGenericType(const string& baseType)
 {
 	static const auto E1D = TexelRankGetSuffix(TexelRank::E1D);
 	static const auto E2D = TexelRankGetSuffix(TexelRank::E2D);
@@ -506,40 +506,53 @@ ShaderType TypeList::ParseGenericType(const string& baseType)
 	static const auto E2DARRAY = TexelRankGetSuffix(TexelRank::E2DArray);
 	static const auto CUBE = TexelRankGetSuffix(TexelRank::Cube);
 
+	// Check cache
+	const auto it = GenericTypes_.find(baseType);
+	if (it != GenericTypes_.end()) {
+		return &(it->second);
+	}
+
+	// Create new generic type
+	ShaderType genType{};
 	if (baseType.find("Image") == 0) {
 		auto rank = baseType.substr(5);
 		if (rank == E1D) {
-			return { BaseType::Image, TexelRank::E1D, nullptr };
+			genType = { BaseType::Image, TexelRank::E1D, nullptr };
 		}
-		if (rank == E2D) {
-			return { BaseType::Image, TexelRank::E2D, nullptr };
+		else if (rank == E2D) {
+			genType = { BaseType::Image, TexelRank::E2D, nullptr };
 		}
-		if (rank == E3D) {
-			return { BaseType::Image, TexelRank::E3D, nullptr };
+		else if (rank == E3D) {
+			genType = { BaseType::Image, TexelRank::E3D, nullptr };
 		}
-		if (rank == E1DARRAY) {
-			return { BaseType::Image, TexelRank::E1DArray, nullptr };
+		else if (rank == E1DARRAY) {
+			genType = { BaseType::Image, TexelRank::E1DArray, nullptr };
 		}
-		if (rank == E2DARRAY) {
-			return { BaseType::Image, TexelRank::E2DArray, nullptr };
+		else if (rank == E2DARRAY) {
+			genType = { BaseType::Image, TexelRank::E2DArray, nullptr };
 		}
-		if (rank == CUBE) {
-			return { BaseType::Image, TexelRank::Cube, nullptr };
+		else if (rank == CUBE) {
+			genType = { BaseType::Image, TexelRank::Cube, nullptr };
 		}
-		return { };
+		else {
+			return nullptr;
+		}
 	}
 	else if (baseType == "ROBuffer") {
-		return { BaseType::ROBuffer, nullptr };
+		genType = { BaseType::ROBuffer, nullptr };
 	}
 	else if (baseType == "RWBuffer") {
-		return { BaseType::RWBuffer, nullptr };
+		genType = { BaseType::RWBuffer, nullptr };
 	}
 	else if (baseType == "RWTexels") {
-		return { BaseType::RWTexels, TexelRank::Buffer, nullptr };
+		genType = { BaseType::RWTexels, TexelRank::Buffer, nullptr };
 	}
 	else {
-		return { };
+		return nullptr;
 	}
+
+	// Add and return
+	return &(GenericTypes_[baseType] = genType);
 }
 
 // ====================================================================================================================
@@ -624,5 +637,6 @@ TypeList::FormatMap TypeList::Formats_ {
 	{ "s16norm", { TexelType::SNorm, 2, 1 } }, { "s16norm2", { TexelType::SNorm, 2, 2 } },
 	{ "s16norm4", { TexelType::SNorm, 2, 4 } },
 };
+TypeList::TypeMap TypeList::GenericTypes_{ };
 
 } // namespace vsl

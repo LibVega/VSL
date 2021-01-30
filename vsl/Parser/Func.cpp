@@ -58,6 +58,13 @@ FunctionType::FunctionType(const string& typeName)
 		type = TypeList::GetBuiltinType("bool");
 		genType = true;
 	}
+	else if (name.compare(name.length() - 2, 2, "<>") == 0) {
+		type = TypeList::ParseGenericType(string(name.substr(0, name.length() - 2)));
+		if (!type) {
+			throw std::runtime_error(mkstr("COMPILER BUG - Invalid generic type '%s'", name.data()));
+		}
+		genType = true;
+	}
 	else {
 		type = TypeList::GetBuiltinType(string(name));
 		if (!type) {
@@ -75,8 +82,21 @@ bool FunctionType::match(const SPtr<Expr> expr) const
 		return false; // No functions take arrays as arguments
 	}
 	if (genType) {
-		const auto casttype = TypeList::GetNumericType(type->baseType, etype->numeric.size, etype->numeric.dims[0], 1);
-		return etype->hasImplicitCast(casttype);
+		if (type->isNumericType()) {
+			const auto casttype = 
+				TypeList::GetNumericType(type->baseType, etype->numeric.size, etype->numeric.dims[0], 1);
+			return etype->hasImplicitCast(casttype);
+		}
+		else if (type->isTexelType()) {
+			return (type->baseType == expr->type->baseType) && (type->texel.rank == expr->type->texel.rank);
+		}
+		else if (type->isBufferType()) {
+			return (type->baseType == expr->type->baseType) && 
+				(type->buffer.structType == expr->type->buffer.structType);
+		}
+		else {
+			return false;
+		}
 	}
 	else {
 		if (type->isNumericType() || type->isBoolean()) {

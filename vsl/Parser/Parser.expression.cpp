@@ -232,7 +232,7 @@ VISIT_FUNC(IndexAtom)
 			ERROR(ctx->index, "Buffer indexer must have scalar integer type");
 		}
 
-		const auto sType = shader_->types().getType(left->type->buffer.structType->name());
+		const auto sType = shader_->types().getType(left->type->buffer.structType->userStruct.type->name());
 		return MAKE_EXPR(mkstr("%s[%s]", leftStr.c_str(), indexStr.c_str()), sType, 1);
 	}
 	else if (left->type->isROTexels()) {
@@ -396,7 +396,7 @@ VISIT_FUNC(NameAtom)
 		funcGen_->emitVariableDefinition(type, refStr, mkstr("subpassLoad(%s)", var->name.c_str()));
 	}
 	else { // Uniform
-		type = shader_->types().getType(var->dataType->buffer.structType->name());
+		type = shader_->types().getType(var->dataType->buffer.structType->userStruct.type->name());
 		refStr = var->name;
 	}
 

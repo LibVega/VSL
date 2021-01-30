@@ -102,7 +102,7 @@ VISIT_FUNC(ShaderStructDefinition)
 
 	// Add the struct type
 	const auto sType = shader_->types().addStructType(typeName, structType);
-	shader_->types().addType(typeName, { BaseType::Struct, sType });
+	shader_->types().addType(typeName, { sType });
 
 	return nullptr;
 }
@@ -207,7 +207,7 @@ VISIT_FUNC(ShaderUniformStatement)
 	}
 
 	// Create the new uniform type
-	ShaderType tempType{ BaseType::Uniform, bVar.dataType->userStruct.type };
+	ShaderType tempType{ BaseType::Uniform, bVar.dataType };
 	const auto uType = 
 		shader_->types().addType(mkstr("Uniform<%s>", bVar.dataType->userStruct.type->name().c_str()), tempType);
 

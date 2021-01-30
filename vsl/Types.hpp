@@ -157,10 +157,15 @@ public:
 	ShaderType(BaseType texelObjectType, TexelRank rank, const TexelFormat* format)
 		: baseType{ texelObjectType }, texel{ rank, format }
 	{ }
-	ShaderType(BaseType structOrBufferType, const StructType* structType)
-		: baseType{ structOrBufferType }, texel{}
+	ShaderType(const BaseType bufferType, const ShaderType* structType)
+		: baseType{ bufferType }, texel{}
 	{
-		buffer.structType = structType; // Also initializes userStruct.structType b/c union
+		buffer.structType = structType;
+	}
+	ShaderType(const StructType* structType)
+		: baseType{ BaseType::Struct }, texel{}
+	{
+		userStruct.type = structType;
 	}
 
 	/* Base Type Checks */
@@ -220,7 +225,7 @@ public:
 		} texel;
 		struct BufferInfo
 		{
-			const StructType* structType;
+			const ShaderType* structType;
 		} buffer;
 		struct StructInfo
 		{
@@ -261,9 +266,9 @@ public:
 
 	static const TexelFormat* GetTexelFormat(const string& format);
 	static const ShaderType* GetNumericType(BaseType baseType, uint32 size, uint32 dim0, uint32 dim1);
+	static const ShaderType* ParseGenericType(const string& baseType);
 
 private:
-	static ShaderType ParseGenericType(const string& baseType);
 	static void Initialize();
 
 private:
@@ -273,6 +278,7 @@ private:
 	
 	static bool Initialized_;
 	static TypeMap BuiltinTypes_;
+	static TypeMap GenericTypes_;
 	static FormatMap Formats_;
 
 	VSL_NO_COPY(TypeList)

@@ -52,7 +52,7 @@ struct binding_record final
 			image.texelCount = uint8(var.type->texel.format->count);
 		}
 		else {
-			buffer.size = uint16(var.type->buffer.structType->size());
+			buffer.size = uint16(var.type->buffer.structType->userStruct.type->size());
 		}
 	}
 

@@ -245,7 +245,7 @@ VISIT_FUNC(Lvalue)
 				ERROR(ctx->index, "RWBuffer expects a scalar integer indexer");
 			}
 			refStr = mkstr("(%s._data_[%s])", left->refString.c_str(), ctx->index->getText().c_str());
-			refType = shader_->types().getType(ltype->buffer.structType->name());
+			refType = shader_->types().getType(ltype->buffer.structType->userStruct.type->name());
 		}
 		else if (ltype->baseType == BaseType::RWTexels) {
 			if (!itype->isScalar()) {

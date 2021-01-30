@@ -91,7 +91,7 @@ void Compiler::writeOutput() const
 	// Write uniform info
 	if (info.hasUniform()) {
 		const auto& unif = info.uniform();
-		const auto sType = unif.type->buffer.structType;
+		const auto sType = unif.type->buffer.structType->userStruct.type;
 		
 		file_write(file, uint16(sType->size()));
 		file_write(file, uint16(unif.stageMask));
