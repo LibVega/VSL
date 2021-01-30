@@ -19,6 +19,7 @@ namespace vsl
 {
 
 class FuncGenerator;
+class StageGenerator;
 
 
 // Used to provide the sizes of the binding tables in generated shaders
@@ -137,6 +138,7 @@ private:
 	ShaderInfo info_;
 	TypeList types_;
 	std::unordered_map<ShaderStages, UPtr<FuncGenerator>> functions_;
+	std::unordered_map<ShaderStages, UPtr<StageGenerator>> stages_;
 
 public:
 	static constexpr uint32 MAX_NAME_LENGTH{ 32u };      // Max length for type and variable names

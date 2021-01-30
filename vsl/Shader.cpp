@@ -8,6 +8,7 @@
 #include "./Parser/Parser.hpp"
 #include "./Compiler/Compiler.hpp"
 #include "./Generator/FuncGenerator.hpp"
+#include "./Generator/StageGenerator.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -26,6 +27,7 @@ Shader::Shader()
 	, info_{ }
 	, types_{ }
 	, functions_{ }
+	, stages_{ }
 {
 
 }
@@ -114,6 +116,52 @@ bool Shader::generate()
 	if (isGenerated()) {
 		lastError_ = ShaderError("Shader has already parsed VSL source");
 		return false;
+	}
+
+	// Generate per-stage
+	if (bool(info_.stageMask() & ShaderStages::Vertex)) {
+		auto& gen = (stages_[ShaderStages::Vertex] = std::make_unique<StageGenerator>(ShaderStages::Vertex));
+		gen->generate(*(functions_[ShaderStages::Vertex]), info_);
+		if (!gen->save(options_)) {
+			lastError_ = { "Failed to save vertex glsl" };
+			return false;
+		}
+	}
+	if (bool(info_.stageMask() & ShaderStages::TessControl)) {
+		auto& gen = (stages_[ShaderStages::TessControl] = std::make_unique<StageGenerator>(ShaderStages::TessControl));
+		gen->generate(*(functions_[ShaderStages::TessControl]), info_);
+		gen->save(options_);
+		if (!gen->save(options_)) {
+			lastError_ = { "Failed to save tess control glsl" };
+			return false;
+		}
+	}
+	if (bool(info_.stageMask() & ShaderStages::TessEval)) {
+		auto& gen = (stages_[ShaderStages::TessEval] = std::make_unique<StageGenerator>(ShaderStages::TessEval));
+		gen->generate(*(functions_[ShaderStages::TessEval]), info_);
+		gen->save(options_);
+		if (!gen->save(options_)) {
+			lastError_ = { "Failed to save tess eval glsl" };
+			return false;
+		}
+	}
+	if (bool(info_.stageMask() & ShaderStages::Geometry)) {
+		auto& gen = (stages_[ShaderStages::Geometry] = std::make_unique<StageGenerator>(ShaderStages::Geometry));
+		gen->generate(*(functions_[ShaderStages::Geometry]), info_);
+		gen->save(options_);
+		if (!gen->save(options_)) {
+			lastError_ = { "Failed to save geometry glsl" };
+			return false;
+		}
+	}
+	if (bool(info_.stageMask() & ShaderStages::Fragment)) {
+		auto& gen = (stages_[ShaderStages::Fragment] = std::make_unique<StageGenerator>(ShaderStages::Fragment));
+		gen->generate(*(functions_[ShaderStages::Fragment]), info_);
+		gen->save(options_);
+		if (!gen->save(options_)) {
+			lastError_ = { "Failed to save fragment glsl" };
+			return false;
+		}
 	}
 
 	progress_.generated = true;

@@ -34,6 +34,12 @@ FuncGenerator::~FuncGenerator()
 }
 
 // ====================================================================================================================
+void FuncGenerator::emitClose()
+{
+	source_ << "}" << CRLF;
+}
+
+// ====================================================================================================================
 void FuncGenerator::emitDeclaration(const ShaderType* type, const string& name)
 {
 	source_ << indent_ << type->getGLSLName() << " " << name << ";" << CRLF;

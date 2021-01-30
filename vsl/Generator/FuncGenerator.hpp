@@ -20,6 +20,8 @@ public:
 	FuncGenerator(ShaderStages stage);
 	~FuncGenerator();
 
+	void emitClose();
+
 	/* Assignment */
 	void emitDeclaration(const ShaderType* type, const string& name);
 	void emitVariableDefinition(const ShaderType* type, const string& name, const string& value);
@@ -39,6 +41,9 @@ public:
 
 	/* Binding */
 	void emitBindingIndex(uint32 index);
+
+	/* Source Access */
+	inline const std::stringstream& source() const { return source_; }
 
 private:
 	const string name_;
