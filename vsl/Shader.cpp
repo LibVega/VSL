@@ -84,20 +84,26 @@ bool Shader::parseString(const string& source, const CompileOptions& options)
 	// Save options
 	options_ = options;
 
-	// Perform parsing
-	Parser parser{ this, &options };
-	if (!parser.parse(source)) {
-		lastError_ = parser.error();
-		return false;
-	}
+	try {
+		// Perform parsing
+		Parser parser{ this, &options };
+		if (!parser.parse(source)) {
+			lastError_ = parser.error();
+			return false;
+		}
 
-	// After-parse validation
-	if (!bool(info_.stageMask() & ShaderStages::Vertex)) {
-		lastError_ = { "Shader is missing required vertex stage", 0, 0 };
-		return false;
+		// After-parse validation
+		if (!bool(info_.stageMask() & ShaderStages::Vertex)) {
+			lastError_ = { "Shader is missing required vertex stage", 0, 0 };
+			return false;
+		}
+		if (!bool(info_.stageMask() & ShaderStages::Fragment)) {
+			lastError_ = { "Shader is missing required fragment stage", 0, 0 };
+			return false;
+		}
 	}
-	if (!bool(info_.stageMask() & ShaderStages::Fragment)) {
-		lastError_ = { "Shader is missing required fragment stage", 0, 0 };
+	catch (const std::exception& ex) {
+		lastError_ = { mkstr("Unhandled parsing exception - %s", ex.what()) };
 		return false;
 	}
 
@@ -118,51 +124,57 @@ bool Shader::generate()
 		return false;
 	}
 
-	// Generate per-stage
-	if (bool(info_.stageMask() & ShaderStages::Vertex)) {
-		auto& gen = (stages_[ShaderStages::Vertex] = 
-			std::make_unique<StageGenerator>(&options_, ShaderStages::Vertex));
-		gen->generate(*(functions_[ShaderStages::Vertex]), info_);
-		if (!gen->save()) {
-			lastError_ = { "Failed to save vertex glsl" };
-			return false;
+	try {
+		// Generate per-stage
+		if (bool(info_.stageMask() & ShaderStages::Vertex)) {
+			auto& gen = (stages_[ShaderStages::Vertex] =
+				std::make_unique<StageGenerator>(&options_, ShaderStages::Vertex));
+			gen->generate(*(functions_[ShaderStages::Vertex]), info_);
+			if (!gen->save()) {
+				lastError_ = { "Failed to save vertex glsl" };
+				return false;
+			}
+		}
+		if (bool(info_.stageMask() & ShaderStages::TessControl)) {
+			auto& gen = (stages_[ShaderStages::TessControl] =
+				std::make_unique<StageGenerator>(&options_, ShaderStages::TessControl));
+			gen->generate(*(functions_[ShaderStages::TessControl]), info_);
+			if (!gen->save()) {
+				lastError_ = { "Failed to save tess control glsl" };
+				return false;
+			}
+		}
+		if (bool(info_.stageMask() & ShaderStages::TessEval)) {
+			auto& gen = (stages_[ShaderStages::TessEval] =
+				std::make_unique<StageGenerator>(&options_, ShaderStages::TessEval));
+			gen->generate(*(functions_[ShaderStages::TessEval]), info_);
+			if (!gen->save()) {
+				lastError_ = { "Failed to save tess eval glsl" };
+				return false;
+			}
+		}
+		if (bool(info_.stageMask() & ShaderStages::Geometry)) {
+			auto& gen = (stages_[ShaderStages::Geometry] =
+				std::make_unique<StageGenerator>(&options_, ShaderStages::Geometry));
+			gen->generate(*(functions_[ShaderStages::Geometry]), info_);
+			if (!gen->save()) {
+				lastError_ = { "Failed to save geometry glsl" };
+				return false;
+			}
+		}
+		if (bool(info_.stageMask() & ShaderStages::Fragment)) {
+			auto& gen = (stages_[ShaderStages::Fragment] =
+				std::make_unique<StageGenerator>(&options_, ShaderStages::Fragment));
+			gen->generate(*(functions_[ShaderStages::Fragment]), info_);
+			if (!gen->save()) {
+				lastError_ = { "Failed to save fragment glsl" };
+				return false;
+			}
 		}
 	}
-	if (bool(info_.stageMask() & ShaderStages::TessControl)) {
-		auto& gen = (stages_[ShaderStages::TessControl] = 
-			std::make_unique<StageGenerator>(&options_, ShaderStages::TessControl));
-		gen->generate(*(functions_[ShaderStages::TessControl]), info_);
-		if (!gen->save()) {
-			lastError_ = { "Failed to save tess control glsl" };
-			return false;
-		}
-	}
-	if (bool(info_.stageMask() & ShaderStages::TessEval)) {
-		auto& gen = (stages_[ShaderStages::TessEval] = 
-			std::make_unique<StageGenerator>(&options_, ShaderStages::TessEval));
-		gen->generate(*(functions_[ShaderStages::TessEval]), info_);
-		if (!gen->save()) {
-			lastError_ = { "Failed to save tess eval glsl" };
-			return false;
-		}
-	}
-	if (bool(info_.stageMask() & ShaderStages::Geometry)) {
-		auto& gen = (stages_[ShaderStages::Geometry] = 
-			std::make_unique<StageGenerator>(&options_, ShaderStages::Geometry));
-		gen->generate(*(functions_[ShaderStages::Geometry]), info_);
-		if (!gen->save()) {
-			lastError_ = { "Failed to save geometry glsl" };
-			return false;
-		}
-	}
-	if (bool(info_.stageMask() & ShaderStages::Fragment)) {
-		auto& gen = (stages_[ShaderStages::Fragment] = 
-			std::make_unique<StageGenerator>(&options_, ShaderStages::Fragment));
-		gen->generate(*(functions_[ShaderStages::Fragment]), info_);
-		if (!gen->save()) {
-			lastError_ = { "Failed to save fragment glsl" };
-			return false;
-		}
+	catch (const std::exception& ex) {
+		lastError_ = { mkstr("Unhandled generator exception - %s", ex.what()) };
+		return false;
 	}
 
 	progress_.generated = true;
@@ -182,38 +194,44 @@ bool Shader::compile()
 		return false;
 	}
 
-	// Create compiler
-	Compiler compiler{ this, &options_ };
+	try {
+		// Create compiler
+		Compiler compiler{ this, &options_ };
 
-	// Compile stages
-	if (bool(info_.stageMask() & ShaderStages::Vertex) && 
+		// Compile stages
+		if (bool(info_.stageMask() & ShaderStages::Vertex) &&
 			!compiler.compileStage(*stages_[ShaderStages::Vertex])) {
-		lastError_ = ShaderError(compiler.lastError());
-		return false;
-	}
-	if (bool(info_.stageMask() & ShaderStages::TessControl) &&
+			lastError_ = ShaderError(compiler.lastError());
+			return false;
+		}
+		if (bool(info_.stageMask() & ShaderStages::TessControl) &&
 			!compiler.compileStage(*stages_[ShaderStages::TessControl])) {
-		lastError_ = ShaderError(compiler.lastError());
-		return false;
-	}
-	if (bool(info_.stageMask() & ShaderStages::TessEval) &&
+			lastError_ = ShaderError(compiler.lastError());
+			return false;
+		}
+		if (bool(info_.stageMask() & ShaderStages::TessEval) &&
 			!compiler.compileStage(*stages_[ShaderStages::TessEval])) {
-		lastError_ = ShaderError(compiler.lastError());
-		return false;
-	}
-	if (bool(info_.stageMask() & ShaderStages::Geometry) &&
+			lastError_ = ShaderError(compiler.lastError());
+			return false;
+		}
+		if (bool(info_.stageMask() & ShaderStages::Geometry) &&
 			!compiler.compileStage(*stages_[ShaderStages::Geometry])) {
-		lastError_ = ShaderError(compiler.lastError());
-		return false;
-	}
-	if (bool(info_.stageMask() & ShaderStages::Fragment) &&
+			lastError_ = ShaderError(compiler.lastError());
+			return false;
+		}
+		if (bool(info_.stageMask() & ShaderStages::Fragment) &&
 			!compiler.compileStage(*stages_[ShaderStages::Fragment])) {
-		lastError_ = ShaderError(compiler.lastError());
+			lastError_ = ShaderError(compiler.lastError());
+			return false;
+		}
+
+		// Write final output file
+		compiler.writeOutput();
+	}
+	catch (const std::exception& ex) {
+		lastError_ = { mkstr("Unhandled compiler exception - %s", ex.what()) };
 		return false;
 	}
-
-	// Write final output file
-	compiler.writeOutput();
 
 	progress_.compiled = true;
 	return true;
